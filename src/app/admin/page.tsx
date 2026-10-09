@@ -104,6 +104,44 @@ const MODAL_PRICE_OPTIONS = [
 ];
 
 
+
+const MARTINIQUE_COMMUNES = [
+  "L'Ajoupa-Bouillon",
+  "Les Anses-d'Arlet",
+  "Basse-Pointe",
+  "Bellefontaine",
+  "Le Carbet",
+  "Case-Pilote",
+  "Le Diamant",
+  "Ducos",
+  "Fonds-Saint-Denis",
+  "Fort-de-France",
+  "Le François",
+  "Grand'Rivière",
+  "Gros-Morne",
+  "Le Lamentin",
+  "Le Lorrain",
+  "Macouba",
+  "Marigot",
+  "Le Marin",
+  "Le Morne-Rouge",
+  "Le Morne-Vert",
+  "Le Prêcheur",
+  "Rivière-Pilote",
+  "Rivière-Salée",
+  "Le Robert",
+  "Sainte-Anne",
+  "Sainte-Luce",
+  "Sainte-Marie",
+  "Saint-Esprit",
+  "Saint-Joseph",
+  "Saint-Pierre",
+  "Schœlcher",
+  "La Trinité",
+  "Les Trois-Îlets",
+  "Le Vauclin"
+];
+
 function extractCoordsFromGoogleMaps(input: string): [number, number] | null {
   if (!input) return null;
   const trimmed = input.trim();
@@ -163,6 +201,8 @@ export default function AdminDashboardPage() {
   const [deletingPlaceId, setDeletingPlaceId] = useState<string | null>(null);
   const [googleMapsInput, setGoogleMapsInput] = useState('');
   const [coordsDetected, setCoordsDetected] = useState(false);
+  const [showCommuneSuggestions, setShowCommuneSuggestions] = useState(false);
+  const [isResolvingGmaps, setIsResolvingGmaps] = useState(false);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
 
@@ -237,6 +277,46 @@ export default function AdminDashboardPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  
+  const handleGoogleMapsChange = async (url: string) => {
+    setGoogleMapsInput(url);
+    if (!url.trim()) {
+      setCoordsDetected(false);
+      return;
+    }
+
+    // 1. Essai direct en local
+    const localCoords = extractCoordsFromGoogleMaps(url);
+    if (localCoords) {
+      setEditingPlace(prev => prev ? ({ ...prev, coords: localCoords }) : null);
+      setCoordsDetected(true);
+      return;
+    }
+
+    // 2. Si lien URL (y compris raccourcis goo.gl ou maps.app.goo.gl), résolution serveur
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      setIsResolvingGmaps(true);
+      try {
+        const res = await fetch('/api/admin/resolve-gmaps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if (data.success && data.coords) {
+          setEditingPlace(prev => prev ? ({ ...prev, coords: data.coords }) : null);
+          setCoordsDetected(true);
+        } else {
+          setCoordsDetected(false);
+        }
+      } catch (e) {
+        setCoordsDetected(false);
+      } finally {
+        setIsResolvingGmaps(false);
+      }
     }
   };
 
@@ -535,14 +615,20 @@ export default function AdminDashboardPage() {
                   id: `lieu-${Date.now()}`,
                   name: '',
                   category: 'beach',
-                  commune: 'Sainte-Anne',
+                  commune: '',
                   description: '',
-                  coords: [14.4372, -60.8805],
-                  photos: ['/images/spots/salines.jpg'],
+                  coords: [0, 0],
+                  photos: [],
+                  website: '',
+                  phone: '',
+                  priceRange: '€€',
                   rating: 4.8,
-                  reviewsCount: 1,
-                  featured: false
+                  reviewsCount: 0,
+                  featured: false,
+                  isHiddenGem: false
                 } as any);
+                setGoogleMapsInput('');
+                setCoordsDetected(false);
                 setIsCreateModalOpen(true);
               }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#087E8B] hover:bg-[#087E8B]/90 text-white rounded-2xl font-bold text-sm shadow-xs transition-colors"
@@ -644,13 +730,40 @@ export default function AdminDashboardPage() {
                       options={MODAL_CATEGORY_OPTIONS}
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#073B4C]">Commune *</label>
+                  <div className="space-y-1.5 relative">
+                    <label className="text-xs font-bold text-[#073B4C]">Commune * (suggestions automatiques)</label>
                     <input 
                       type="text" required 
-                      value={editingPlace.commune} onChange={e => setEditingPlace({...editingPlace, commune: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
+                      placeholder="Tapez le début de la commune..."
+                      value={editingPlace.commune} 
+                      onChange={e => {
+                        setEditingPlace({...editingPlace, commune: e.target.value});
+                        setShowCommuneSuggestions(true);
+                      }}
+                      onFocus={() => setShowCommuneSuggestions(true)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
                     />
+                    {showCommuneSuggestions && editingPlace.commune.trim() && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowCommuneSuggestions(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl border border-[#DCECEF] p-1.5 z-50 max-h-48 overflow-y-auto space-y-1">
+                          {MARTINIQUE_COMMUNES.filter(c => c.toLowerCase().includes(editingPlace.commune.toLowerCase())).slice(0, 6).map(c => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => {
+                                setEditingPlace({...editingPlace, commune: c});
+                                setShowCommuneSuggestions(false);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#073B4C] hover:bg-[#F2FCFC] hover:text-[#087E8B] text-left transition-colors cursor-pointer"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-[#087E8B]" />
+                              <span>{c}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Description</label>
@@ -688,21 +801,17 @@ export default function AdminDashboardPage() {
                     <div className="relative">
                       <input 
                         type="text"
-                        placeholder="Collez ici un lien Google Maps ou des coordonnées (ex: https://maps.google.com/... ou 14.4325, -60.8492)"
+                        placeholder="Collez ici n'importe quel lien Google Maps (ex: https://maps.app.goo.gl/... ou 14.4325, -60.8492)"
                         value={googleMapsInput}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setGoogleMapsInput(val);
-                          const coords = extractCoordsFromGoogleMaps(val);
-                          if (coords) {
-                            setEditingPlace({ ...editingPlace, coords });
-                            setCoordsDetected(true);
-                          } else {
-                            setCoordsDetected(false);
-                          }
-                        }}
-                        className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-[#DCECEF] bg-white text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
+                        onChange={e => handleGoogleMapsChange(e.target.value)}
+                        className="w-full pl-4 pr-28 py-2.5 rounded-xl border border-[#DCECEF] bg-white text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
                       />
+                      {isResolvingGmaps && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#087E8B] flex items-center gap-1.5">
+                          <div className="w-3.5 h-3.5 border-2 border-[#087E8B] border-t-transparent rounded-full animate-spin" />
+                          <span>Analyse GPS...</span>
+                        </div>
+                      )}
                       {coordsDetected && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5" /> GPS détecté !
