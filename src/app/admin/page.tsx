@@ -1468,83 +1468,86 @@ export default function AdminDashboardPage() {
 
       {/* Double Vérification : Modal de Confirmation et Revue Finale */}
       {showEditConfirm && editingPlace && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#073B4C]/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white max-w-lg w-full rounded-4xl p-7 text-center border border-[#DCECEF] shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="w-16 h-16 rounded-3xl bg-[#BFEFF2]/50 text-[#087E8B] mx-auto flex items-center justify-center shadow-inner">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-2xl font-extrabold text-[#073B4C]">
-                {isCreateModalOpen ? 'Vérification avant Publication' : 'Vérification des Modifications'}
-              </h3>
-              <p className="text-xs text-[#6E858A]">
-                Vérifiez les données du lieu avant synchronisation avec Supabase :
-              </p>
-            </div>
-
-            {/* Récapitulatif clair */}
-            <div className="bg-[#F2FCFC] border border-[#DCECEF] rounded-3xl p-4 text-left space-y-3 text-xs text-[#073B4C]">
-              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
-                <span className="font-semibold text-[#6E858A]">Nom du lieu :</span>
-                <span className="font-extrabold text-sm text-[#073B4C]">{editingPlace.name || '—'}</span>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-[#073B4C]/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-3xl p-5 sm:p-6 text-center border border-[#DCECEF] shadow-2xl space-y-3.5">
+            {/* En-tête compact avec icône alignée */}
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#BFEFF2]/60 text-[#087E8B] flex items-center justify-center shadow-inner shrink-0">
+                <CheckCircle2 className="w-6 h-6 text-[#087E8B]" />
               </div>
-              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+              <div className="text-left">
+                <h3 className="text-lg font-extrabold text-[#073B4C] leading-tight">
+                  {isCreateModalOpen ? 'Vérification avant Publication' : 'Vérification des Modifications'}
+                </h3>
+                <p className="text-[11px] text-[#6E858A]">
+                  Vérifiez les données avant synchronisation Supabase
+                </p>
+              </div>
+            </div>
+
+            {/* Récapitulatif clair & compact */}
+            <div className="bg-[#F2FCFC] border border-[#DCECEF] rounded-2xl p-3 sm:p-3.5 text-left space-y-2 text-xs text-[#073B4C]">
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-1.5">
+                <span className="font-semibold text-[#6E858A]">Nom :</span>
+                <span className="font-extrabold text-xs text-[#073B4C] truncate max-w-[210px]">{editingPlace.name || '—'}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-1.5">
                 <span className="font-semibold text-[#6E858A]">Commune :</span>
                 <span className="font-bold text-[#087E8B]">{editingPlace.commune || '—'}</span>
               </div>
-              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-1.5">
                 <span className="font-semibold text-[#6E858A]">Catégorie :</span>
                 <span className="font-bold">
                   {MODAL_CATEGORY_OPTIONS.find(c => c.value === editingPlace.category)?.label || editingPlace.category}
                 </span>
               </div>
-              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
-                <span className="font-semibold text-[#6E858A]">Coordonnées GPS :</span>
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-1.5">
+                <span className="font-semibold text-[#6E858A]">GPS :</span>
                 {editingPlace.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0) ? (
-                  <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px]">
                     {editingPlace.coords[0]}, {editingPlace.coords[1]}
                   </span>
                 ) : (
-                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
                     ⚠️ Non définies (0, 0)
                   </span>
                 )}
               </div>
-              <div className="flex justify-between items-center border-t border-[#DCECEF]/60 pt-2">
+              <div className="flex justify-between items-center pt-0.5">
                 <span className="font-semibold text-[#6E858A]">Photo principale :</span>
                 {editingPlace.photos && editingPlace.photos.length > 0 ? (
                   <div className="flex items-center gap-2">
                     <img 
                       src={editingPlace.photos[0]} 
                       alt="" 
-                      className="w-9 h-9 object-cover rounded-xl border border-[#DCECEF] shadow-xs" 
+                      className="w-8 h-8 object-cover rounded-lg border border-[#DCECEF] shadow-xs" 
                       onError={(e) => { (e.target as HTMLImageElement).src = '/images/spots/salines.jpg'; }}
                     />
-                    <span className="font-bold text-[#087E8B]">{editingPlace.photos.length} photo(s)</span>
+                    <span className="font-bold text-[#087E8B] text-xs">{editingPlace.photos.length} photo(s)</span>
                   </div>
                 ) : (
-                  <span className="text-amber-700 font-bold">Aucune photo</span>
+                  <span className="text-amber-700 font-bold text-xs">Aucune photo</span>
                 )}
               </div>
             </div>
 
-            <p className="text-[11px] text-[#6E858A] leading-relaxed">
-              Une fois validé, ce lieu sera immédiatement accessible aux utilisateurs dans l'explorateur Martinique.
+            <p className="text-[11px] text-[#6E858A] leading-snug">
+              Une fois validé, ce lieu sera immédiatement accessible aux visiteurs dans l'explorateur.
             </p>
 
-            <div className="flex gap-3 pt-2">
+            {/* Boutons d'action toujours visibles sans défilement */}
+            <div className="flex gap-2.5 pt-1">
               <button 
                 type="button"
                 onClick={() => setShowEditConfirm(false)}
-                className="flex-1 py-3 rounded-2xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
+                className="flex-1 py-2.5 rounded-xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-xs cursor-pointer"
               >
                 Ajuster les infos
               </button>
               <button 
                 type="button"
                 onClick={handleConfirmSave}
-                className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-all text-sm shadow-md shadow-[#087E8B]/20 flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-all text-xs shadow-md shadow-[#087E8B]/20 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 {isCreateModalOpen ? 'Confirmer & Créer' : 'Confirmer & Enregistrer'}
