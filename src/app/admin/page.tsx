@@ -215,7 +215,6 @@ export default function AdminDashboardPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isDragOverPhoto, setIsDragOverPhoto] = useState(false);
-  const [showManualUrlInput, setShowManualUrlInput] = useState(false);
   const [photoRequiredError, setPhotoRequiredError] = useState(false);
   const [resolvedMapsUrl, setResolvedMapsUrl] = useState<string | null>(null);
 
@@ -1237,20 +1236,13 @@ export default function AdminDashboardPage() {
                         >
                           <ExternalLink className="w-3.5 h-3.5" /> Ouvrir le Studio Photos
                         </Link>
-                        <button
-                          type="button"
-                          onClick={() => setShowManualUrlInput(!showManualUrlInput)}
-                          className="text-xs font-bold text-[#6E858A] hover:text-[#073B4C] bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl transition-colors shrink-0 cursor-pointer"
-                        >
-                          {showManualUrlInput ? 'Masquer URLs' : 'URLs manuelles'}
-                        </button>
                       </div>
                     </div>
 
                     {photoRequiredError && (
                       <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-rose-800 text-xs font-bold animate-fadeIn">
                         <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>⚠️ Une photo est obligatoire pour créer ou modifier ce lieu. Veuillez déposer une photo ou saisir une URL ci-dessous.</span>
+                        <span>⚠️ Une photo est obligatoire pour créer ou modifier ce lieu. Veuillez déposer une photo ci-dessous.</span>
                       </div>
                     )}
 
@@ -1411,28 +1403,9 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
 
-                    {/* Saisie textuelle avancée (URLs séparées par virgules) */}
-                    {showManualUrlInput && (
-                      <div className="pt-2 animate-fadeIn space-y-1.5">
-                        <label className="text-xs font-bold text-[#6E858A]">
-                          URLs manuelles (séparées par des virgules ou retours à la ligne) :
-                        </label>
-                        <textarea 
-                          rows={2}
-                          value={(editingPlace.photos || []).join(',\n')} 
-                          onChange={e => {
-                            const updatedPhotos = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                            setEditingPlace({...editingPlace, photos: updatedPhotos});
-                            if (updatedPhotos.length > 0) setPhotoRequiredError(false);
-                          }}
-                          className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-xs focus:outline-none focus:border-[#087E8B]"
-                          placeholder="/images/spots/photo1.jpg, https://example.com/photo2.jpg"
-                        />
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* 📋 SECTION 4 : Infos Pratiques */}
               <div className="space-y-4">
