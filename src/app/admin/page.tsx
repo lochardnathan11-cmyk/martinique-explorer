@@ -37,6 +37,7 @@ export default function AdminDashboardPage() {
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   
   // Modals state
   const [editingPlace, setEditingPlace] = useState<PlaceItem | null>(null);
@@ -194,11 +195,27 @@ export default function AdminDashboardPage() {
     }
   };
 
+    const CATEGORY_OPTIONS = [
+    { value: 'all', label: 'Toutes les catégories', icon: '🌴', count: places.length },
+    { value: 'beach', label: 'Plages & Snorkeling', icon: '🏖️', count: places.filter(p => p.category === 'beach' || p.category === 'snorkeling').length },
+    { value: 'activity', label: 'Activités & Randos', icon: '🥾', count: places.filter(p => p.category === 'activity' || p.category === 'hiking' || p.category === 'excursion').length },
+    { value: 'accommodation', label: 'Hôtels & Lodges', icon: '🏨', count: places.filter(p => p.category === 'accommodation').length },
+    { value: 'restaurant', label: 'Restaurants & Bars', icon: '🍽️', count: places.filter(p => p.category === 'restaurant' || p.category === 'bar').length },
+    { value: 'viewpoint', label: 'Points de vue & Secrets', icon: '💎', count: places.filter(p => p.category === 'viewpoint' || p.category === 'hidden_gem' || p.category === 'photo').length },
+  ];
+
+  const currentCategoryOption = CATEGORY_OPTIONS.find(o => o.value === categoryFilter) || CATEGORY_OPTIONS[0];
+
   // ----- Filtering ----- //
   const filteredPlaces = places.filter(place => {
     const matchesSearch = place.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           place.commune.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || place.category === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' 
+      || place.category === categoryFilter
+      || (categoryFilter === 'beach' && place.category === 'snorkeling')
+      || (categoryFilter === 'activity' && (place.category === 'hiking' || place.category === 'excursion'))
+      || (categoryFilter === 'restaurant' && place.category === 'bar')
+      || (categoryFilter === 'viewpoint' && (place.category === 'hidden_gem' || place.category === 'photo'));
     return matchesSearch && matchesCategory;
   });
 
@@ -324,17 +341,56 @@ export default function AdminDashboardPage() {
               />
             </div>
             
-            <select
-              value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
-              className="py-2.5 pl-4 pr-10 rounded-2xl bg-[#F2FCFC]/60 border border-[#DCECEF] text-sm text-[#073B4C] font-medium focus:outline-none focus:ring-2 focus:ring-[#087E8B] appearance-none"
-            >
-              <option value="all">Toutes les catégories</option>
-              <option value="beach">Plages</option>
-              <option value="activity">Activités</option>
-              <option value="accommodation">Hôtels</option>
-              <option value="restaurant">Restaurants</option>
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                className="py-2.5 px-4 rounded-2xl bg-[#F2FCFC]/80 hover:bg-white border border-[#DCECEF] hover:border-[#087E8B] text-sm text-[#073B4C] font-semibold transition-all flex items-center gap-2.5 shadow-xs cursor-pointer"
+              >
+                <span className="text-base">{currentCategoryOption.icon}</span>
+                <span>{currentCategoryOption.label}</span>
+                <ChevronDown className={`w-4 h-4 text-[#6E858A] transition-transform duration-200 ${categoryDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {categoryDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setCategoryDropdownOpen(false)} 
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-3xl shadow-2xl border border-[#DCECEF] p-2 z-50 animate-fadeIn space-y-1">
+                    {CATEGORY_OPTIONS.map(opt => {
+                      const isSelected = categoryFilter === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setCategoryFilter(opt.value);
+                            setCategoryDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#BFEFF2]/50 text-[#087E8B]'
+                              : 'text-[#073B4C] hover:bg-[#F2FCFC]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base">{opt.icon}</span>
+                            <span>{opt.label}</span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                            isSelected ? 'bg-[#087E8B] text-white' : 'bg-slate-100 text-[#6E858A]'
+                          }`}>
+                            {opt.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
             
             <button
               onClick={() => {
