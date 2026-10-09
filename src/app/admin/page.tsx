@@ -25,6 +25,84 @@ import { useApp } from '@/context/AppContext';
 import { PlaceItem } from '@/types';
 import { isSupabaseConfigured } from '@/lib/supabaseClient';
 
+
+// Composant Select personnalisé haut de gamme
+interface AdminCustomSelectProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string; icon?: string }[];
+  placeholder?: string;
+}
+
+function AdminCustomSelect({ value, onChange, options, placeholder }: AdminCustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selected = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 rounded-2xl border border-[#DCECEF] bg-[#F2FCFC]/60 hover:bg-white text-sm text-[#073B4C] font-semibold flex items-center justify-between transition-all focus:outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/20 shadow-xs cursor-pointer"
+      >
+        <div className="flex items-center gap-2">
+          {selected?.icon && <span className="text-base">{selected.icon}</span>}
+          <span>{selected?.label || placeholder || 'Sélectionner...'}</span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-[#6E858A] transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#087E8B]' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-[70]" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-[#DCECEF] p-1.5 z-[80] animate-fadeIn space-y-1 max-h-60 overflow-y-auto">
+            {options.map(opt => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#BFEFF2]/50 text-[#087E8B]'
+                      : 'text-[#073B4C] hover:bg-[#F2FCFC]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    {opt.icon && <span className="text-base">{opt.icon}</span>}
+                    <span>{opt.label}</span>
+                  </div>
+                  {isSelected && <CheckCircle2 className="w-4 h-4 text-[#087E8B] shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+const MODAL_CATEGORY_OPTIONS = [
+  { value: 'beach', label: 'Plage', icon: '🏖️' },
+  { value: 'activity', label: 'Activité & Rando', icon: '🥾' },
+  { value: 'accommodation', label: 'Hébergement & Hôtel', icon: '🏨' },
+  { value: 'restaurant', label: 'Restaurant & Bar', icon: '🍽️' },
+  { value: 'viewpoint', label: 'Point de vue', icon: '📸' },
+  { value: 'hidden_gem', label: 'Spot Secret', icon: '💎' },
+];
+
+const MODAL_PRICE_OPTIONS = [
+  { value: 'Gratuit', label: 'Gratuit', icon: '🟢' },
+  { value: '€', label: 'Abordable (€)', icon: '💶' },
+  { value: '€€', label: 'Moyen (€€)', icon: '💶' },
+  { value: '€€€', label: 'Élevé (€€€)', icon: '💎' },
+];
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { currentUser, userRole, logout } = useApp();
@@ -497,17 +575,11 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Catégorie *</label>
-                    <select 
-                      value={editingPlace.category} onChange={e => setEditingPlace({...editingPlace, category: e.target.value as any})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
-                    >
-                      <option value="beach">Plage</option>
-                      <option value="activity">Activité</option>
-                      <option value="accommodation">Hébergement</option>
-                      <option value="restaurant">Restaurant</option>
-                      <option value="viewpoint">Point de vue</option>
-                      <option value="hidden_gem">Spot Secret</option>
-                    </select>
+                    <AdminCustomSelect
+                      value={editingPlace.category}
+                      onChange={val => setEditingPlace({...editingPlace, category: val as any})}
+                      options={MODAL_CATEGORY_OPTIONS}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Commune *</label>
@@ -590,15 +662,11 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Gamme de prix</label>
-                    <select 
-                      value={editingPlace.priceRange || '€€'} onChange={e => setEditingPlace({...editingPlace, priceRange: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
-                    >
-                      <option value="Gratuit">Gratuit</option>
-                      <option value="€">Abordable (€)</option>
-                      <option value="€€">Moyen (€€)</option>
-                      <option value="€€€">Élevé (€€€)</option>
-                    </select>
+                    <AdminCustomSelect
+                      value={editingPlace.priceRange || '€€'}
+                      onChange={val => setEditingPlace({...editingPlace, priceRange: val})}
+                      options={MODAL_PRICE_OPTIONS}
+                    />
                   </div>
                 </div>
                 

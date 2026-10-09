@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { X, Check } from 'lucide-react';
+import { X, Check, ChevronDown, CheckCircle2 } from 'lucide-react';
 
 export default function AlertReportModal() {
   const { closeModal, addAlert } = useApp();
@@ -12,6 +12,17 @@ export default function AlertReportModal() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [success, setSuccess] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const ALERT_TYPES = [
+    { value: 'sargasses', label: 'Arrivage de sargasses', icon: '🌿' },
+    { value: 'meduses', label: 'Présence de méduses', icon: '🪼' },
+    { value: 'houle', label: 'Forte houle ou rouleaux', icon: '🌊' },
+    { value: 'embouteillage', label: 'Ralentissement routier', icon: '🚗' },
+    { value: 'info', label: 'Conditions calmes & Tortues', icon: '🐢' },
+  ];
+
+  const currentTypeObj = ALERT_TYPES.find(t => t.value === type) || ALERT_TYPES[0];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,17 +81,51 @@ export default function AlertReportModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-deep mb-1.5">Nature de l&apos;observation</label>
-              <select
-                value={type}
-                onChange={e => setType(e.target.value as any)}
-                className="w-full text-sm p-3 rounded-2xl bg-lagon-bg border border-lagon-border text-ink focus:border-action focus:outline-none"
-              >
-                <option value="sargasses">Arrivage de sargasses</option>
-                <option value="meduses">Présence de méduses</option>
-                <option value="houle">Forte houle ou rouleaux</option>
-                <option value="embouteillage">Ralentissement routier</option>
-                <option value="info">Conditions calmes & observation de tortues</option>
-              </select>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full p-3 rounded-2xl bg-lagon-bg hover:bg-white border border-lagon-border hover:border-action text-ink text-sm font-medium flex items-center justify-between transition-all cursor-pointer shadow-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{currentTypeObj.icon}</span>
+                    <span>{currentTypeObj.label}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-ink-muted transition-transform duration-200 ${dropdownOpen ? 'rotate-180 text-action' : ''}`} />
+                </button>
+
+                {dropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-lagon-border p-1.5 z-50 animate-fadeIn space-y-1">
+                      {ALERT_TYPES.map(opt => {
+                        const isSelected = type === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setType(opt.value as any);
+                              setDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left cursor-pointer ${
+                              isSelected
+                                ? 'bg-lagon-bg text-action font-bold'
+                                : 'text-ink hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{opt.icon}</span>
+                              <span>{opt.label}</span>
+                            </div>
+                            {isSelected && <CheckCircle2 className="w-4 h-4 text-action shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Plus, Check, MessageSquare, Search, CheckCircle2, HelpCircle } from 'lucide-react';
+import { Plus, Check, MessageSquare, Search, CheckCircle2, HelpCircle, ChevronDown } from 'lucide-react';
 
 export default function ForumSection() {
   const { forumTopics, addForumTopic } = useApp();
@@ -12,6 +12,7 @@ export default function ForumSection() {
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [category, setCategory] = useState('Tourisme');
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
 
   const categories = ['Tous', 'Tourisme', 'Restaurants', 'Activités', 'Retraite', 'Vie locale'];
 
@@ -164,15 +165,45 @@ export default function ForumSection() {
                 <label className="block text-xs font-semibold text-deep mb-1.5">
                   Thématique
                 </label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  className="w-full text-sm p-3 rounded-2xl bg-lagon-bg border border-lagon-border text-ink focus:border-action focus:outline-none"
-                >
-                  {categories.filter(c => c !== 'Tous').map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+                    className="w-full p-3 rounded-2xl bg-lagon-bg hover:bg-white border border-lagon-border hover:border-action text-ink text-sm font-medium flex items-center justify-between transition-all cursor-pointer shadow-xs"
+                  >
+                    <span>{category}</span>
+                    <ChevronDown className={`w-4 h-4 text-ink-muted transition-transform duration-200 ${catDropdownOpen ? 'rotate-180 text-action' : ''}`} />
+                  </button>
+
+                  {catDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setCatDropdownOpen(false)} />
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-lagon-border p-1.5 z-50 animate-fadeIn space-y-1">
+                        {categories.filter(c => c !== 'Tous').map(c => {
+                          const isSelected = category === c;
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => {
+                                setCategory(c);
+                                setCatDropdownOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left cursor-pointer ${
+                                isSelected
+                                  ? 'bg-lagon-bg text-action font-bold'
+                                  : 'text-ink hover:bg-slate-50'
+                              }`}
+                            >
+                              <span>{c}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-action shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div>
