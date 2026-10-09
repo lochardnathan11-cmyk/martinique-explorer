@@ -68,6 +68,10 @@ export default function CommunityView() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
     if (!newContent.trim()) return;
 
     addPost(newContent.trim(), newLocation, newPhoto.trim() || undefined, newTag);
@@ -77,6 +81,10 @@ export default function CommunityView() {
   };
 
   const handleAddComment = (postId: string) => {
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
     const text = commentInput[postId];
     if (!text || !text.trim()) return;
 
@@ -86,7 +94,7 @@ export default function CommunityView() {
         ...(prev[postId] || []),
         {
           id: 'cm-' + Date.now(),
-          author: currentUser?.name || 'Voyageur',
+          author: currentUser.name || 'Membre vérifié',
           text: text.trim(),
           date: 'À l\'instant'
         }
@@ -159,18 +167,32 @@ export default function CommunityView() {
         <div className="lg:col-span-8 space-y-8">
           {/* A. Create Post Card */}
           <div className="bg-white rounded-3xl border border-lagon-border p-6 sm:p-7 shadow-soft space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-action/10 text-action flex items-center justify-center font-bold text-sm shrink-0">
-                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'V'}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+                  currentUser ? 'bg-gradient-to-tr from-[#087E8B] to-[#BFEFF2] text-white shadow-xs' : 'bg-slate-100 text-[#6E858A]'
+                }`}>
+                  {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : '👤'}
+                </div>
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-deep block">
+                    {currentUser?.name || 'Visiteur non connecté'}
+                  </span>
+                  <span className="text-[11px] text-ink-muted">
+                    {currentUser ? 'Votre publication sera associée à votre profil vérifié' : 'Connectez-vous pour échanger avec la communauté'}
+                  </span>
+                </div>
               </div>
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-deep block">
-                  {currentUser?.name || 'Visiteur de l\'île'}
-                </span>
-                <span className="text-[11px] text-ink-muted">
-                  Partager une trouvaille, une météo ou une photo avec la communauté
-                </span>
-              </div>
+
+              {!currentUser && (
+                <button
+                  type="button"
+                  onClick={() => openModal('auth')}
+                  className="px-3.5 py-1.5 rounded-xl bg-action/10 hover:bg-action hover:text-white text-action text-xs font-bold transition-all cursor-pointer border border-action/20 shrink-0"
+                >
+                  Se connecter
+                </button>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">

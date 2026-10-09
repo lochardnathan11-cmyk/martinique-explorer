@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Heart, MessageCircle, Share2, Plus, Image as ImageIcon, Tag, Check } from 'lucide-react';
 
 export default function SocialFeed() {
-  const { posts, addPost, likePost } = useApp();
+  const { posts, addPost, likePost, currentUser, openModal } = useApp();
   const [newContent, setNewContent] = useState('');
   const [newLocation, setNewLocation] = useState('Les Anses-d\'Arlet');
   const [newPhoto, setNewPhoto] = useState('');
@@ -18,6 +18,10 @@ export default function SocialFeed() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
     if (!newContent.trim()) return;
 
     addPost(newContent, newLocation, newPhoto.trim() || undefined, newTag);
@@ -25,6 +29,14 @@ export default function SocialFeed() {
     setNewPhoto('');
     setShowPhotoInput(false);
     setIsPosting(false);
+  };
+
+  const handleStartPosting = () => {
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
+    setIsPosting(true);
   };
 
   const filteredPosts = posts.filter(p => {
@@ -38,11 +50,18 @@ export default function SocialFeed() {
       <div className="bg-white rounded-3xl border border-lagon-border p-6 sm:p-8 shadow-soft space-y-4">
         {!isPosting ? (
           <div
-            onClick={() => setIsPosting(true)}
+            onClick={handleStartPosting}
             className="flex items-center justify-between p-4 rounded-2xl bg-lagon-bg border border-lagon-border text-ink-muted text-sm cursor-pointer hover:border-action transition-colors"
           >
             <span>Partagez un bon plan, une observation météo ou une photo en direct...</span>
-            <button className="px-4 py-2 rounded-xl bg-action text-white text-xs font-medium hover:bg-action-hover transition-colors shrink-0">
+            <button 
+              type="button" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStartPosting();
+              }}
+              className="px-4 py-2 rounded-xl bg-action text-white text-xs font-medium hover:bg-action-hover transition-colors shrink-0 cursor-pointer"
+            >
               Écrire
             </button>
           </div>

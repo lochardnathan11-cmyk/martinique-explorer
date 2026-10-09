@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Plus, Check, MessageSquare, Search, CheckCircle2, HelpCircle, ChevronDown } from 'lucide-react';
 
 export default function ForumSection() {
-  const { forumTopics, addForumTopic } = useApp();
+  const { forumTopics, addForumTopic, currentUser, openModal } = useApp();
   const [selectedCat, setSelectedCat] = useState<string>('Tous');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -26,8 +26,20 @@ export default function ForumSection() {
     return t.category === selectedCat;
   });
 
+  const handleOpenCreateModal = () => {
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
+    setShowModal(true);
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
     if (!title.trim()) return;
     addForumTopic(title, category as any, excerpt);
     setTitle('');
@@ -54,8 +66,8 @@ export default function ForumSection() {
 
           <button
             type="button"
-            onClick={() => setShowModal(true)}
-            className="px-5 py-3 rounded-2xl bg-action hover:bg-action-hover text-white text-xs sm:text-sm font-medium transition-colors shadow-soft flex items-center gap-2 self-start md:self-auto shrink-0"
+            onClick={handleOpenCreateModal}
+            className="px-5 py-3 rounded-2xl bg-action hover:bg-action-hover text-white text-xs sm:text-sm font-medium transition-colors shadow-soft flex items-center gap-2 self-start md:self-auto shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Poser une question (+15 XP)</span>

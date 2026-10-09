@@ -44,7 +44,7 @@ export default function PlaceDetailView({
   onSelectPlace,
   onNavigateHome
 }: PlaceDetailViewProps) {
-  const { favorites, toggleFavorite, addToItinerary, itinerary } = useApp();
+  const { favorites, toggleFavorite, addToItinerary, itinerary, currentUser, openModal } = useApp();
   const isFav = favorites.includes(place.id);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -52,7 +52,6 @@ export default function PlaceDetailView({
   const [reviews, setReviews] = useState(place.reviews || []);
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
-  const [newAuthor, setNewAuthor] = useState('');
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -64,21 +63,24 @@ export default function PlaceDetailView({
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      openModal('auth');
+      return;
+    }
     if (!newComment.trim()) return;
 
     const newRev = {
       id: 'rev-' + Date.now(),
-      author: newAuthor.trim() || 'Voyageur de passage',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      author: currentUser.name || 'Membre vérifié',
+      avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       rating: newRating,
       date: 'Aujourd\'hui',
       comment: newComment.trim(),
-      userBadge: 'Avis vérifié'
+      userBadge: currentUser.role === 'admin' ? 'Équipe Martinique' : 'Avis vérifié'
     };
 
     setReviews(prev => [newRev, ...prev]);
     setNewComment('');
-    setNewAuthor('');
   };
 
   // Nearby or similar spots
@@ -430,59 +432,95 @@ export default function PlaceDetailView({
             </div>
 
             {/* New Review Form */}
-            <form onSubmit={handleAddReview} className="p-6 rounded-3xl bg-white border border-lagon-border space-y-4 shadow-soft">
-              <h4 className="text-sm font-semibold text-deep">
-                Vous avez visité {place.name} ? Laissez votre avis !
-              </h4>
+            {currentUser ? (
+              <form onSubmit={handleAddReview} className="p-6 rounded-3xl bg-white border border-lagon-border space-y-4 shadow-soft">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-lagon-border/60 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#087E8B] to-[#BFEFF2] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                      {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'M'}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-deep">{currentUser.name}</span>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          Connecté
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-muted">Votre avis sera publié avec votre profil vérifié</p>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  value={newAuthor}
-                  onChange={e => setNewAuthor(e.target.value)}
-                  placeholder="Votre prénom ou pseudo (ex: Thomas B.)"
-                  className="px-4 py-2.5 rounded-xl bg-lagon-bg border border-lagon-border text-xs focus:border-action focus:outline-none"
-                />
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-ink-muted">Note :</span>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setNewRating(star)}
-                        className="cursor-pointer"
-                      >
-                        <Star
-                          className={`w-5 h-5 ${
-                            star <= newRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-deep">Votre note :</span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewRating(star)}
+                          className="cursor-pointer p-0.5"
+                          title={`${star} étoile(s)`}
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              star <= newRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <textarea
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                placeholder="Racontez votre expérience : clarté de l'eau, facilité de parking, faune croisée, ombre disponible..."
-                rows={3}
-                className="w-full p-4 rounded-xl bg-lagon-bg border border-lagon-border text-xs focus:border-action focus:outline-none resize-none"
-              />
+                <textarea
+                  value={newComment}
+                  onChange={e => setNewComment(e.target.value)}
+                  placeholder={`Racontez votre expérience à ${place.name} : clarté de l'eau, facilité d'accès, météo, ambiance...`}
+                  rows={3}
+                  className="w-full p-4 rounded-xl bg-lagon-bg border border-lagon-border text-xs focus:border-action focus:bg-white focus:outline-none resize-none"
+                />
 
-              <div className="flex justify-end">
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim()}
+                    className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover disabled:opacity-50 text-white text-xs font-semibold shadow-soft cursor-pointer transition-colors"
+                  >
+                    Publier mon avis vérifié
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div 
+                onClick={() => openModal('auth')}
+                className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-white via-white to-[#F2FCFC] border-2 border-dashed border-[#087E8B]/40 hover:border-[#087E8B] shadow-soft cursor-pointer transition-all flex flex-col sm:flex-row items-center justify-between gap-4 group"
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-2xl bg-[#BFEFF2]/50 text-[#087E8B] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <MessageSquare className="w-6 h-6 text-[#087E8B]" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-deep">
+                      Vous avez visité {place.name} ? Laissez votre avis !
+                    </h4>
+                    <p className="text-xs text-ink-muted">
+                      Vous devez être connecté pour publier un avis ou partager avec la communauté.
+                    </p>
+                  </div>
+                </div>
+
                 <button
-                  type="submit"
-                  disabled={!newComment.trim()}
-                  className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover disabled:opacity-50 text-white text-xs font-semibold shadow-soft cursor-pointer transition-colors"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal('auth');
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-bold shadow-soft transition-colors shrink-0 cursor-pointer"
                 >
-                  Publier mon avis vérifié
+                  Se connecter pour donner mon avis
                 </button>
               </div>
-            </form>
+            )}
 
             {/* Reviews List */}
             <div className="space-y-4">
