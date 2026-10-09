@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import ScrollToTop from "@/components/layout/ScrollToTop";
+import GlobalModals from "@/components/modals/GlobalModals";
 
 export const metadata: Metadata = {
   title: "Martinique Explorer — Le Guide & Réseau Communautaire de l'Île aux Fleurs",
@@ -40,6 +41,7 @@ export default function RootLayout({
         </Suspense>
         <AppProvider>
           {children}
+          <GlobalModals />
         </AppProvider>
       </body>
     </html>

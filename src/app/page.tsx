@@ -14,10 +14,6 @@ import BlogSection from '@/components/blog/BlogSection';
 import AdBanner from '@/components/layout/AdBanner';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import DetailModal from '@/components/modals/DetailModal';
-import AlertReportModal from '@/components/modals/AlertReportModal';
-import AIAssistantModal from '@/components/ai/AIAssistantModal';
-import GamificationModal from '@/components/badges/GamificationModal';
-import AuthModal from '@/components/modals/AuthModal';
 import BeachesView from '@/components/pages/BeachesView';
 import SnorkelingView from '@/components/pages/SnorkelingView';
 import ActivitiesView from '@/components/pages/ActivitiesView';
@@ -420,20 +416,6 @@ export default function HomePage() {
         setActiveSection(sec);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }} />
-
-      {/* Modals Container (DetailModal removed in favor of dedicated full page PlaceDetailView) */}
-      {activeModal.type === 'alert_report' && (
-        <AlertReportModal />
-      )}
-      {activeModal.type === 'ai_assistant' && (
-        <AIAssistantModal initialQuery={activeModal.data?.query} />
-      )}
-      {activeModal.type === 'badges' && (
-        <GamificationModal />
-      )}
-      {activeModal.type === 'auth' && (
-        <AuthModal onAdminNavigate={() => setActiveSection('admin')} />
-      )}
     </div>
   );
 }
