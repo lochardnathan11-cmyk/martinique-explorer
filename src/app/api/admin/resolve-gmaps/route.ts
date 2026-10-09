@@ -458,6 +458,7 @@ export async function POST(req: Request) {
     let address: string | null = null;
     let rating: number | null = null;
     let reviewsCount: number | null = null;
+    let photoUrl: string | null = null;
 
     // 1. Tenter d'interroger le point de prévisualisation Google Maps (protobuf JSON)
     const previewMatch = htmlBody.match(/\/maps\/preview\/place\?[^"'\s<>]+/);
@@ -496,10 +497,48 @@ export async function POST(req: Request) {
           website = placeData[7]?.[0] || null;
           rating = placeData[4]?.[7] ? parseFloat(placeData[4][7]) : null;
           reviewsCount = placeData[4]?.[8] ? parseInt(placeData[4][8]) : null;
+
+          // Extraction de la photo officielle du lieu
+          try {
+            const rawCandidate = placeData[72]?.[0]?.[0]?.[6]?.[0] ||
+                                 placeData[37]?.[0]?.[0]?.[6]?.[0] ||
+                                 placeData[5]?.[0]?.[1]?.[0]?.[0];
+            if (rawCandidate && typeof rawCandidate === 'string' && rawCandidate.startsWith('http')) {
+              photoUrl = rawCandidate;
+            }
+          } catch (e) {}
+
+          if (!photoUrl) {
+            const jsonStr = JSON.stringify(placeData);
+            const matches = jsonStr.match(/https:\/\/[^"'\s\\]*(?:googleusercontent\.com|ggpht\.com)[^"'\s\\]*/g) || [];
+            for (const m of matches) {
+              if (!m.includes('default_avatar') && !m.includes('/places/icons/') && !m.includes('streetview')) {
+                photoUrl = m;
+                break;
+              }
+            }
+          }
         }
       } catch (e: any) {
         console.warn('Google preview parse error:', e.message);
       }
+    }
+
+    // Extraction photo de secours depuis le corps HTML complet
+    if (!photoUrl && htmlBody) {
+      const htmlMatches = htmlBody.match(/https:\/\/lh\d+\.googleusercontent\.com\/[^"'\s<>\\]+/g) || [];
+      for (const m of htmlMatches) {
+        if (!m.includes('default_avatar') && !m.includes('/places/icons/') && !m.includes('streetview')) {
+          photoUrl = m;
+          break;
+        }
+      }
+    }
+
+    if (photoUrl) {
+      photoUrl = photoUrl
+        .replace(/=w\d+-h\d+.*$/, '=w1200-h800-k-no')
+        .replace(/=s\d+.*$/, '=w1200-h800-k-no');
     }
 
     // 2. Coordonnées de secours depuis l'URL ou le HTML
@@ -609,6 +648,7 @@ export async function POST(req: Request) {
       rating: rating || null,
       reviewsCount: reviewsCount || null,
       mapsUrl: placeMapsUrl,
+      photoUrl: photoUrl || null,
       data: {
         coords: coords || null,
         name: refinedName || '',
@@ -621,7 +661,8 @@ export async function POST(req: Request) {
         rating: rating || null,
         reviewsCount: reviewsCount || null,
         originalUrl: url,
-        mapsUrl: placeMapsUrl
+        mapsUrl: placeMapsUrl,
+        photoUrl: photoUrl || null
       }
     });
   } catch (err: any) {

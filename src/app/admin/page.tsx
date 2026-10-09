@@ -15,6 +15,7 @@ import {
   Trash2,
   Image as ImageIcon,
   CheckCircle2,
+  Check,
   AlertCircle,
   ExternalLink,
   ChevronDown,
@@ -217,6 +218,7 @@ export default function AdminDashboardPage() {
   const [isDragOverPhoto, setIsDragOverPhoto] = useState(false);
   const [photoRequiredError, setPhotoRequiredError] = useState(false);
   const [resolvedMapsUrl, setResolvedMapsUrl] = useState<string | null>(null);
+  const [detectedGmapsPhoto, setDetectedGmapsPhoto] = useState<string | null>(null);
 
   const [autoFillNotice, setAutoFillNotice] = useState<{
     type: 'success' | 'warning' | 'info';
@@ -364,6 +366,14 @@ export default function AdminDashboardPage() {
           filledDetails.push(`Catégorie (${catLabel})`);
         }
         if (coords) filledDetails.push(`GPS [${coords[0]}, ${coords[1]}]`);
+
+        const foundPhoto = data.photoUrl || data.data?.photoUrl;
+        if (foundPhoto) {
+          setDetectedGmapsPhoto(foundPhoto);
+          filledDetails.push('Photo du lieu');
+        } else {
+          setDetectedGmapsPhoto(null);
+        }
 
         if (filledDetails.length > 0) {
           setAutoFillNotice({
@@ -865,6 +875,7 @@ export default function AdminDashboardPage() {
                 setGoogleMapsInput('');
                 setCoordsDetected(false);
                 setResolvedMapsUrl(null);
+                setDetectedGmapsPhoto(null);
                 setPhotoRequiredError(false);
                 setAutoFillNotice(null);
                 setShowCommuneSuggestions(false);
@@ -915,6 +926,7 @@ export default function AdminDashboardPage() {
                         );
                         setCoordsDetected(Boolean(place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)));
                         setResolvedMapsUrl(null);
+                        setDetectedGmapsPhoto(null);
                         setPhotoRequiredError(false);
                         setAutoFillNotice(null);
                         setShowCommuneSuggestions(false);
@@ -1243,6 +1255,82 @@ export default function AdminDashboardPage() {
                       <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-rose-800 text-xs font-bold animate-fadeIn">
                         <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                         <span>⚠️ Une photo est obligatoire pour créer ou modifier ce lieu. Veuillez déposer une photo ci-dessous.</span>
+                      </div>
+                    )}
+
+                    {/* 📸 Proposition de la photo détectée sur Google Maps */}
+                    {detectedGmapsPhoto && (
+                      <div className="p-4 rounded-3xl bg-gradient-to-r from-[#BFEFF2]/50 via-[#F2FCFC] to-white border-2 border-[#087E8B]/40 shadow-sm flex flex-col sm:flex-row items-center gap-4 animate-fadeIn">
+                        <div className="relative w-28 h-20 sm:w-32 sm:h-24 rounded-2xl overflow-hidden bg-slate-100 border border-[#087E8B]/30 shadow-xs shrink-0 group">
+                          <img 
+                            src={detectedGmapsPhoto} 
+                            alt="Photo Google Maps" 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/images/spots/salines.jpg';
+                            }}
+                          />
+                          <span className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                            Google Maps
+                          </span>
+                        </div>
+
+                        <div className="flex-1 space-y-1.5 text-center sm:text-left w-full">
+                          <div className="flex items-center gap-2 justify-center sm:justify-start">
+                            <span className="text-xs font-extrabold text-[#073B4C] flex items-center gap-1.5">
+                              📸 Photo trouvée sur Google Maps
+                            </span>
+                            <span className="text-[10px] bg-[#087E8B] text-white font-extrabold px-2 py-0.5 rounded-full">
+                              Suggérée
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#6E858A] leading-relaxed">
+                            Souhaitez-vous conserver cette photo officielle comme illustration principale ou préférer en charger une autre ?
+                          </p>
+
+                          <div className="flex flex-wrap items-center gap-2 pt-1 justify-center sm:justify-start">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingPlace(prev => {
+                                  if (!prev) return null;
+                                  const current = Array.isArray(prev.photos) ? prev.photos : [];
+                                  if (current.includes(detectedGmapsPhoto)) return prev;
+                                  return {
+                                    ...prev,
+                                    photos: [detectedGmapsPhoto, ...current]
+                                  };
+                                });
+                                setPhotoRequiredError(false);
+                                setDetectedGmapsPhoto(null);
+                                showSuccess('Photo Google Maps définie comme photo principale !');
+                              }}
+                              className="px-3.5 py-1.5 rounded-xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Garder cette photo
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDetectedGmapsPhoto(null);
+                                if (fileInputRef.current) fileInputRef.current.click();
+                              }}
+                              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-[#073B4C] border border-[#DCECEF] text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            >
+                              <UploadCloud className="w-3.5 h-3.5 text-[#087E8B]" /> Charger une autre photo
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDetectedGmapsPhoto(null)}
+                              className="p-1.5 rounded-xl hover:bg-slate-200 text-[#6E858A] hover:text-[#073B4C] text-xs transition-colors cursor-pointer"
+                              title="Ignorer cette suggestion"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
 
