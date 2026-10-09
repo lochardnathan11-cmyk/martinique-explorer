@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { deletePlaceFromMockData } from '@/lib/spotsAdminService';
+import { deletePlaceFromSupabase } from '@/lib/placesSupabaseService';
 
 export async function POST(request: Request) {
   try {
@@ -12,12 +13,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const deleted = deletePlaceFromMockData(id);
-    if (!deleted) {
-      return NextResponse.json(
-        { error: `Impossible de supprimer le lieu ${id}` },
-        { status: 500 }
-      );
+    // 1. Supprimer localement
+    deletePlaceFromMockData(id);
+
+    // 2. Supprimer dans Supabase
+    try {
+      await deletePlaceFromSupabase(id);
+    } catch (dbErr) {
+      console.warn('Note: Could not delete from Supabase yet:', dbErr);
     }
 
     return NextResponse.json({

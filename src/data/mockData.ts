@@ -3,48 +3,31 @@ import { PlaceItem, CommunityAlert, SocialPost, ForumTopic, UserBadge, BlogPost 
 export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'salines',
-    name: 'Plage des Salines',
+    slug: 'salines',
+    name: "Plage des Salines",
     category: 'beach',
-    subCategory: 'Baignade & Famille',
-    commune: 'Sainte-Anne',
-    description: 'La plus célèbre et emblématique plage de Martinique. 2 km de sable doré bordé de cocotiers penchés vers une eau turquoise et cristalline. Idéale en famille et pour les couchers de soleil.',
-    coords: [14.4042, -60.8753],
+    subCategory: "",
+    commune: "Sainte-Anne",
+    description: "La plus c�l�bre plage de sable blanc de Martinique avec ses cocotiers inclin�s face � la mer.",
+    coords: [14.4035, -60.8753],
     photos: [
-      '/images/spots/salines.jpg',
-      '/images/spots/salines-sunset.jpg'
+      '/images/spots/salines.jpg'
     ],
     rating: 4.8,
-    reviewsCount: 342,
-    featured: true,
-    crowdLevel: 'Forte',
+    reviewsCount: 100,
+    featured: false,
+    isHiddenGem: false,
+    crowdLevel: 'Modérée',
     parking: 'Facile et gratuit',
-    toilets: true,
-    restaurantsNearby: true,
-    accessibilityPMR: true,
-    tags: ['Baignade', 'Famille', 'Coucher de soleil', 'Glaces coco'],
-    isDangerous: false,
-    isLifeguarded: true,
-    realTime: {
-      weather: 'Ensoleillé',
-      tempAir: 30,
-      tempWater: 28,
-      windSpeed: 14,
-      uvIndex: 9,
-      seaState: 'Calme',
-      sargassum: 'none',
-      lastUpdate: 'Il y a 15 min'
-    },
-    reviews: [
-      {
-        id: 'r1',
-        author: 'Aurélie Martin',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-        rating: 5,
-        date: 'Hier',
-        comment: 'Eau transparente comme une piscine, sable fin et ombre parfaite sous les raisiniers ! Les sorbets coco artisanaux au parking sont immanquables.',
-        userBadge: 'Expert Plages'
-      }
-    ]
+    toilets: false,
+    restaurantsNearby: false,
+    website: 'https://martinique-explorer.fr',
+    phone: '+596 596 00 00 00',
+    address: '',
+    schedules: 'Tous les jours',
+    priceRange: '€€',
+    tags: [],
+    badges: []
   },
   {
     id: 'anse-dufour',

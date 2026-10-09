@@ -141,6 +141,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Ignore in SSR
     }
 
+    // Charger les lieux en direct depuis Supabase
+    fetch('/api/spots')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.spots && data.spots.length > 0) {
+          setPlaces(data.spots);
+        }
+      })
+      .catch(err => console.log('Could not load live spots:', err));
+
     if (isSupabaseConfigured) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
@@ -194,7 +204,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const login = async (email: string, password?: string): Promise<{ success: boolean; isAdmin: boolean; error?: string }> => {
+    const login = async (email: string, password?: string): Promise<{ success: boolean; isAdmin: boolean; error?: string }> => {
     const clean = email.trim().toLowerCase();
     const isAdmin = clean.includes('papa') || clean.includes('admin') || clean === 'papa@martinique-explorer.com';
 
@@ -257,38 +267,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured && password) {
       try {
-        const { data, error } = await supabase.auth.signUp({
-          email: clean,
-          password,
-          options: {
-            data: {
-              name: name.trim() || clean.split('@')[0],
-              role: isAdmin ? 'admin' : 'member'
-            }
-          }
+        // Appeler notre route serveur pour créer l'utilisateur avec email_confirm: true (évite email rate limit)
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email: clean, password })
         });
+        const data = await res.json();
 
-        if (error) {
-          return { success: false, error: error.message };
+        if (!res.ok) {
+          return { success: false, error: data.error || 'Erreur lors de la création du compte' };
         }
 
-        if (data.user) {
-          const user: AuthUser = {
-            id: data.user.id,
-            name: name.trim() || clean.split('@')[0],
-            email: clean,
-            role: isAdmin ? 'admin' : 'member'
-          };
-
-          setCurrentUser(user);
-          setUserRole(user.role);
-          try {
-            localStorage.setItem('mq_current_user', JSON.stringify(user));
-          } catch (e) {}
-
-          addPoints(50);
-          return { success: true };
-        }
+        // Connexion automatique immédiate après création
+        const loginRes = await login(clean, password);
+        return { success: loginRes.success, error: loginRes.error };
       } catch (err: any) {
         return { success: false, error: err.message };
       }

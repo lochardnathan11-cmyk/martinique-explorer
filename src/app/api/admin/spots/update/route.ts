@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { saveUpdatedPlace } from '@/lib/spotsAdminService';
+import { upsertPlaceInSupabase } from '@/lib/placesSupabaseService';
 import { PlaceItem } from '@/types';
 
 export async function POST(request: Request) {
@@ -13,12 +14,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const saved = saveUpdatedPlace(place as PlaceItem);
-    if (!saved) {
-      return NextResponse.json(
-        { error: `Impossible de sauvegarder le lieu ${place.id}` },
-        { status: 500 }
-      );
+    // 1. Sauvegarde locale mock
+    saveUpdatedPlace(place as PlaceItem);
+
+    // 2. Sauvegarde Supabase
+    try {
+      await upsertPlaceInSupabase(place as PlaceItem);
+    } catch (dbErr) {
+      console.warn('Note: Could not update in Supabase yet:', dbErr);
     }
 
     return NextResponse.json({

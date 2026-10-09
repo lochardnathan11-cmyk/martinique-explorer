@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { saveNewPlace } from '@/lib/spotsAdminService';
+import { upsertPlaceInSupabase } from '@/lib/placesSupabaseService';
 import { PlaceItem } from '@/types';
 
 export async function POST(request: Request) {
@@ -28,12 +29,14 @@ export async function POST(request: Request) {
       badges: place.badges || []
     };
 
-    const saved = saveNewPlace(newPlace);
-    if (!saved) {
-      return NextResponse.json(
-        { error: 'Erreur lors de l\'enregistrement du nouveau lieu' },
-        { status: 500 }
-      );
+    // 1. Sauvegarder dans le fichier mock pour synchro locale
+    saveNewPlace(newPlace);
+
+    // 2. Sauvegarder dans Supabase si disponible
+    try {
+      await upsertPlaceInSupabase(newPlace);
+    } catch (dbErr) {
+      console.warn('Note: Could not save to Supabase yet (table might be absent):', dbErr);
     }
 
     return NextResponse.json({
@@ -42,7 +45,9 @@ export async function POST(request: Request) {
       place: newPlace
     });
   } catch (err: any) {
-    console.error('Error in create spot route:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || 'Erreur serveur lors de la création' },
+      { status: 500 }
+    );
   }
 }

@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_PLACES } from '@/data/mockData';
+import { getAllPlaces } from '@/lib/placesSupabaseService';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  return NextResponse.json({
-    success: true,
-    spots: INITIAL_PLACES
-  });
+  try {
+    const places = await getAllPlaces();
+    return NextResponse.json({
+      success: true,
+      spots: places
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }

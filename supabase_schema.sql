@@ -1,4 +1,4 @@
--- ========================================================
+--- ========================================================
 -- MARTINIQUE EXPLORER - SCHEMA SQL SUPABASE
 -- À exécuter dans le menu "SQL Editor" de votre tableau de bord Supabase
 -- ========================================================
