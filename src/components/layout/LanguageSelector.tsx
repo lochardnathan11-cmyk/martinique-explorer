@@ -56,6 +56,24 @@ function FlagIcon({ code }: { code: AppLanguage }) {
 export default function LanguageSelector({ scrolled, isHome }: LanguageSelectorProps) {
   const { language, setLanguage } = useApp();
   const [open, setOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [open]);
 
   const languages: { code: AppLanguage; label: string }[] = [
     { code: 'fr', label: 'Français' },
@@ -67,7 +85,7 @@ export default function LanguageSelector({ scrolled, isHome }: LanguageSelectorP
   const current = languages.find(l => l.code === language) || languages[0];
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       {/* Sleek Trigger Button with Live SVG Flag */}
       <button
         type="button"
@@ -86,12 +104,7 @@ export default function LanguageSelector({ scrolled, isHome }: LanguageSelectorP
 
       {/* Elegant Custom Dropdown with Crisp Visual Flags */}
       {open && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-modal border border-lagon-border p-2 z-50 text-left animate-fadeIn">
+        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-modal border border-lagon-border p-2 z-50 text-left animate-fadeIn">
             <div className="px-2.5 py-1.5 text-[10px] font-semibold tracking-wider uppercase text-ink-muted border-b border-lagon-border/60 mb-1">
               Langue / Language
             </div>
@@ -121,8 +134,7 @@ export default function LanguageSelector({ scrolled, isHome }: LanguageSelectorP
                 );
               })}
             </div>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
