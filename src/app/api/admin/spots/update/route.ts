@@ -14,6 +14,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!place.photos || !Array.isArray(place.photos) || place.photos.length === 0 || !place.photos.some((p: string) => p && p.trim())) {
+      return NextResponse.json(
+        { error: 'Au moins une photo est obligatoire pour ce lieu' },
+        { status: 400 }
+      );
+    }
+
     // 1. Sauvegarde locale mock
     saveUpdatedPlace(place as PlaceItem);
 

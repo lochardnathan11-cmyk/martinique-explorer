@@ -216,6 +216,7 @@ export default function AdminDashboardPage() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isDragOverPhoto, setIsDragOverPhoto] = useState(false);
   const [showManualUrlInput, setShowManualUrlInput] = useState(false);
+  const [photoRequiredError, setPhotoRequiredError] = useState(false);
 
   const [autoFillNotice, setAutoFillNotice] = useState<{
     type: 'success' | 'warning' | 'info';
@@ -520,6 +521,7 @@ export default function AdminDashboardPage() {
           };
         });
 
+        setPhotoRequiredError(false);
         showSuccess(`${uploadedUrls.length} photo(s) déposée(s) et ajoutée(s) avec succès !`);
       }
     } catch (err: any) {
@@ -577,6 +579,19 @@ export default function AdminDashboardPage() {
       if (formEl) formEl.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+
+    const hasValidPhoto = editingPlace.photos && Array.isArray(editingPlace.photos) && editingPlace.photos.length > 0 && editingPlace.photos.some(p => typeof p === 'string' && p.trim().length > 0);
+    if (!hasValidPhoto) {
+      setPhotoRequiredError(true);
+      showError('Au moins une photo est obligatoire pour enregistrer ce lieu. Veuillez déposer une photo ci-dessous.');
+      const photoEl = document.getElementById('photo-dropzone-section');
+      if (photoEl) {
+        photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    setPhotoRequiredError(false);
     // Double vérification systématique pour la création et la modification
     setShowEditConfirm(true);
   };
@@ -1161,15 +1176,23 @@ export default function AdminDashboardPage() {
                     />
                   </div>
 
-                  <div className="space-y-3 md:col-span-2">
+                  <div id="photo-dropzone-section" className="space-y-3 md:col-span-2">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <span className="text-xs font-bold text-[#073B4C] flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-[#073B4C] flex items-center gap-1.5 flex-wrap">
                           <ImageIcon className="w-4 h-4 text-[#087E8B]" />
                           Photos du Lieu & Couverture
+                          <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+                            * Obligatoire
+                          </span>
+                          {editingPlace.photos && editingPlace.photos.length > 0 && (
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                              ✓ {editingPlace.photos.length} photo(s)
+                            </span>
+                          )}
                         </span>
                         <p className="text-[11px] text-[#6E858A]">
-                          Déposez vos images ici. La première photo servira d'illustration principale sur le site et la base de données.
+                          Déposez vos images ici. <strong className="text-rose-600 font-bold">Au moins 1 photo est obligatoire</strong>. La première photo servira d'illustration principale sur le site et la base de données.
                         </p>
                       </div>
 
@@ -1190,6 +1213,13 @@ export default function AdminDashboardPage() {
                         </button>
                       </div>
                     </div>
+
+                    {photoRequiredError && (
+                      <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-rose-800 text-xs font-bold animate-fadeIn">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>⚠️ Une photo est obligatoire pour créer ou modifier ce lieu. Veuillez déposer une photo ou saisir une URL ci-dessous.</span>
+                      </div>
+                    )}
 
                     {/* Zone de Dépôt / Drag & Drop */}
                     <div
@@ -1224,7 +1254,9 @@ export default function AdminDashboardPage() {
                       className={`relative border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-2.5 ${
                         isDragOverPhoto
                           ? 'border-[#087E8B] bg-[#BFEFF2]/40 scale-[1.01] ring-4 ring-[#087E8B]/20 shadow-md'
-                          : 'border-[#DCECEF] hover:border-[#087E8B] bg-[#F2FCFC]/40 hover:bg-[#F2FCFC] shadow-2xs'
+                          : photoRequiredError
+                            ? 'border-rose-400 bg-rose-50/40 ring-4 ring-rose-200/60 shadow-sm'
+                            : 'border-[#DCECEF] hover:border-[#087E8B] bg-[#F2FCFC]/40 hover:bg-[#F2FCFC] shadow-2xs'
                       }`}
                     >
                       <input 
@@ -1355,7 +1387,11 @@ export default function AdminDashboardPage() {
                         <textarea 
                           rows={2}
                           value={(editingPlace.photos || []).join(',\n')} 
-                          onChange={e => setEditingPlace({...editingPlace, photos: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})}
+                          onChange={e => {
+                            const updatedPhotos = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                            setEditingPlace({...editingPlace, photos: updatedPhotos});
+                            if (updatedPhotos.length > 0) setPhotoRequiredError(false);
+                          }}
                           className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-xs focus:outline-none focus:border-[#087E8B]"
                           placeholder="/images/spots/photo1.jpg, https://example.com/photo2.jpg"
                         />

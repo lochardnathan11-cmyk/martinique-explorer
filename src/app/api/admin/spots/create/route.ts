@@ -14,6 +14,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!place.photos || !Array.isArray(place.photos) || place.photos.length === 0 || !place.photos.some((p: string) => p && p.trim())) {
+      return NextResponse.json(
+        { error: 'Au moins une photo est obligatoire pour créer ce lieu' },
+        { status: 400 }
+      );
+    }
+
     const cleanSlug = place.slug || place.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const cleanId = place.id || cleanSlug || `lieu-${Date.now()}`;
 
@@ -22,7 +29,7 @@ export async function POST(request: Request) {
       id: cleanId,
       slug: cleanSlug,
       coords: place.coords && place.coords.length === 2 ? place.coords : [14.6415, -61.0242],
-      photos: place.photos && place.photos.length > 0 ? place.photos : ['/images/spots/salines.jpg'],
+      photos: place.photos,
       rating: place.rating || 4.8,
       reviewsCount: place.reviewsCount || 1,
       tags: place.tags || ['Martinique'],
