@@ -67,8 +67,10 @@ export function saveNewPlace(newPlace: PlaceItem): boolean {
     const closeArrayBracket = content.lastIndexOf('];', endArrayMatch);
     if (closeArrayBracket === -1) return false;
 
-    const formattedCode = `,\n  ${formatPlaceToTypeScript(newPlace)}\n`;
-    const newContent = content.substring(0, closeArrayBracket) + formattedCode + content.substring(closeArrayBracket);
+    const beforeBracket = content.substring(0, closeArrayBracket).trimEnd();
+    const needsLeadingComma = !beforeBracket.endsWith(',');
+    const formattedCode = `${needsLeadingComma ? ',\n' : '\n'}  ${formatPlaceToTypeScript(newPlace)}\n`;
+    const newContent = beforeBracket + formattedCode + content.substring(closeArrayBracket);
     fs.writeFileSync(filePath, newContent, 'utf8');
     return true;
   } catch (err) {

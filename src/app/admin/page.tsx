@@ -326,12 +326,23 @@ export default function AdminDashboardPage() {
 
         setEditingPlace(prev => {
           if (!prev) return null;
+          const addressVal = data.address || data.data?.address;
+          const phoneVal = data.phone || data.data?.phone;
+          const websiteVal = data.website || data.data?.website;
+          const ratingVal = data.rating || data.data?.rating;
+          const reviewsCountVal = data.reviewsCount || data.data?.reviewsCount;
+
           return {
             ...prev,
             name: name || prev.name,
             commune: commune || prev.commune,
             category: (category && MODAL_CATEGORY_OPTIONS.some(o => o.value === category)) ? category : prev.category,
             coords: coords || prev.coords,
+            address: addressVal ? addressVal : prev.address,
+            phone: phoneVal ? phoneVal : prev.phone,
+            website: websiteVal ? websiteVal : prev.website,
+            rating: ratingVal ? Number(ratingVal) : prev.rating,
+            reviewsCount: reviewsCountVal ? Number(reviewsCountVal) : prev.reviewsCount,
           };
         });
 

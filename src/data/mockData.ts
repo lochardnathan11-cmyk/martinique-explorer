@@ -1120,6 +1120,35 @@ export const INITIAL_PLACES: PlaceItem[] = [
     tags: ["Coucher de soleil", "Catamaran", "Apéro", "Romantique", "Caraïbe"],
     badges: ["🌅 Golden Hour"]
   }
+,
+  {
+    id: 'lieu-1791540939798',
+    slug: 'tangarane',
+    name: "Tangarane",
+    category: 'accommodation',
+    subCategory: "Résidence hôtelière",
+    commune: "Les Trois-Îlets",
+    description: "Résidence hôtelière située à l'Anse Mitan aux Trois-Îlets.",
+    coords: [14.546874, -61.051488],
+    photos: [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'
+    ],
+    rating: 5,
+    reviewsCount: 12,
+    featured: false,
+    isHiddenGem: false,
+    crowdLevel: 'Modérée',
+    parking: 'Facile et gratuit',
+    toilets: true,
+    restaurantsNearby: true,
+    website: 'http://www.tangarane.com/',
+    phone: '+596 696 36 36 68',
+    address: '47 Anse Mitan, 97229 Les Trois-Îlets',
+    schedules: 'Tous les jours',
+    priceRange: '€€',
+    tags: ['Hébergement', 'Résidence', 'Trois-Îlets', 'Anse Mitan'],
+    badges: ['🌴 Résidence']
+  }
 ];
 
 export const INITIAL_ALERTS: CommunityAlert[] = [
