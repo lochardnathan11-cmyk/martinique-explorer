@@ -10,18 +10,20 @@ export default function MentionsLegales() {
   return (
     <LegalPageLayout title="Mentions Légales">
       <section className="space-y-4">
-        <h2 className="text-xl font-bold text-deep">1. Éditeur du site</h2>
-        <p>Le site Martinique Explorer est édité par la société Martinique Explorer SAS, au capital de 10 000 euros, immatriculée au Registre du Commerce et des Sociétés de Fort-de-France sous le numéro XXX XXX XXX.</p>
-        <p><strong>Siège social :</strong> 123 Rue de la République, 97200 Fort-de-France, Martinique.</p>
-        <p><strong>Directeur de la publication :</strong> [Nom du Directeur]</p>
-        <p><strong>Contact :</strong> contact@martinique-explorer.com</p>
+        <h2 className="text-xl font-bold text-deep">1. Édition du site</h2>
+        <p>Le site <strong>Martinique Explorer</strong> est édité à titre personnel et non professionnel.</p>
+        <p>Conformément aux dispositions de l&apos;article 6-III 2° de la loi n°2004-575 du 21 juin 2004 pour la Confiance dans l&apos;Économie Numérique (LCEN), l&apos;éditeur a fait le choix de préserver son anonymat. Ses nom, prénom et domicile ont été transmis à l&apos;hébergeur du site, qui est tenu au secret professionnel.</p>
+        <p>En cas de réclamation concernant le contenu de ce site, il convient de s&apos;adresser directement à l&apos;hébergeur mentionné ci-dessous, ou de contacter l&apos;éditeur via le formulaire de contact du site ou à l&apos;adresse email de contact fournie.</p>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold text-deep">2. Hébergement</h2>
-        <p>Le site est hébergé par Vercel Inc.<br />
+        <p>Le site est hébergé par la société :<br />
+        <strong>Vercel Inc.</strong><br />
         340 S Lemon Ave #4133<br />
-        Walnut, CA 91789, USA</p>
+        Walnut, CA 91789, États-Unis<br />
+        Contact hébergeur : privacy@vercel.com
+        </p>
       </section>
 
       <section className="space-y-4">
