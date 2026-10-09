@@ -34,7 +34,7 @@ export default function CartePageContainer() {
       />
 
       {/* 2. Main Map Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto pt-24 sm:pt-28 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col">
+      <main className="flex-1 w-full max-w-6xl mx-auto pt-24 sm:pt-28 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col">
         {/* Clean, Elegant Header */}
         <div className="mb-4 text-left">
           <h1 className="text-2xl sm:text-3xl font-semibold text-deep tracking-tight">

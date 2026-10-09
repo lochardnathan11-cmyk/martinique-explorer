@@ -418,7 +418,7 @@ export default function InteractiveMartiniqueMap({
           ========================================================================= */}
       <div
         className={`relative isolate z-0 w-full lg:w-3/5 ${
-          fullscreenMode ? 'h-[580px] lg:h-[760px]' : 'h-[520px] lg:h-[660px]'
+          fullscreenMode ? 'h-[460px] sm:h-[520px] lg:h-[580px]' : 'h-[380px] sm:h-[430px] lg:h-[480px]'
         } flex flex-col rounded-3xl overflow-hidden border border-lagon-border shadow-soft bg-white text-ink shrink-0`}
       >
         {/* TOP SEARCH & ACTION BAR */}
@@ -525,7 +525,7 @@ export default function InteractiveMartiniqueMap({
           ========================================================================= */}
       <div
         className={`w-full lg:w-2/5 ${
-          fullscreenMode ? 'h-[580px] lg:h-[760px]' : 'h-[520px] lg:h-[660px]'
+          fullscreenMode ? 'h-[460px] sm:h-[520px] lg:h-[580px]' : 'h-[380px] sm:h-[430px] lg:h-[480px]'
         } bg-white rounded-3xl border border-lagon-border shadow-soft flex flex-col overflow-hidden text-left`}
       >
         {selectedPlace ? (

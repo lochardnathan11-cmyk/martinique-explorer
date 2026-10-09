@@ -183,7 +183,7 @@ export default function HomePage() {
             <ForumSection />
           </div>
         ) : activeSection === 'map' ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16">
             <InteractiveMartiniqueMap
               places={places}
               alerts={alerts}
@@ -387,7 +387,7 @@ export default function HomePage() {
             </section>
 
             {/* 5. INTERACTIVE MAP SECTION (Split-Screen: Carte 3/5, Infos 2/5) */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <InteractiveMartiniqueMap
                 places={places}
                 alerts={alerts}
