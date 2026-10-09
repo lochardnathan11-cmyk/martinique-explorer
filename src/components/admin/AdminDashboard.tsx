@@ -123,7 +123,7 @@ export default function AdminDashboard() {
     <section className="bg-white rounded-3xl border border-lagon-border shadow-soft overflow-hidden text-left">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-deep text-white px-5 py-3 rounded-2xl shadow-modal border border-lagon-border flex items-center gap-3 animate-fadeIn">
+        <div className="fixed bottom-6 right-6 z-[99999] bg-deep text-white px-5 py-3 rounded-2xl shadow-modal border border-lagon-border flex items-center gap-3 animate-fadeIn pointer-events-auto">
           <CheckCircle2 className="w-5 h-5 text-lagon-light shrink-0" />
           <span className="text-xs sm:text-sm font-medium">{successToast}</span>
         </div>

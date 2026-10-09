@@ -556,10 +556,14 @@ export default function AdminDashboardPage() {
     if (!editingPlace) return;
     if (!editingPlace.name.trim()) {
       showError('Veuillez renseigner un nom pour ce lieu.');
+      const formEl = document.querySelector('form.overflow-y-auto');
+      if (formEl) formEl.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     if (!editingPlace.commune.trim()) {
       showError('Veuillez renseigner une commune pour ce lieu.');
+      const formEl = document.querySelector('form.overflow-y-auto');
+      if (formEl) formEl.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     // Double vérification systématique pour la création et la modification
@@ -639,15 +643,20 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-[#F2FCFC] text-[#17343D] pb-20">
       {/* Toast Notifications */}
       {success && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-xl bg-emerald-600 text-white border border-emerald-500 flex items-center gap-3 animate-fadeIn">
+        <div className="fixed top-6 right-6 z-[99999] px-5 py-3.5 rounded-2xl shadow-2xl bg-emerald-600 text-white border-2 border-white/30 flex items-center gap-3 animate-fadeIn pointer-events-auto">
           <CheckCircle2 className="w-5 h-5 shrink-0" />
           <span className="font-semibold text-sm">{success}</span>
         </div>
       )}
       {error && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-xl bg-rose-600 text-white border border-rose-500 flex items-center gap-3 animate-fadeIn">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span className="font-semibold text-sm">{error}</span>
+        <div className="fixed top-6 right-6 z-[99999] px-5 py-3.5 rounded-2xl shadow-2xl bg-rose-600 text-white border-2 border-white/40 flex items-center justify-between gap-3 animate-fadeIn max-w-md pointer-events-auto">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span className="font-semibold text-sm">{error}</span>
+          </div>
+          <button type="button" onClick={() => setError(null)} className="text-white/80 hover:text-white shrink-0 ml-2">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -892,6 +901,29 @@ export default function AdminDashboardPage() {
             </div>
             
             <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto flex-1 space-y-7">
+              {/* ⚠️ Alerte d'erreur bien visible à l'intérieur de la modale */}
+              {error && (
+                <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-800 flex items-center justify-between gap-3 text-sm font-bold shadow-md animate-fadeIn">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <AlertCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-rose-600 uppercase tracking-wider">Attention</p>
+                      <p className="text-sm font-extrabold text-rose-900 leading-snug">{error}</p>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setError(null)} 
+                    className="w-8 h-8 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                    title="Fermer ce message"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               {/* 📍 SECTION 1 : Auto-remplissage via Google Maps (En haut) */}
               <div className="bg-gradient-to-br from-[#087E8B]/10 via-[#BFEFF2]/30 to-[#F2FCFC] border-2 border-[#087E8B]/30 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1380,25 +1412,36 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             </form>
-            <div className="p-6 border-t border-[#DCECEF] bg-slate-50 flex justify-end gap-3 rounded-b-4xl">
-              <button 
-                type="button" 
-                onClick={() => {
-                  setEditingPlace(null);
-                  setIsCreateModalOpen(false);
-                }}
-                className="px-6 py-2.5 rounded-2xl font-bold text-[#6E858A] hover:bg-[#DCECEF] transition-colors"
-              >
-                Annuler
-              </button>
-              <button 
-                type="button" 
-                onClick={handleFormSubmit}
-                className="px-8 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {isCreateModalOpen ? 'Vérifier & Créer le lieu' : 'Vérifier & Enregistrer'}
-              </button>
+            <div className="p-4 sm:p-6 border-t border-[#DCECEF] bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-b-4xl">
+              {error ? (
+                <div className="flex items-center gap-2 text-rose-600 text-xs sm:text-sm font-bold animate-fadeIn">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span className="truncate max-w-sm">{error}</span>
+                </div>
+              ) : (
+                <div />
+              )}
+              <div className="flex items-center justify-end gap-3 shrink-0">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setEditingPlace(null);
+                    setIsCreateModalOpen(false);
+                    setError(null);
+                  }}
+                  className="px-6 py-2.5 rounded-2xl font-bold text-[#6E858A] hover:bg-[#DCECEF] transition-colors"
+                >
+                  Annuler
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleFormSubmit}
+                  className="px-8 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {isCreateModalOpen ? 'Vérifier & Créer le lieu' : 'Vérifier & Enregistrer'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1536,6 +1579,13 @@ export default function AdminDashboardPage() {
             <p className="text-[11px] text-[#6E858A] leading-snug">
               Une fois validé, ce lieu sera immédiatement accessible aux visiteurs dans l'explorateur.
             </p>
+
+            {error && (
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold flex items-center gap-2 animate-fadeIn text-left">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="truncate">{error}</span>
+              </div>
+            )}
 
             {/* Boutons d'action toujours visibles sans défilement */}
             <div className="flex gap-2.5 pt-1">
