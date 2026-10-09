@@ -103,6 +103,46 @@ const MODAL_PRICE_OPTIONS = [
   { value: '€€€', label: 'Élevé (€€€)', icon: '💎' },
 ];
 
+
+function extractCoordsFromGoogleMaps(input: string): [number, number] | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+
+  // Pattern direct "14.4325, -60.8492"
+  const direct = trimmed.match(/(-?\d+\.\d+)[\s,]+(-?\d+\.\d+)/);
+  if (direct && !trimmed.includes('http')) {
+    const lat = parseFloat(direct[1]);
+    const lng = parseFloat(direct[2]);
+    if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
+  }
+
+  // Pattern Google Maps @14.4325,-60.8492
+  const atMatch = trimmed.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) {
+    const lat = parseFloat(atMatch[1]);
+    const lng = parseFloat(atMatch[2]);
+    if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
+  }
+
+  // Pattern ?q=lat,lng ou ?query=lat,lng
+  const paramMatch = trimmed.match(/[?&](?:q|ll|query|daddr)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (paramMatch) {
+    const lat = parseFloat(paramMatch[1]);
+    const lng = parseFloat(paramMatch[2]);
+    if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
+  }
+
+  // Pattern place data !3dlat!4dlng
+  const placeMatch = trimmed.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (placeMatch) {
+    const lat = parseFloat(placeMatch[1]);
+    const lng = parseFloat(placeMatch[2]);
+    if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
+  }
+
+  return null;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { currentUser, userRole, logout } = useApp();
@@ -121,6 +161,8 @@ export default function AdminDashboardPage() {
   const [editingPlace, setEditingPlace] = useState<PlaceItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingPlaceId, setDeletingPlaceId] = useState<string | null>(null);
+  const [googleMapsInput, setGoogleMapsInput] = useState('');
+  const [coordsDetected, setCoordsDetected] = useState(false);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
 
@@ -522,7 +564,11 @@ export default function AdminDashboardPage() {
                   
                   <div className="mt-auto grid grid-cols-2 gap-2 pt-4 border-t border-[#DCECEF]/60">
                     <button
-                      onClick={() => setEditingPlace({...place})}
+                      onClick={() => {
+                        setEditingPlace({...place});
+                        setGoogleMapsInput('');
+                        setCoordsDetected(false);
+                      }}
                       className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#F2FCFC] hover:bg-[#087E8B] text-[#087E8B] hover:text-white text-xs font-bold transition-colors border border-[#DCECEF] hover:border-[#087E8B]"
                     >
                       <Edit2 className="w-3.5 h-3.5" /> Modifier
@@ -604,8 +650,55 @@ export default function AdminDashboardPage() {
               <div>
                 <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider mb-4 border-b border-[#DCECEF] pb-2">Localisation & Médias</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Champ intelligent Google Maps */}
+                  <div className="space-y-1.5 md:col-span-2 bg-[#F2FCFC]/40 p-4 rounded-2xl border border-[#DCECEF]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-[#073B4C] flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-[#087E8B]" />
+                        Lien Google Maps (Détection automatique des coordonnées GPS)
+                      </label>
+                      {editingPlace.coords && editingPlace.coords[0] !== 0 && (
+                        <a 
+                          href={`https://www.google.com/maps/search/?api=1&query=${editingPlace.coords[0]},${editingPlace.coords[1]}`}
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-[11px] font-bold text-[#087E8B] hover:underline flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Tester sur Google Maps
+                        </a>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        placeholder="Collez ici un lien Google Maps ou des coordonnées (ex: https://maps.google.com/... ou 14.4325, -60.8492)"
+                        value={googleMapsInput}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setGoogleMapsInput(val);
+                          const coords = extractCoordsFromGoogleMaps(val);
+                          if (coords) {
+                            setEditingPlace({ ...editingPlace, coords });
+                            setCoordsDetected(true);
+                          } else {
+                            setCoordsDetected(false);
+                          }
+                        }}
+                        className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-[#DCECEF] bg-white text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
+                      />
+                      {coordsDetected && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> GPS détecté !
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#6E858A]">
+                      💡 Collez simplement l'URL Google Maps du lieu : la latitude et la longitude ci-dessous seront calculées automatiquement.
+                    </p>
+                  </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#073B4C]">Latitude (ex: 14.4372)</label>
+                    <label className="text-xs font-bold text-[#073B4C]">Latitude GPS</label>
                     <input 
                       type="number" step="any" required 
                       value={editingPlace.coords?.[0] || 0} 
@@ -614,7 +707,7 @@ export default function AdminDashboardPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#073B4C]">Longitude (ex: -60.8805)</label>
+                    <label className="text-xs font-bold text-[#073B4C]">Longitude GPS</label>
                     <input 
                       type="number" step="any" required 
                       value={editingPlace.coords?.[1] || 0} 
@@ -623,12 +716,16 @@ export default function AdminDashboardPage() {
                     />
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-xs font-bold text-[#073B4C] flex justify-between">
-                      <span>Photos (URLs séparées par des virgules)</span>
-                      <Link href="/admin/photos" target="_blank" className="text-[#087E8B] hover:underline flex items-center gap-1">
-                        <ImageIcon className="w-3 h-3" /> Ouvrir le Studio Photos
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold text-[#073B4C]">Photos (URLs séparées par des virgules)</span>
+                      <Link 
+                        href={`/admin/photos?spotId=${editingPlace.id}&search=${encodeURIComponent(editingPlace.name)}`} 
+                        target="_blank" 
+                        className="text-[#087E8B] hover:underline flex items-center gap-1.5 text-xs font-bold bg-[#BFEFF2]/40 hover:bg-[#BFEFF2]/70 px-2.5 py-1 rounded-lg transition-colors border border-[#087E8B]/20"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5" /> Ouvrir le Studio Photos de ce lieu
                       </Link>
-                    </label>
+                    </div>
                     <textarea 
                       rows={2}
                       value={(editingPlace.photos || []).join(',\n')} 

@@ -29,7 +29,7 @@ export default function PhotoManagementStudioPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmPhotoChange, setConfirmPhotoChange] = useState<{ spotId: string; spotName: string; photoUrl: string } | null>(null);
 
-  // Charger les lieux à jour depuis la base de données
+  // Charger les lieux et gérer le ciblage direct depuis l'admin
   useEffect(() => {
     fetch('/api/admin/spots/list')
       .then(res => res.json())
@@ -39,6 +39,29 @@ export default function PhotoManagementStudioPage() {
         }
       })
       .catch(e => console.error('Erreur chargement spots:', e));
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get('search');
+      const spotId = params.get('spotId');
+
+      if (search) {
+        setSearchQuery(decodeURIComponent(search));
+      }
+
+      if (spotId) {
+        setTimeout(() => {
+          const el = document.getElementById(`spot-${spotId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-4', 'ring-[#087E8B]', 'border-[#087E8B]');
+            setTimeout(() => {
+              el.classList.remove('ring-4', 'ring-[#087E8B]', 'border-[#087E8B]');
+            }, 4500);
+          }
+        }, 600);
+      }
+    }
   }, []);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   
@@ -318,7 +341,8 @@ export default function PhotoManagementStudioPage() {
             return (
               <div 
                 key={spot.id}
-                className="bg-white rounded-3xl border border-[#DCECEF] p-5 sm:p-6 shadow-sm space-y-5 transition-all hover:border-[#087E8B]/40"
+                id={`spot-${spot.id}`}
+                className="bg-white rounded-3xl border border-[#DCECEF] p-5 sm:p-6 shadow-sm space-y-5 transition-all hover:border-[#087E8B]/40 scroll-mt-24"
               >
                 {/* Spot Header */}
                 <div className="flex items-start justify-between flex-wrap gap-3 border-b border-[#DCECEF] pb-4">
