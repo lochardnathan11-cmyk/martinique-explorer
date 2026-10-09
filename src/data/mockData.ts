@@ -31,7 +31,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   },
   {
     id: 'anse-dufour',
-    name: 'Anse Dufour (Le paradis des tortues)',
+    name: 'Anse Dufour',
     category: 'snorkeling',
     subCategory: 'Snorkeling d\'exception',
     commune: 'Les Anses-d\'Arlet',
@@ -133,7 +133,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   },
   {
     id: 'anse-couleuvre',
-    name: 'Anse Couleuvre (Bout du Monde)',
+    name: 'Anse Couleuvre',
     category: 'beach',
     subCategory: 'Sauvage & Forêt tropicale',
     commune: 'Le Prêcheur',
@@ -308,7 +308,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'petibonum',
     slug: 'petibonum-carbet',
-    name: 'Le Petibonum (Chef Guy Ferdinand)',
+    name: 'Le Petibonum',
     category: 'restaurant',
     subCategory: 'Cuisine créole les pieds dans le sable',
     commune: 'Le Carbet',
@@ -453,7 +453,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'belvedere-morne-gommier',
     slug: 'belvedere-morne-gommier',
-    name: 'Belvédère du Morne Gommier (Panorama 360°)',
+    name: 'Belvédère du Morne Gommier',
     category: 'viewpoint',
     subCategory: 'Table d\'orientation & Vue panoramique',
     commune: 'Le Marin',
@@ -471,7 +471,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'secret-anse-trabaud',
     slug: 'anse-trabaud-sauvage',
-    name: '💎 Anse Trabaud (Plage Sauvage Secrète)',
+    name: 'Anse Trabaud',
     category: 'hidden_gem',
     subCategory: 'Crique sauvage isolée',
     commune: 'Sainte-Anne',
@@ -652,7 +652,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'tartane-plage',
     slug: 'plage-tartane-caravelle',
-    name: 'Plage de Tartane (Presqu\'île de la Caravelle)',
+    name: 'Plage de Tartane',
     category: 'beach',
     subCategory: 'Ambiance côte atlantique & Pêcheurs',
     commune: 'La Trinité',
@@ -684,7 +684,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'hotel-french-coco',
     slug: 'hotel-french-coco-tartane',
-    name: "Hôtel French Coco 4* (Boutique Hôtel)",
+    name: "Hôtel French Coco 4*",
     category: 'accommodation',
     subCategory: "Boutique Hôtel de Luxe & Suites",
     commune: "La Trinité",
@@ -713,7 +713,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'domaine-des-bulles',
     slug: 'le-domaine-des-bulles-vauclin',
-    name: "Le Domaine des Bulles (Écolodge)",
+    name: "Le Domaine des Bulles",
     category: 'accommodation',
     subCategory: "Nuit insolite sous les étoiles",
     commune: "Le Vauclin",
@@ -742,7 +742,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'hotel-plein-soleil',
     slug: 'hotel-plein-soleil-francois',
-    name: "Hôtel Plein Soleil 3* (Charme Créole)",
+    name: "Hôtel Plein Soleil 3*",
     category: 'accommodation',
     subCategory: "Hôtel de charme vue Baie",
     commune: "Le François",
@@ -771,7 +771,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'hotel-bambou',
     slug: 'hotel-bambou-trois-ilets',
-    name: "Hôtel Bambou 3* (Pieds dans l'Eau)",
+    name: "Hôtel Bambou 3*",
     category: 'accommodation',
     subCategory: "Bungalows créoles de plage",
     commune: "Les Trois-Îlets",
@@ -800,7 +800,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'hotel-simon',
     slug: 'le-simon-hotel-fort-de-france',
-    name: "Le Simon Hotel 4* (Urbain Chic)",
+    name: "Le Simon Hotel 4*",
     category: 'accommodation',
     subCategory: "Hôtel design front de mer",
     commune: "Fort-de-France",
@@ -831,7 +831,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'rando-trace-jesuites',
     slug: 'la-trace-des-jesuites-fonds-saint-denis',
-    name: "Trace des Jésuites (Forêt Primaire & Rivière)",
+    name: "Trace des Jésuites",
     category: 'hiking',
     subCategory: "Randonnée Forêt Tropicale Humide",
     commune: "Fonds-Saint-Denis",
@@ -860,7 +860,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'rando-gorges-falaise',
     slug: 'les-gorges-de-la-falaise-ajoupa-bouillon',
-    name: "Gorges de la Falaise (Canyon Aquatique)",
+    name: "Gorges de la Falaise",
     category: 'hiking',
     subCategory: "Randonnée Aquatique & Cascade",
     commune: "L'Ajoupa-Bouillon",
@@ -889,7 +889,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'rando-precheur-grand-riviere',
     slug: 'sentier-precheur-grand-riviere-nord',
-    name: "Sentier du Bout du Monde (Prêcheur - Grand'Rivière)",
+    name: "Sentier du Bout du Monde",
     category: 'hiking',
     subCategory: "Grande Randonnée Sauvage (14 km)",
     commune: "Grand'Rivière",
@@ -918,7 +918,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'rando-cascade-couleuvre',
     slug: 'cascade-anse-couleuvre-le-precheur',
-    name: "Cascade Couleuvre (Vallée Tropicale)",
+    name: "Cascade Couleuvre",
     category: 'hiking',
     subCategory: "Balade familiale & Cascade 120m",
     commune: "Le Prêcheur",
@@ -978,7 +978,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'excursion-ilet-chancel',
     slug: 'catamaran-ilets-du-robert-ilet-chancel',
-    name: "Excursion Îlets du Robert & Fonds Blancs (Catamaran)",
+    name: "Excursion Îlets du Robert & Fonds Blancs",
     category: 'excursion',
     subCategory: "Journée Catamaran & Iguanes Endémiques",
     commune: "Le Robert",
@@ -1065,7 +1065,7 @@ export const INITIAL_PLACES: PlaceItem[] = [
   {
     id: 'excursion-safari-4x4',
     slug: 'safari-4x4-nord-distilleries-plantations',
-    name: "Safari 4x4 & Route du Rhum (Cœur Sauvage)",
+    name: "Safari 4x4 & Route du Rhum",
     category: 'excursion',
     subCategory: "Aventure Tout-Terrain & Terroir",
     commune: "Saint-Esprit",

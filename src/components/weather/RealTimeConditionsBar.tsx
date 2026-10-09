@@ -29,7 +29,7 @@ interface WeatherCity {
 const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   {
     id: 'salines',
-    name: 'Plage des Salines (Ste-Anne)',
+    name: 'Plage des Salines',
     type: 'plage',
     weather: 'soleil',
     weatherLabel: 'Grand soleil',
@@ -41,7 +41,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'anse-dufour',
-    name: 'Anse Dufour (Anses d\'Arlet)',
+    name: 'Anse Dufour',
     type: 'plage',
     weather: 'soleil',
     weatherLabel: 'Ensoleillé & Limpide',
@@ -53,7 +53,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'diamant',
-    name: 'Le Diamant (Rocher)',
+    name: 'Le Diamant',
     type: 'plage',
     weather: 'soleil',
     weatherLabel: 'Ciel bleu',
@@ -65,7 +65,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'trois-ilets',
-    name: 'Pointe du Bout (Trois-Îlets)',
+    name: 'Pointe du Bout',
     type: 'ville',
     weather: 'soleil',
     weatherLabel: 'Grand soleil',
@@ -77,7 +77,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'anse-noire',
-    name: 'Anse Noire (Sable volcanique)',
+    name: 'Anse Noire',
     type: 'spot',
     weather: 'eclaircies',
     weatherLabel: 'Éclaircies douces',
@@ -89,7 +89,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'sainte-luce',
-    name: 'Sainte-Luce (Gros Raisin)',
+    name: 'Sainte-Luce',
     type: 'plage',
     weather: 'soleil',
     weatherLabel: 'Ensoleillé',
@@ -101,7 +101,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'tartane',
-    name: 'Tartane (Presqu\'île Caravelle)',
+    name: 'Tartane',
     type: 'plage',
     weather: 'eclaircies',
     weatherLabel: 'Belles éclaircies',
@@ -113,7 +113,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'fdf',
-    name: 'Fort-de-France (Baie des Flamands)',
+    name: 'Fort-de-France',
     type: 'ville',
     weather: 'soleil',
     weatherLabel: 'Ensoleillé',
@@ -125,7 +125,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'pointe-faula',
-    name: 'Pointe Faula (Le Vauclin)',
+    name: 'Pointe Faula',
     type: 'plage',
     weather: 'soleil',
     weatherLabel: 'Grand soleil',
@@ -137,7 +137,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'francois',
-    name: 'Le François (Baignoire Joséphine)',
+    name: 'Le François',
     type: 'spot',
     weather: 'soleil',
     weatherLabel: 'Soleil radieux',
@@ -149,7 +149,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'saint-pierre',
-    name: 'Saint-Pierre (Pied de la Pelée)',
+    name: 'Saint-Pierre',
     type: 'ville',
     weather: 'eclaircies',
     weatherLabel: 'Sommet dégagé',
@@ -161,7 +161,7 @@ const MARTINIQUE_WEATHER_DATA: WeatherCity[] = [
   },
   {
     id: 'grand-riviere',
-    name: 'Grand\'Rivière (Nord Sauvage)',
+    name: 'Grand\'Rivière',
     type: 'ville',
     weather: 'averse',
     weatherLabel: 'Brume tropicale',
