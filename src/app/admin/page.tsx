@@ -19,7 +19,8 @@ import {
   ExternalLink,
   ChevronDown,
   X,
-  Globe
+  Globe,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { PlaceItem } from '@/types';
@@ -104,6 +105,9 @@ const MODAL_PRICE_OPTIONS = [
 ];
 
 
+
+const normalizeSearchText = (str: string) => 
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 const MARTINIQUE_COMMUNES = [
   "L'Ajoupa-Bouillon",
@@ -203,6 +207,11 @@ export default function AdminDashboardPage() {
   const [coordsDetected, setCoordsDetected] = useState(false);
   const [showCommuneSuggestions, setShowCommuneSuggestions] = useState(false);
   const [isResolvingGmaps, setIsResolvingGmaps] = useState(false);
+  const [autoFillNotice, setAutoFillNotice] = useState<{
+    type: 'success' | 'warning' | 'info';
+    title: string;
+    message: string;
+  } | null>(null);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
 
@@ -281,42 +290,107 @@ export default function AdminDashboardPage() {
   };
 
   
-  const handleGoogleMapsChange = async (url: string) => {
+  const triggerAutoFillFromGmaps = async (rawUrl: string) => {
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return;
+
+    setIsResolvingGmaps(true);
+    setAutoFillNotice(null);
+
+    try {
+      // Vérification locale rapide des coordonnées
+      const localCoords = extractCoordsFromGoogleMaps(trimmed);
+
+      const res = await fetch('/api/admin/resolve-gmaps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: trimmed })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const coords = data.coords || data.data?.coords || localCoords;
+        const name = data.name || data.data?.name || '';
+        const commune = data.commune || data.data?.commune || '';
+        const category = data.category || data.data?.category || '';
+
+        setEditingPlace(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            name: name || prev.name,
+            commune: commune || prev.commune,
+            category: (category && MODAL_CATEGORY_OPTIONS.some(o => o.value === category)) ? category : prev.category,
+            coords: coords || prev.coords,
+          };
+        });
+
+        if (coords && (coords[0] !== 0 || coords[1] !== 0)) {
+          setCoordsDetected(true);
+        }
+
+        const filledDetails: string[] = [];
+        if (name) filledDetails.push(`Nom ("${name}")`);
+        if (commune) filledDetails.push(`Commune ("${commune}")`);
+        if (category) {
+          const catLabel = MODAL_CATEGORY_OPTIONS.find(c => c.value === category)?.label || category;
+          filledDetails.push(`Catégorie (${catLabel})`);
+        }
+        if (coords) filledDetails.push(`GPS [${coords[0]}, ${coords[1]}]`);
+
+        if (filledDetails.length > 0) {
+          setAutoFillNotice({
+            type: 'success',
+            title: '✨ Détection Google Maps réussie !',
+            message: `Données extraites : ${filledDetails.join(' • ')}. Veuillez vérifier et compléter les informations ci-dessous avant d'enregistrer.`
+          });
+        } else {
+          setAutoFillNotice({
+            type: 'warning',
+            title: 'Lien analysé mais peu d\'informations extraites',
+            message: 'Vous pouvez vérifier et compléter les informations ci-dessous à la main.'
+          });
+        }
+      } else {
+        if (localCoords) {
+          setEditingPlace(prev => prev ? ({ ...prev, coords: localCoords }) : null);
+          setCoordsDetected(true);
+          setAutoFillNotice({
+            type: 'info',
+            title: 'Coordonnées GPS extraites',
+            message: `GPS détecté : [${localCoords[0]}, ${localCoords[1]}]. Veuillez renseigner le nom et la commune.`
+          });
+        } else {
+          setAutoFillNotice({
+            type: 'warning',
+            title: 'Impossible d\'extraire les données du lien',
+            message: data.error || 'Vérifiez le lien Google Maps ou saisissez directement les informations ci-dessous.'
+          });
+        }
+      }
+    } catch (e: any) {
+      setAutoFillNotice({
+        type: 'warning',
+        title: 'Erreur lors de l\'analyse',
+        message: e.message || 'Impossible de joindre le serveur d\'analyse.'
+      });
+    } finally {
+      setIsResolvingGmaps(false);
+    }
+  };
+
+  const handleGoogleMapsChange = (url: string) => {
     setGoogleMapsInput(url);
     if (!url.trim()) {
       setCoordsDetected(false);
+      setAutoFillNotice(null);
       return;
     }
 
-    // 1. Essai direct en local
-    const localCoords = extractCoordsFromGoogleMaps(url);
-    if (localCoords) {
-      setEditingPlace(prev => prev ? ({ ...prev, coords: localCoords }) : null);
-      setCoordsDetected(true);
-      return;
-    }
-
-    // 2. Si lien URL (y compris raccourcis goo.gl ou maps.app.goo.gl), résolution serveur
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      setIsResolvingGmaps(true);
-      try {
-        const res = await fetch('/api/admin/resolve-gmaps', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-        const data = await res.json();
-        if (data.success && data.coords) {
-          setEditingPlace(prev => prev ? ({ ...prev, coords: data.coords }) : null);
-          setCoordsDetected(true);
-        } else {
-          setCoordsDetected(false);
-        }
-      } catch (e) {
-        setCoordsDetected(false);
-      } finally {
-        setIsResolvingGmaps(false);
-      }
+    const trimmed = url.trim();
+    // Auto-déclencher si c'est un lien complet Google Maps ou des coordonnées
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || /^-?\d+\.\d+[\s,]+-?\d+\.\d+$/.test(trimmed)) {
+      triggerAutoFillFromGmaps(trimmed);
     }
   };
 
@@ -339,7 +413,6 @@ export default function AdminDashboardPage() {
   
   const handleSaveEdit = async () => {
     if (!editingPlace) return;
-    
     try {
       const res = await fetch('/api/admin/spots/update', {
         method: 'POST',
@@ -347,33 +420,20 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ place: editingPlace })
       });
       const data = await res.json();
-      
       if (!res.ok) throw new Error(data.error);
       
       showSuccess(data.message);
       setShowEditConfirm(false);
       setEditingPlace(null);
-      fetchPlaces(); // Refresh list
+      fetchPlaces();
     } catch (err: any) {
       showError(err.message);
       setShowEditConfirm(false);
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreate = async () => {
     if (!editingPlace) return;
-    if (isCreateModalOpen) {
-      handleCreate(e);
-    } else {
-      setShowEditConfirm(true);
-    }
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingPlace) return; // We use editingPlace state for creation too
-    
     try {
       const res = await fetch('/api/admin/spots/create', {
         method: 'POST',
@@ -381,16 +441,41 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ place: editingPlace })
       });
       const data = await res.json();
-      
       if (!res.ok) throw new Error(data.error);
       
       showSuccess(data.message);
       setIsCreateModalOpen(false);
+      setShowEditConfirm(false);
       setEditingPlace(null);
-      fetchPlaces(); // Refresh list
+      fetchPlaces();
     } catch (err: any) {
       showError(err.message);
+      setShowEditConfirm(false);
     }
+  };
+
+  const handleConfirmSave = async () => {
+    if (!editingPlace) return;
+    if (isCreateModalOpen) {
+      await handleCreate();
+    } else {
+      await handleSaveEdit();
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlace) return;
+    if (!editingPlace.name.trim()) {
+      showError('Veuillez renseigner un nom pour ce lieu.');
+      return;
+    }
+    if (!editingPlace.commune.trim()) {
+      showError('Veuillez renseigner une commune pour ce lieu.');
+      return;
+    }
+    // Double vérification systématique pour la création et la modification
+    setShowEditConfirm(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -622,13 +707,15 @@ export default function AdminDashboardPage() {
                   website: '',
                   phone: '',
                   priceRange: '€€',
-                  rating: 4.8,
+                  rating: 5.0,
                   reviewsCount: 0,
                   featured: false,
                   isHiddenGem: false
                 } as any);
                 setGoogleMapsInput('');
                 setCoordsDetected(false);
+                setAutoFillNotice(null);
+                setShowCommuneSuggestions(false);
                 setIsCreateModalOpen(true);
               }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#087E8B] hover:bg-[#087E8B]/90 text-white rounded-2xl font-bold text-sm shadow-xs transition-colors"
@@ -669,8 +756,15 @@ export default function AdminDashboardPage() {
                     <button
                       onClick={() => {
                         setEditingPlace({...place});
-                        setGoogleMapsInput('');
-                        setCoordsDetected(false);
+                        setGoogleMapsInput(
+                          place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)
+                            ? `${place.coords[0]}, ${place.coords[1]}`
+                            : ''
+                        );
+                        setCoordsDetected(Boolean(place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)));
+                        setAutoFillNotice(null);
+                        setShowCommuneSuggestions(false);
+                        setIsCreateModalOpen(false);
                       }}
                       className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#F2FCFC] hover:bg-[#087E8B] text-[#087E8B] hover:text-white text-xs font-bold transition-colors border border-[#DCECEF] hover:border-[#087E8B]"
                     >
@@ -709,16 +803,129 @@ export default function AdminDashboardPage() {
               </button>
             </div>
             
-            <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto flex-1 space-y-8">
-              {/* Informations Générales */}
-              <div>
-                <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider mb-4 border-b border-[#DCECEF] pb-2">Informations Générales</h3>
+            <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto flex-1 space-y-7">
+              {/* 📍 SECTION 1 : Auto-remplissage via Google Maps (En haut) */}
+              <div className="bg-gradient-to-br from-[#087E8B]/10 via-[#BFEFF2]/30 to-[#F2FCFC] border-2 border-[#087E8B]/30 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#087E8B] text-white flex items-center justify-center shadow-md shrink-0">
+                      <Sparkles className="w-5 h-5 text-amber-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-[#073B4C] flex items-center gap-2">
+                        <span>1. Auto-Remplissage Google Maps</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-[#087E8B] text-white px-2.5 py-0.5 rounded-full">
+                          Recommandé
+                        </span>
+                      </h3>
+                      <p className="text-xs text-[#6E858A]">
+                        Collez le lien Google Maps du lieu : le nom, la commune, la catégorie et les coordonnées GPS seront pré-remplis automatiquement.
+                      </p>
+                    </div>
+                  </div>
+                  {editingPlace.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0) && (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${editingPlace.coords[0]},${editingPlace.coords[1]}`}
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#087E8B] hover:text-[#073B4C] bg-white px-3 py-1.5 rounded-xl border border-[#DCECEF] shadow-2xs transition-colors shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> Ouvrir sur Maps
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <div className="relative flex-1">
+                    <input 
+                      type="text"
+                      placeholder="Collez ici le lien Google Maps (ex: https://maps.app.goo.gl/... ou https://www.google.com/maps/place/...)"
+                      value={googleMapsInput}
+                      onChange={e => handleGoogleMapsChange(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          triggerAutoFillFromGmaps(googleMapsInput);
+                        }
+                      }}
+                      className="w-full pl-4 pr-10 py-3 rounded-2xl border-2 border-[#DCECEF] focus:border-[#087E8B] bg-white text-sm font-medium text-[#073B4C] placeholder-[#6E858A]/60 shadow-xs focus:outline-none transition-all"
+                    />
+                    {googleMapsInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGoogleMapsInput('');
+                          setAutoFillNotice(null);
+                          setCoordsDetected(false);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6E858A] hover:text-[#073B4C] p-1 rounded-lg"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={!googleMapsInput.trim() || isResolvingGmaps}
+                    onClick={() => triggerAutoFillFromGmaps(googleMapsInput)}
+                    className="px-5 py-3 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 disabled:bg-[#6E858A]/30 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:cursor-not-allowed shrink-0"
+                  >
+                    {isResolvingGmaps ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Analyse en cours...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Scanner & Pré-remplir</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Banner de statut d'auto-remplissage */}
+                {autoFillNotice && (
+                  <div className={`p-4 rounded-2xl border text-xs font-semibold flex items-start gap-3 animate-fadeIn ${
+                    autoFillNotice.type === 'success' 
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
+                      : autoFillNotice.type === 'info'
+                      ? 'bg-blue-50 border-blue-200 text-blue-900'
+                      : 'bg-amber-50 border-amber-200 text-amber-900'
+                  }`}>
+                    {autoFillNotice.type === 'success' ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1 space-y-1">
+                      <p className="font-bold text-sm">{autoFillNotice.title}</p>
+                      <p className="text-xs leading-relaxed opacity-90">{autoFillNotice.message}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 📝 SECTION 2 : Vérification et Informations Générales */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#DCECEF] pb-2">
+                  <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider">
+                    2. Informations Générales
+                  </h3>
+                  <span className="text-[11px] font-bold text-[#6E858A] bg-slate-100 px-2.5 py-0.5 rounded-full">
+                    À vérifier
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Nom du Lieu *</label>
                     <input 
                       type="text" required 
-                      value={editingPlace.name} onChange={e => setEditingPlace({...editingPlace, name: e.target.value})}
+                      placeholder="ex: Plage des Salines"
+                      value={editingPlace.name} 
+                      onChange={e => setEditingPlace({...editingPlace, name: e.target.value})}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
                     />
                   </div>
@@ -734,7 +941,7 @@ export default function AdminDashboardPage() {
                     <label className="text-xs font-bold text-[#073B4C]">Commune * (suggestions automatiques)</label>
                     <input 
                       type="text" required 
-                      placeholder="Tapez le début de la commune..."
+                      placeholder="Tapez le nom de la commune (ex: Sainte-Anne)..."
                       value={editingPlace.commune} 
                       onChange={e => {
                         setEditingPlace({...editingPlace, commune: e.target.value});
@@ -747,7 +954,9 @@ export default function AdminDashboardPage() {
                       <>
                         <div className="fixed inset-0 z-40" onClick={() => setShowCommuneSuggestions(false)} />
                         <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl border border-[#DCECEF] p-1.5 z-50 max-h-48 overflow-y-auto space-y-1">
-                          {MARTINIQUE_COMMUNES.filter(c => c.toLowerCase().includes(editingPlace.commune.toLowerCase())).slice(0, 6).map(c => (
+                          {MARTINIQUE_COMMUNES.filter(c => 
+                            normalizeSearchText(c).includes(normalizeSearchText(editingPlace.commune))
+                          ).slice(0, 8).map(c => (
                             <button
                               key={c}
                               type="button"
@@ -769,83 +978,61 @@ export default function AdminDashboardPage() {
                     <label className="text-xs font-bold text-[#073B4C]">Description</label>
                     <textarea 
                       rows={3}
-                      value={editingPlace.description} onChange={e => setEditingPlace({...editingPlace, description: e.target.value})}
+                      placeholder="Décrivez les atouts majeurs, l'accès ou la spécificité du lieu..."
+                      value={editingPlace.description} 
+                      onChange={e => setEditingPlace({...editingPlace, description: e.target.value})}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Localisation & Médias */}
-              <div>
-                <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider mb-4 border-b border-[#DCECEF] pb-2">Localisation & Médias</h3>
+              {/* 🌍 SECTION 3 : Coordonnées GPS & Photos */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#DCECEF] pb-2">
+                  <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider">
+                    3. Coordonnées GPS & Photos
+                  </h3>
+                  {coordsDetected && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> GPS Validé
+                    </span>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Champ intelligent Google Maps */}
-                  <div className="space-y-1.5 md:col-span-2 bg-[#F2FCFC]/40 p-4 rounded-2xl border border-[#DCECEF]">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-[#073B4C] flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-[#087E8B]" />
-                        Lien Google Maps (Détection automatique des coordonnées GPS)
-                      </label>
-                      {editingPlace.coords && editingPlace.coords[0] !== 0 && (
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${editingPlace.coords[0]},${editingPlace.coords[1]}`}
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="text-[11px] font-bold text-[#087E8B] hover:underline flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" /> Tester sur Google Maps
-                        </a>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <input 
-                        type="text"
-                        placeholder="Collez ici n'importe quel lien Google Maps (ex: https://maps.app.goo.gl/... ou 14.4325, -60.8492)"
-                        value={googleMapsInput}
-                        onChange={e => handleGoogleMapsChange(e.target.value)}
-                        className="w-full pl-4 pr-28 py-2.5 rounded-xl border border-[#DCECEF] bg-white text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
-                      />
-                      {isResolvingGmaps && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#087E8B] flex items-center gap-1.5">
-                          <div className="w-3.5 h-3.5 border-2 border-[#087E8B] border-t-transparent rounded-full animate-spin" />
-                          <span>Analyse GPS...</span>
-                        </div>
-                      )}
-                      {coordsDetected && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> GPS détecté !
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[#6E858A]">
-                      💡 Collez simplement l'URL Google Maps du lieu : la latitude et la longitude ci-dessous seront calculées automatiquement.
-                    </p>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#073B4C]">Latitude GPS *</label>
+                    <input 
+                      type="number" step="any" required 
+                      placeholder="ex: 14.40428"
+                      value={editingPlace.coords && editingPlace.coords[0] !== 0 ? editingPlace.coords[0] : ''} 
+                      onChange={e => setEditingPlace({
+                        ...editingPlace, 
+                        coords: [e.target.value === '' ? 0 : parseFloat(e.target.value), editingPlace.coords?.[1] || 0]
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#073B4C]">Longitude GPS *</label>
+                    <input 
+                      type="number" step="any" required 
+                      placeholder="ex: -60.87572"
+                      value={editingPlace.coords && editingPlace.coords[1] !== 0 ? editingPlace.coords[1] : ''} 
+                      onChange={e => setEditingPlace({
+                        ...editingPlace, 
+                        coords: [editingPlace.coords?.[0] || 0, e.target.value === '' ? 0 : parseFloat(e.target.value)]
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
+                    />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#073B4C]">Latitude GPS</label>
-                    <input 
-                      type="number" step="any" required 
-                      value={editingPlace.coords?.[0] || 0} 
-                      onChange={e => setEditingPlace({...editingPlace, coords: [parseFloat(e.target.value), editingPlace.coords?.[1] || 0]})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#073B4C]">Longitude GPS</label>
-                    <input 
-                      type="number" step="any" required 
-                      value={editingPlace.coords?.[1] || 0} 
-                      onChange={e => setEditingPlace({...editingPlace, coords: [editingPlace.coords?.[0] || 0, parseFloat(e.target.value)]})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
-                    />
-                  </div>
                   <div className="space-y-1.5 md:col-span-2">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-xs font-bold text-[#073B4C]">Photos (URLs séparées par des virgules)</span>
                       <Link 
-                        href={`/admin/photos?spotId=${editingPlace.id}&search=${encodeURIComponent(editingPlace.name)}`} 
+                        href={`/admin/photos?spotId=${editingPlace.id}&search=${encodeURIComponent(editingPlace.name || '')}`} 
                         target="_blank" 
                         className="text-[#087E8B] hover:underline flex items-center gap-1.5 text-xs font-bold bg-[#BFEFF2]/40 hover:bg-[#BFEFF2]/70 px-2.5 py-1 rounded-lg transition-colors border border-[#087E8B]/20"
                       >
@@ -863,15 +1050,19 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Infos Complémentaires */}
-              <div>
-                <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider mb-4 border-b border-[#DCECEF] pb-2">Infos Pratiques</h3>
+              {/* 📋 SECTION 4 : Infos Pratiques */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider border-b border-[#DCECEF] pb-2">
+                  4. Infos Pratiques
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#073B4C]">Site Web</label>
                     <input 
                       type="url" 
-                      value={editingPlace.website || ''} onChange={e => setEditingPlace({...editingPlace, website: e.target.value})}
+                      placeholder="https://..."
+                      value={editingPlace.website || ''} 
+                      onChange={e => setEditingPlace({...editingPlace, website: e.target.value})}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
                     />
                   </div>
@@ -879,7 +1070,9 @@ export default function AdminDashboardPage() {
                     <label className="text-xs font-bold text-[#073B4C]">Téléphone</label>
                     <input 
                       type="text" 
-                      value={editingPlace.phone || ''} onChange={e => setEditingPlace({...editingPlace, phone: e.target.value})}
+                      placeholder="+596 ..."
+                      value={editingPlace.phone || ''} 
+                      onChange={e => setEditingPlace({...editingPlace, phone: e.target.value})}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
                     />
                   </div>
@@ -893,7 +1086,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
                 
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <label className="flex items-center gap-3 p-3 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/30 cursor-pointer hover:bg-[#F2FCFC] transition-colors">
                     <input 
                       type="checkbox" 
@@ -914,7 +1107,6 @@ export default function AdminDashboardPage() {
                   </label>
                 </div>
               </div>
-
             </form>
             <div className="p-6 border-t border-[#DCECEF] bg-slate-50 flex justify-end gap-3 rounded-b-4xl">
               <button 
@@ -928,12 +1120,12 @@ export default function AdminDashboardPage() {
                 Annuler
               </button>
               <button 
-                type="submit" 
+                type="button" 
                 onClick={handleFormSubmit}
-                className="px-8 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold shadow-xs transition-colors flex items-center gap-2"
+                className="px-8 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                {isCreateModalOpen ? 'Créer le lieu' : 'Enregistrer les modifications'}
+                {isCreateModalOpen ? 'Vérifier & Créer le lieu' : 'Vérifier & Enregistrer'}
               </button>
             </div>
           </div>
@@ -1004,26 +1196,60 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Double Vérification : Modal de Modification */}
+      {/* Double Vérification : Modal de Confirmation et Revue Finale */}
       {showEditConfirm && editingPlace && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#073B4C]/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white max-w-md w-full rounded-4xl p-7 text-center border border-[#DCECEF] shadow-2xl space-y-5">
+          <div className="bg-white max-w-lg w-full rounded-4xl p-7 text-center border border-[#DCECEF] shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="w-16 h-16 rounded-3xl bg-[#BFEFF2]/50 text-[#087E8B] mx-auto flex items-center justify-center shadow-inner">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-2xl font-extrabold text-[#073B4C]">Confirmer les modifications ?</h3>
-              <p className="text-sm text-[#6E858A]">
-                Voulez-vous enregistrer et publier ces modifications pour :
-              </p>
-              <div className="p-3 bg-[#F2FCFC] text-[#087E8B] font-bold rounded-2xl border border-[#DCECEF] text-base">
-                {editingPlace.name} ({editingPlace.commune})
-              </div>
+            <div className="space-y-1.5">
+              <h3 className="text-2xl font-extrabold text-[#073B4C]">
+                {isCreateModalOpen ? 'Vérification avant Publication' : 'Vérification des Modifications'}
+              </h3>
               <p className="text-xs text-[#6E858A]">
-                Les nouvelles données seront immédiatement synchronisées avec Supabase et visibles par tous les visiteurs du site.
+                Vérifiez les données du lieu avant synchronisation avec Supabase :
               </p>
             </div>
+
+            {/* Récapitulatif clair */}
+            <div className="bg-[#F2FCFC] border border-[#DCECEF] rounded-3xl p-4 text-left space-y-3 text-xs text-[#073B4C]">
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+                <span className="font-semibold text-[#6E858A]">Nom du lieu :</span>
+                <span className="font-extrabold text-sm text-[#073B4C]">{editingPlace.name || '—'}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+                <span className="font-semibold text-[#6E858A]">Commune :</span>
+                <span className="font-bold text-[#087E8B]">{editingPlace.commune || '—'}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+                <span className="font-semibold text-[#6E858A]">Catégorie :</span>
+                <span className="font-bold">
+                  {MODAL_CATEGORY_OPTIONS.find(c => c.value === editingPlace.category)?.label || editingPlace.category}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#DCECEF]/60 pb-2">
+                <span className="font-semibold text-[#6E858A]">Coordonnées GPS :</span>
+                {editingPlace.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0) ? (
+                  <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {editingPlace.coords[0]}, {editingPlace.coords[1]}
+                  </span>
+                ) : (
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                    ⚠️ Non définies (0, 0)
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[#6E858A]">Photos configurées :</span>
+                <span className="font-bold">{editingPlace.photos?.length || 0} photo(s)</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#6E858A] leading-relaxed">
+              Une fois validé, ce lieu sera immédiatement accessible aux utilisateurs dans l'explorateur Martinique.
+            </p>
 
             <div className="flex gap-3 pt-2">
               <button 
@@ -1031,14 +1257,15 @@ export default function AdminDashboardPage() {
                 onClick={() => setShowEditConfirm(false)}
                 className="flex-1 py-3 rounded-2xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
               >
-                Revenir en arrière
+                Ajuster les infos
               </button>
               <button 
                 type="button"
-                onClick={handleSaveEdit}
-                className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-all text-sm shadow-md shadow-[#087E8B]/20"
+                onClick={handleConfirmSave}
+                className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-all text-sm shadow-md shadow-[#087E8B]/20 flex items-center justify-center gap-2 cursor-pointer"
               >
-                Oui, Enregistrer
+                <CheckCircle2 className="w-4 h-4" />
+                {isCreateModalOpen ? 'Confirmer & Créer' : 'Confirmer & Enregistrer'}
               </button>
             </div>
           </div>
