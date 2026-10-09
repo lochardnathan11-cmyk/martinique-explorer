@@ -1023,44 +1023,46 @@ export default function AdminDashboardPage() {
                       options={MODAL_CATEGORY_OPTIONS}
                     />
                   </div>
-                  <div className="space-y-1.5 relative">
-                    <label className="text-xs font-bold text-[#073B4C]">Commune * (suggestions automatiques)</label>
-                    <input 
-                      type="text" required 
-                      placeholder="Tapez le nom de la commune (ex: Sainte-Anne)..."
-                      value={editingPlace.commune} 
-                      onChange={e => {
-                        setEditingPlace({...editingPlace, commune: e.target.value});
-                        setShowCommuneSuggestions(true);
-                      }}
-                      onFocus={() => setShowCommuneSuggestions(true)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
-                    />
-                    {showCommuneSuggestions && editingPlace.commune.trim() && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowCommuneSuggestions(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl border border-[#DCECEF] p-1.5 z-50 max-h-48 overflow-y-auto space-y-1">
-                          {MARTINIQUE_COMMUNES.filter(c => 
-                            normalizeSearchText(c).includes(normalizeSearchText(editingPlace.commune))
-                          ).slice(0, 8).map(c => (
-                            <button
-                              key={c}
-                              type="button"
-                              onClick={() => {
-                                setEditingPlace({...editingPlace, commune: c});
-                                setShowCommuneSuggestions(false);
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#073B4C] hover:bg-[#F2FCFC] hover:text-[#087E8B] text-left transition-colors cursor-pointer"
-                            >
-                              <MapPin className="w-3.5 h-3.5 text-[#087E8B]" />
-                              <span>{c}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
                   <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#073B4C]">Commune * (suggestions automatiques)</label>
+                    <div className="relative">
+                      <input 
+                        type="text" required 
+                        placeholder="Tapez le nom de la commune (ex: Sainte-Anne)..."
+                        value={editingPlace.commune} 
+                        onChange={e => {
+                          setEditingPlace({...editingPlace, commune: e.target.value});
+                          setShowCommuneSuggestions(true);
+                        }}
+                        onFocus={() => setShowCommuneSuggestions(true)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B] focus:ring-1 focus:ring-[#087E8B]"
+                      />
+                      {showCommuneSuggestions && editingPlace.commune.trim() && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowCommuneSuggestions(false)} />
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-[#DCECEF] p-1.5 z-50 max-h-48 overflow-y-auto space-y-1">
+                            {MARTINIQUE_COMMUNES.filter(c => 
+                              normalizeSearchText(c).includes(normalizeSearchText(editingPlace.commune))
+                            ).slice(0, 8).map(c => (
+                              <button
+                                key={c}
+                                type="button"
+                                onClick={() => {
+                                  setEditingPlace({...editingPlace, commune: c});
+                                  setShowCommuneSuggestions(false);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#073B4C] hover:bg-[#F2FCFC] hover:text-[#087E8B] text-left transition-colors cursor-pointer"
+                              >
+                                <MapPin className="w-3.5 h-3.5 text-[#087E8B]" />
+                                <span>{c}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
                     <label className="text-xs font-bold text-[#073B4C]">Description</label>
                     <textarea 
                       rows={3}
