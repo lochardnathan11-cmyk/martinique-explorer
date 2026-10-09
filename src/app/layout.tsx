@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 
 export const metadata: Metadata = {
   title: "Martinique Explorer — Le Guide & Réseau Communautaire de l'Île aux Fleurs",
@@ -26,13 +28,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="scroll-smooth">
+    <html lang="fr">
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="alternate icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased min-h-screen flex flex-col bg-slate-50 selection:bg-teal-500 selection:text-white">
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
         <AppProvider>
           {children}
         </AppProvider>

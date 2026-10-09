@@ -54,7 +54,9 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
     else if (id === 'snorkeling') setSelectedCategory('snorkeling');
     else if (id === 'activities') setSelectedCategory('activity');
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setMobileOpen(false);
     setUserDropdownOpen(false);
   };

@@ -50,15 +50,26 @@ export default function HomePage() {
     setPreviousSection(activeSection === 'place_detail' ? 'home' : activeSection);
     setSelectedPlace(place);
     setActiveSection('place_detail');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   const handleOpenArticle = (post: BlogPost) => {
     setPreviousSection(activeSection === 'article_detail' ? 'home' : activeSection);
     setSelectedArticle(post);
     setActiveSection('article_detail');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
+
+  // Forcer systématiquement le scroll tout en haut dès que la section active change
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeSection]);
 
   // Intercept any detail modal calls from elsewhere and divert to full page
   React.useEffect(() => {
