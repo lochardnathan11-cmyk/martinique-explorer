@@ -156,7 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (session?.user) {
           const email = session.user.email || '';
           const name = (session.user.user_metadata?.name as string) || email.split('@')[0];
-          const isAdmin = email.includes('admin') || email.includes('papa') || session.user.user_metadata?.role === 'admin';
+          const isAdmin = email.includes('admin') || email.includes('papa') || session.user.user_metadata?.role === 'admin' || email.toLowerCase() === 'nathan.test@gmail.com';
           const role: UserRole = isAdmin ? 'admin' : 'member';
           const user: AuthUser = {
             id: session.user.id,
@@ -176,7 +176,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (session?.user) {
           const email = session.user.email || '';
           const name = (session.user.user_metadata?.name as string) || email.split('@')[0];
-          const isAdmin = email.includes('admin') || email.includes('papa') || session.user.user_metadata?.role === 'admin';
+          const isAdmin = email.includes('admin') || email.includes('papa') || session.user.user_metadata?.role === 'admin' || email.toLowerCase() === 'nathan.test@gmail.com';
           const role: UserRole = isAdmin ? 'admin' : 'member';
           const user: AuthUser = {
             id: session.user.id,
@@ -206,7 +206,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const login = async (email: string, password?: string): Promise<{ success: boolean; isAdmin: boolean; error?: string }> => {
     const clean = email.trim().toLowerCase();
-    const isAdmin = clean.includes('papa') || clean.includes('admin') || clean === 'papa@martinique-explorer.com';
+    const isAdmin = clean.includes('papa') || clean.includes('admin') || clean === 'papa@martinique-explorer.com' || clean === 'nathan.test@gmail.com';
 
     if (isSupabaseConfigured && password) {
       try {
@@ -221,7 +221,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (data.user) {
           const name = (data.user.user_metadata?.name as string) || clean.split('@')[0];
-          const role: UserRole = isAdmin ? 'admin' : 'member';
+          const isUserAdmin = isAdmin || data.user.user_metadata?.role === 'admin';
+          const role: UserRole = isUserAdmin ? 'admin' : 'member';
           const user: AuthUser = {
             id: data.user.id,
             name,
@@ -236,7 +237,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } catch (e) {}
 
           addPoints(20);
-          return { success: true, isAdmin };
+          return { success: true, isAdmin: isUserAdmin };
         }
       } catch (err: any) {
         return { success: false, isAdmin: false, error: err.message };
