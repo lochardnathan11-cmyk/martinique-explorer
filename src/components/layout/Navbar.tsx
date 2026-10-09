@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Menu, X, Shield, User, LogOut } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
@@ -161,14 +162,14 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                       </div>
 
                       {currentUser.role === 'admin' && (
-                        <button
-                          type="button"
-                          onClick={() => handleNavClick('admin')}
+                        <Link
+                          href="/admin"
+                          onClick={() => setUserDropdownOpen(false)}
                           className="w-full text-left px-3 py-2 text-xs font-semibold text-deep hover:bg-sand-light rounded-xl transition-colors flex items-center gap-2 my-1"
                         >
                           <Shield className="w-3.5 h-3.5 text-coral shrink-0" />
-                          <span>Back-Office Papa (Zéro Code)</span>
-                        </button>
+                          <span>Page Administration (Admin)</span>
+                        </Link>
                       )}
 
                       <button
@@ -262,13 +263,14 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                   </button>
                 </div>
                 {currentUser.role === 'admin' && (
-                  <button
-                    onClick={() => handleNavClick('admin')}
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
                     className="w-full py-2.5 rounded-xl bg-sand-light text-deep text-xs font-semibold border border-sand-border flex items-center justify-center gap-2"
                   >
                     <Shield className="w-4 h-4 text-coral" />
-                    <span>Back-Office Papa (Zéro Code)</span>
-                  </button>
+                    <span>Page Administration (Admin)</span>
+                  </Link>
                 )}
               </div>
             ) : (
