@@ -991,6 +991,17 @@ export default function AdminDashboardPage() {
                       )}
                     </div>
 
+                    {/* Petit œil en haut à droite pour ouvrir la page du lieu */}
+                    <Link
+                      href={`/lieux/${place.slug || place.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Voir la page de ce lieu sur le site"
+                      className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-white/95 hover:bg-white text-[#073B4C] hover:text-[#087E8B] shadow-md flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 border border-[#DCECEF] z-10 cursor-pointer"
+                    >
+                      <Eye className="w-4 h-4 stroke-[2.5]" />
+                    </Link>
+
                     {/* Nombre de photos */}
                     {place.photos && place.photos.length > 1 && (
                       <div className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
