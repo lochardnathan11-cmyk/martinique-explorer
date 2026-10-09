@@ -592,6 +592,10 @@ export async function POST(req: Request) {
     // 6. Détection de la catégorie
     const detectedCat = detectCategory(refinedName, categoryRaw || '', address || '');
 
+    const placeMapsUrl = (finalUrl && finalUrl.startsWith('http') && (finalUrl.includes('google.com/maps') || finalUrl.includes('maps.app.goo.gl')))
+      ? finalUrl
+      : (url && url.startsWith('http') ? url : null);
+
     return NextResponse.json({
       success: true,
       coords: coords || null,
@@ -604,6 +608,7 @@ export async function POST(req: Request) {
       website: website || null,
       rating: rating || null,
       reviewsCount: reviewsCount || null,
+      mapsUrl: placeMapsUrl,
       data: {
         coords: coords || null,
         name: refinedName || '',
@@ -615,7 +620,8 @@ export async function POST(req: Request) {
         website: website || null,
         rating: rating || null,
         reviewsCount: reviewsCount || null,
-        originalUrl: url
+        originalUrl: url,
+        mapsUrl: placeMapsUrl
       }
     });
   } catch (err: any) {

@@ -217,6 +217,7 @@ export default function AdminDashboardPage() {
   const [isDragOverPhoto, setIsDragOverPhoto] = useState(false);
   const [showManualUrlInput, setShowManualUrlInput] = useState(false);
   const [photoRequiredError, setPhotoRequiredError] = useState(false);
+  const [resolvedMapsUrl, setResolvedMapsUrl] = useState<string | null>(null);
 
   const [autoFillNotice, setAutoFillNotice] = useState<{
     type: 'success' | 'warning' | 'info';
@@ -324,6 +325,11 @@ export default function AdminDashboardPage() {
         const name = data.name || data.data?.name || '';
         const commune = data.commune || data.data?.commune || '';
         const category = data.category || data.data?.category || '';
+        const directMapsUrl = data.mapsUrl || data.data?.mapsUrl || (trimmed.startsWith('http') ? trimmed : null);
+
+        if (directMapsUrl) {
+          setResolvedMapsUrl(directMapsUrl);
+        }
 
         setEditingPlace(prev => {
           if (!prev) return null;
@@ -429,6 +435,28 @@ export default function AdminDashboardPage() {
   const showError = (msg: string) => {
     setError(msg);
     setTimeout(() => setError(null), 5000);
+  };
+
+  const getGoogleMapsFicheUrl = () => {
+    // 1. Si une URL résolue directement vers la fiche Google Maps existe
+    if (resolvedMapsUrl && (resolvedMapsUrl.startsWith('http://') || resolvedMapsUrl.startsWith('https://'))) {
+      return resolvedMapsUrl;
+    }
+    // 2. Si l'utilisateur a collé un lien complet Google Maps (ex: maps.app.goo.gl ou google.com/maps/place/...)
+    const trimmedInput = googleMapsInput.trim();
+    if (trimmedInput.startsWith('http://') || trimmedInput.startsWith('https://')) {
+      return trimmedInput;
+    }
+    // 3. Recherche ciblée par Nom et Commune (ouvre directement la fiche établissement complète au lieu de coordonnées vides)
+    if (editingPlace?.name && editingPlace.name.trim()) {
+      const q = `${editingPlace.name.trim()}${editingPlace.commune ? ', ' + editingPlace.commune.trim() : ''}, Martinique`;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+    }
+    // 4. Secours sur les coordonnées GPS si aucun nom n'est encore disponible
+    if (editingPlace?.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0)) {
+      return `https://www.google.com/maps/search/?api=1&query=${editingPlace.coords[0]},${editingPlace.coords[1]}`;
+    }
+    return 'https://www.google.com/maps';
   };
 
   // ----- CRUD Operations ----- //
@@ -837,6 +865,8 @@ export default function AdminDashboardPage() {
                 } as any);
                 setGoogleMapsInput('');
                 setCoordsDetected(false);
+                setResolvedMapsUrl(null);
+                setPhotoRequiredError(false);
                 setAutoFillNotice(null);
                 setShowCommuneSuggestions(false);
                 setIsCreateModalOpen(true);
@@ -885,6 +915,8 @@ export default function AdminDashboardPage() {
                             : ''
                         );
                         setCoordsDetected(Boolean(place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)));
+                        setResolvedMapsUrl(null);
+                        setPhotoRequiredError(false);
                         setAutoFillNotice(null);
                         setShowCommuneSuggestions(false);
                         setIsCreateModalOpen(false);
@@ -969,12 +1001,13 @@ export default function AdminDashboardPage() {
                       </p>
                     </div>
                   </div>
-                  {editingPlace.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0) && (
+                  {((editingPlace.coords && (editingPlace.coords[0] !== 0 || editingPlace.coords[1] !== 0)) || editingPlace.name || (googleMapsInput && googleMapsInput.trim().startsWith('http'))) && (
                     <a 
-                      href={`https://www.google.com/maps/search/?api=1&query=${editingPlace.coords[0]},${editingPlace.coords[1]}`}
+                      href={getGoogleMapsFicheUrl()}
                       target="_blank" 
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#087E8B] hover:text-[#073B4C] bg-white px-3 py-1.5 rounded-xl border border-[#DCECEF] shadow-2xs transition-colors shrink-0"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#087E8B] hover:text-[#073B4C] bg-white px-3 py-1.5 rounded-xl border border-[#DCECEF] shadow-2xs transition-colors shrink-0 cursor-pointer"
+                      title="Ouvrir la fiche Google Maps du lieu"
                     >
                       <ExternalLink className="w-3.5 h-3.5" /> Ouvrir sur Maps
                     </a>
