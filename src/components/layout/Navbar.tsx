@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Menu, X, Shield, User, LogOut } from 'lucide-react';
@@ -18,6 +18,25 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fermer le menu si on clique à côté
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [userDropdownOpen]);
   const t = TRANSLATIONS[language] || TRANSLATIONS.fr;
 
   useEffect(() => {
@@ -127,7 +146,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
           <LanguageSelector scrolled={scrolled} isHome={activeSection === 'home'} />
 
           {/* User Account Button with Dropdown positioned strictly below */}
-          <div className="relative">
+          <div className="relative" ref={userDropdownRef}>
             {currentUser ? (
               <div>
                 <button
@@ -151,15 +170,21 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                 {/* Logged in User Menu */}
                 {userDropdownOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setUserDropdownOpen(false)}
-                    />
+                    
                     <div className="absolute right-0 top-full mt-2.5 w-60 bg-white rounded-2xl shadow-modal border border-lagon-border p-2.5 z-50 text-left animate-fadeIn">
                       <div className="px-3 py-2 border-b border-lagon-border/70">
                         <p className="text-xs font-semibold text-deep truncate">{currentUser.name}</p>
                         <p className="text-[11px] text-ink-muted truncate">{currentUser.email}</p>
                       </div>
+
+                      <Link
+                        href="/compte"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="w-full text-left px-3 py-2 text-xs font-semibold text-deep hover:bg-lagon-bg rounded-xl transition-colors flex items-center gap-2 my-1"
+                      >
+                        <User className="w-3.5 h-3.5 text-action shrink-0" />
+                        <span>Mon Profil & Favoris</span>
+                      </Link>
 
                       {currentUser.role === 'admin' && (
                         <Link
@@ -254,7 +279,10 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
             {currentUser ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-2 rounded-xl bg-lagon-bg text-xs">
-                  <span className="font-semibold text-deep">{currentUser.name}</span>
+                  <Link href="/compte" onClick={() => setMobileOpen(false)} className="font-semibold text-action hover:underline flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" />
+                    <span>Mon Compte ({currentUser.name})</span>
+                  </Link>
                   <button
                     onClick={() => { logout(); setMobileOpen(false); }}
                     className="text-coral hover:underline"

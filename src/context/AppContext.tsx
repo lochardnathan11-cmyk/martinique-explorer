@@ -65,6 +65,7 @@ interface AppContextType {
   login: (email: string, password?: string) => Promise<{ success: boolean; isAdmin: boolean; error?: string }>;
   signup: (name: string, email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  updateUserProfile: (name: string) => Promise<{ success: boolean; error?: string }>;
   userRole: UserRole;
   setUserRole: (role: UserRole) => void;
   language: AppLanguage;
@@ -317,6 +318,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {}
   };
 
+  const updateUserProfile = async (name: string): Promise<{ success: boolean; error?: string }> => {
+    if (!currentUser) return { success: false, error: 'Utilisateur non connecté' };
+    const updatedUser: AuthUser = {
+      ...currentUser,
+      name: name.trim() || currentUser.name
+    };
+    setCurrentUser(updatedUser);
+    try {
+      localStorage.setItem('mq_current_user', JSON.stringify(updatedUser));
+    } catch (e) {}
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.auth.updateUser({
+          data: { name: name.trim() }
+        });
+      } catch (err: any) {
+        console.warn('Could not sync name to Supabase:', err);
+      }
+    }
+    return { success: true };
+  };
+
   const toggleFavorite = (placeId: string) => {
     setFavorites(prev => {
       const next = prev.includes(placeId) ? prev.filter(id => id !== placeId) : [...prev, placeId];
@@ -497,6 +521,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         login,
         signup,
         logout,
+        updateUserProfile,
         userRole,
         setUserRole,
         language,
