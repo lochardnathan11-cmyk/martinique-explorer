@@ -2,12 +2,19 @@ import { createClient } from '@supabase/supabase-js';
 import { PlaceItem } from '@/types';
 import { INITIAL_PLACES } from '@/data/mockData';
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+export function getSupabaseServer() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  if (!supabaseUrl || !supabaseKey) return null;
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false },
+    global: {
+      fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+    }
+  });
+}
 
-export const supabaseServer = (supabaseUrl && supabaseKey)
-  ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
-  : null;
+export const supabaseServer = getSupabaseServer();
 
 // Convert database row to frontend PlaceItem
 export function mapRowToPlace(row: any): PlaceItem {
@@ -72,17 +79,19 @@ export function mapPlaceToRow(place: PlaceItem): any {
 }
 
 export async function getAllPlaces(): Promise<PlaceItem[]> {
-  if (!supabaseServer) {
+  const client = getSupabaseServer() || supabaseServer;
+  if (!client) {
     return INITIAL_PLACES;
   }
 
   try {
-    const { data, error } = await supabaseServer
+    const { data, error } = await client
       .from('places')
       .select('*')
       .order('name', { ascending: true });
 
     if (error || !data || data.length === 0) {
+      if (error) console.error('Supabase query error in getAllPlaces:', error);
       return INITIAL_PLACES;
     }
 
@@ -94,9 +103,10 @@ export async function getAllPlaces(): Promise<PlaceItem[]> {
 }
 
 export async function upsertPlaceInSupabase(place: PlaceItem) {
-  if (!supabaseServer) throw new Error('Supabase not configured');
+  const client = getSupabaseServer() || supabaseServer;
+  if (!client) throw new Error('Supabase not configured');
   const row = mapPlaceToRow(place);
-  const { data, error } = await supabaseServer
+  const { data, error } = await client
     .from('places')
     .upsert(row, { onConflict: 'id' })
     .select();
@@ -106,8 +116,9 @@ export async function upsertPlaceInSupabase(place: PlaceItem) {
 }
 
 export async function deletePlaceFromSupabase(id: string) {
-  if (!supabaseServer) throw new Error('Supabase not configured');
-  const { error } = await supabaseServer
+  const client = getSupabaseServer() || supabaseServer;
+  if (!client) throw new Error('Supabase not configured');
+  const { error } = await client
     .from('places')
     .delete()
     .eq('id', id);

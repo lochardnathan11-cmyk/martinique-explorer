@@ -35,9 +35,10 @@ interface InteractiveMartiniqueMapProps {
 const PRIMARY_FILTERS = [
   { id: 'all', label: 'Tous', icon: '📍', color: '#073B4C' },
   { id: 'beach', label: 'Plages', icon: '🏖️', color: '#0284C7' },
-  { id: 'restaurant', label: 'Restos', icon: '🍽️', color: '#EA580C' },
   { id: 'hiking', label: 'Randos', icon: '🥾', color: '#059669' },
+  { id: 'excursion', label: 'Excursions', icon: '⛵', color: '#0891B2' },
   { id: 'accommodation', label: 'Hôtels', icon: '🏨', color: '#2563EB' },
+  { id: 'restaurant', label: 'Restos', icon: '🍽️', color: '#EA580C' },
   { id: 'activity', label: 'Activités', icon: '🏄', color: '#0891B2' },
   { id: 'hidden_gem', label: 'Secrets', icon: '💎', color: '#DB2777' },
 ];
@@ -180,6 +181,8 @@ export default function InteractiveMartiniqueMap({
         if (p.category !== 'restaurant' && p.category !== 'bar') return false;
       } else if (activeFilter === 'hiking') {
         if (p.category !== 'hiking' && p.category !== 'viewpoint') return false;
+      } else if (activeFilter === 'excursion') {
+        if (p.category !== 'excursion') return false;
       } else if (activeFilter === 'accommodation') {
         if (p.category !== 'accommodation') return false;
       } else if (activeFilter === 'activity') {
@@ -228,6 +231,8 @@ export default function InteractiveMartiniqueMap({
         if (p.category !== 'restaurant' && p.category !== 'bar') return false;
       } else if (filterId === 'hiking') {
         if (p.category !== 'hiking' && p.category !== 'viewpoint') return false;
+      } else if (filterId === 'excursion') {
+        if (p.category !== 'excursion') return false;
       } else if (filterId === 'accommodation') {
         if (p.category !== 'accommodation') return false;
       } else if (filterId === 'activity') {

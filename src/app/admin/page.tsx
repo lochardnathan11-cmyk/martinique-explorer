@@ -93,7 +93,9 @@ function AdminCustomSelect({ value, onChange, options, placeholder }: AdminCusto
 
 const MODAL_CATEGORY_OPTIONS = [
   { value: 'beach', label: 'Plage', icon: '🏖️' },
-  { value: 'activity', label: 'Activité & Rando', icon: '🥾' },
+  { value: 'hiking', label: 'Randonnée', icon: '🥾' },
+  { value: 'excursion', label: 'Excursion & Mer', icon: '⛵' },
+  { value: 'activity', label: 'Activité & Loisir', icon: '🎯' },
   { value: 'accommodation', label: 'Hébergement & Hôtel', icon: '🏨' },
   { value: 'restaurant', label: 'Restaurant & Bar', icon: '🍽️' },
   { value: 'viewpoint', label: 'Point de vue', icon: '📸' },

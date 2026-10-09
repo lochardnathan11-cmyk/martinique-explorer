@@ -81,8 +81,12 @@ export default function HomePage() {
 
   // Filtered places for homepage
   const filteredPlaces = places.filter(place => {
-    if (selectedCategory && place.category !== selectedCategory) {
-      return false;
+    if (selectedCategory) {
+      if (selectedCategory === 'activity') {
+        if (place.category !== 'activity' && place.category !== 'hiking' && place.category !== 'excursion') return false;
+      } else if (place.category !== selectedCategory) {
+        return false;
+      }
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -346,9 +350,11 @@ export default function HomePage() {
                     { id: null, label: 'Tous les lieux' },
                     { id: 'beach', label: 'Plages' },
                     { id: 'snorkeling', label: 'Snorkeling' },
-                    { id: 'activity', label: 'Expériences' },
-                    { id: 'restaurant', label: 'Gastronomie' },
-                    { id: 'accommodation', label: 'Hébergements' },
+                    { id: 'hiking', label: '🥾 Randonnées' },
+                    { id: 'excursion', label: '⛵ Sorties en Mer' },
+                    { id: 'accommodation', label: '🏨 Hébergements' },
+                    { id: 'activity', label: '🎯 Expériences' },
+                    { id: 'restaurant', label: '🍽️ Gastronomie' },
                   ].map(cat => {
                     const isSelected = selectedCategory === cat.id;
                     return (

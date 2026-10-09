@@ -15,7 +15,7 @@ export default function ActivitiesView({ places, onOpenMap }: ActivitiesViewProp
   const [searchTerm, setSearchTerm] = useState('');
 
   const activityPlaces = places.filter(
-    p => p.category === 'activity' || p.category === 'restaurant' || p.category === 'event'
+    p => p.category === 'activity' || p.category === 'restaurant' || p.category === 'event' || p.category === 'hiking' || p.category === 'excursion'
   );
 
   const filtered = activityPlaces.filter(p => {
@@ -25,8 +25,8 @@ export default function ActivitiesView({ places, onOpenMap }: ActivitiesViewProp
       if (!match) return false;
     }
     if (activityFilter === 'all') return true;
-    if (activityFilter === 'sea') return p.subCategory?.includes('bateau') || p.tags?.includes('Catamaran') || p.tags?.includes('Bateau') || p.tags?.includes('Fonds Blancs');
-    if (activityFilter === 'hike') return p.subCategory?.includes('Randonnée') || p.tags?.includes('Volcan');
+    if (activityFilter === 'sea') return p.category === 'excursion' || p.subCategory?.includes('bateau') || p.tags?.includes('Catamaran') || p.tags?.includes('Bateau') || p.tags?.includes('Fonds Blancs');
+    if (activityFilter === 'hike') return p.category === 'hiking' || p.subCategory?.includes('Randonnée') || p.tags?.includes('Volcan');
     if (activityFilter === 'canyon') return p.subCategory?.includes('Canyoning');
     if (activityFilter === 'food') return p.category === 'restaurant';
     if (activityFilter === 'event') return p.category === 'event';
