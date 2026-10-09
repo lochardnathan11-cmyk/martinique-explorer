@@ -283,7 +283,7 @@ export default function PhotoManagementStudioPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#F2FCFC] hover:bg-[#DCECEF] text-[#073B4C] font-bold text-sm transition-colors border border-[#DCECEF]"
             >
               <Shield className="w-4 h-4 text-[#087E8B]" />
-              Retour Admin
+              Retour Gestion
             </Link>
             <Link
               href="/"

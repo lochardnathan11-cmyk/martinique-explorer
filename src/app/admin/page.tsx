@@ -661,6 +661,31 @@ export default function AdminDashboardPage() {
     { value: 'viewpoint', label: 'Points de vue & Secrets', icon: '💎', count: places.filter(p => p.category === 'viewpoint' || p.category === 'hidden_gem' || p.category === 'photo').length },
   ];
 
+  const getPlaceCategoryBadge = (cat: string) => {
+    switch (cat) {
+      case 'beach':
+      case 'snorkeling':
+        return { label: 'Plage', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200', icon: '🏖️' };
+      case 'activity':
+      case 'hiking':
+        return { label: 'Randonnée', bg: 'bg-teal-50 text-teal-800 border-teal-200', icon: '🥾' };
+      case 'excursion':
+        return { label: 'Excursion', bg: 'bg-cyan-50 text-cyan-800 border-cyan-200', icon: '⛵' };
+      case 'accommodation':
+        return { label: 'Hôtel', bg: 'bg-blue-50 text-blue-800 border-blue-200', icon: '🏨' };
+      case 'restaurant':
+      case 'bar':
+        return { label: 'Restaurant', bg: 'bg-amber-50 text-amber-800 border-amber-200', icon: '🍽️' };
+      case 'viewpoint':
+      case 'photo':
+        return { label: 'Point de vue', bg: 'bg-indigo-50 text-indigo-800 border-indigo-200', icon: '📸' };
+      case 'hidden_gem':
+        return { label: 'Spot Secret', bg: 'bg-purple-50 text-purple-800 border-purple-200', icon: '💎' };
+      default:
+        return { label: 'Lieu', bg: 'bg-slate-100 text-slate-800 border-slate-200', icon: '📍' };
+    }
+  };
+
   const currentCategoryOption = CATEGORY_OPTIONS.find(o => o.value === categoryFilter) || CATEGORY_OPTIONS[0];
 
   // ----- Filtering ----- //
@@ -723,50 +748,64 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Admin Header */}
-      <header className="bg-white border-b border-[#DCECEF] sticky top-0 z-30 shadow-sm">
+      {/* Header Espace Gestion */}
+      <header className="bg-white border-b border-[#DCECEF] sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-coral/10 rounded-2xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-coral" />
+              <div className="w-12 h-12 bg-gradient-to-tr from-[#087E8B] to-[#BFEFF2] rounded-2xl flex items-center justify-center shadow-md text-white">
+                <MapPin className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold text-[#073B4C]">Back-Office Martinique</h1>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs font-semibold text-[#6E858A]">Bienvenue, {currentUser?.name || 'Administrateur'}</span>
-                  <div className="w-1 h-1 rounded-full bg-[#DCECEF]"></div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black text-[#073B4C] tracking-tight">
+                    Espace Gestion Martinique
+                  </h1>
+                  <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#BFEFF2]/50 text-[#087E8B] border border-[#087E8B]/20">
+                    Mode Facile
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs font-semibold text-[#6E858A]">
+                    Bonjour {currentUser?.name ? currentUser.name : 'Papa'} • Vos lieux en ligne
+                  </span>
+                  <div className="w-1 h-1 rounded-full bg-[#DCECEF]" />
                   {isSupabaseConfigured ? (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      <Database className="w-3 h-3" /> Supabase Actif
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> En ligne (Supabase)
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                      <Database className="w-3 h-3" /> Mode Démo (Local)
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      Mode Démo
                     </span>
                   )}
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#073B4C] rounded-xl font-bold text-sm transition-colors border border-[#DCECEF]"
+                target="_blank"
+                className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#073B4C] rounded-2xl font-bold text-xs sm:text-sm transition-colors border border-[#DCECEF] shadow-2xs"
+                title="Ouvrir le site public"
               >
                 <Globe className="w-4 h-4 text-[#087E8B]" />
-                <span className="hidden sm:inline">Voir le site</span>
+                <span className="hidden md:inline">Voir le site en direct</span>
+                <span className="md:hidden">Voir le site</span>
               </Link>
               <Link
                 href="/admin/photos"
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl font-bold text-sm transition-colors border border-indigo-100"
+                className="hidden sm:inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-2xl font-bold text-xs sm:text-sm transition-colors border border-indigo-100 shadow-2xs"
+                title="Gérer toutes les photos de vos lieux"
               >
-                <ImageIcon className="w-4 h-4" />
-                Studio Photos
+                <ImageIcon className="w-4 h-4 text-indigo-600" />
+                <span>Photos des Lieux</span>
               </Link>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#F2FCFC] text-[#6E858A] hover:bg-rose-50 hover:text-rose-600 rounded-xl font-bold text-sm transition-colors border border-[#DCECEF] hover:border-rose-200"
+                className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 bg-[#F2FCFC] text-[#6E858A] hover:bg-rose-50 hover:text-rose-600 rounded-2xl font-bold text-xs sm:text-sm transition-colors border border-[#DCECEF] hover:border-rose-200 cursor-pointer"
+                title="Se déconnecter"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Déconnexion</span>
@@ -776,42 +815,105 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         
-        {/* Quick Stats & Controls */}
-        <div className="bg-white rounded-3xl border border-[#DCECEF] p-6 shadow-sm flex flex-col lg:flex-row gap-6 items-center justify-between">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="bg-[#F2FCFC] px-5 py-3 rounded-2xl border border-[#DCECEF]">
-              <div className="text-[#6E858A] text-xs font-semibold mb-1">Total Lieux</div>
-              <div className="text-2xl font-extrabold text-[#073B4C]">{places.length}</div>
+        {/* Bandeau d'aide simplifié & Bouton d'action principal */}
+        <div className="bg-gradient-to-r from-white via-white to-[#F2FCFC] rounded-3xl border border-[#DCECEF] p-5 sm:p-6 shadow-sm flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-[#087E8B]">
+                Ajouter ou modifier vos adresses
+              </span>
+              <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                Zéro prise de tête
+              </span>
             </div>
-            <div className="bg-[#F2FCFC] px-5 py-3 rounded-2xl border border-[#DCECEF]">
-              <div className="text-[#6E858A] text-xs font-semibold mb-1">Plages</div>
-              <div className="text-2xl font-extrabold text-[#087E8B]">{places.filter(p => p.category === 'beach').length}</div>
+            <p className="text-sm text-[#073B4C] font-semibold">
+              Pour ajouter une adresse, cliquez sur <strong className="text-[#087E8B]">« + Ajouter un lieu »</strong> et collez simplement son lien Google Maps !
+            </p>
+            <p className="text-xs text-[#6E858A]">
+              Le système récupère automatiquement le nom, la commune, la catégorie et la photo officielle.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              setEditingPlace({
+                id: `lieu-${Date.now()}`,
+                name: '',
+                category: 'beach',
+                commune: '',
+                description: '',
+                coords: [0, 0],
+                photos: [],
+                website: '',
+                phone: '',
+                priceRange: '€€',
+                rating: 5.0,
+                reviewsCount: 0,
+                featured: false,
+                isHiddenGem: false
+              } as any);
+              setGoogleMapsInput('');
+              setCoordsDetected(false);
+              setResolvedMapsUrl(null);
+              setDetectedGmapsPhoto(null);
+              setPhotoRequiredError(false);
+              setAutoFillNotice(null);
+              setShowCommuneSuggestions(false);
+              setIsCreateModalOpen(true);
+            }}
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-[#087E8B] to-[#0a9ca8] hover:opacity-95 text-white rounded-2xl font-black text-sm shadow-md shadow-[#087E8B]/20 transition-all cursor-pointer transform hover:-translate-y-0.5 shrink-0"
+          >
+            <Plus className="w-5 h-5 stroke-[3]" />
+            <span>+ Ajouter un lieu</span>
+          </button>
+        </div>
+
+        {/* Barre de Recherche & Filtres Rapides */}
+        <div className="bg-white rounded-3xl border border-[#DCECEF] p-4 sm:p-5 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="bg-[#F2FCFC] px-4 py-2.5 rounded-2xl border border-[#DCECEF] flex items-center gap-2.5">
+              <span className="text-[#6E858A] text-xs font-bold">Lieux enregistrés :</span>
+              <span className="text-lg font-black text-[#073B4C]">{places.length}</span>
             </div>
+            {filteredPlaces.length !== places.length && (
+              <span className="text-xs font-bold text-[#087E8B] bg-[#BFEFF2]/40 px-3 py-1.5 rounded-xl border border-[#087E8B]/20">
+                {filteredPlaces.length} affiché(s)
+              </span>
+            )}
           </div>
           
-          <div className="flex w-full lg:w-auto items-center gap-3 flex-wrap sm:flex-nowrap">
-             <div className="relative flex-1 sm:w-64">
+          <div className="flex w-full md:w-auto items-center gap-3 flex-wrap sm:flex-nowrap">
+            <div className="relative flex-1 sm:w-72">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6E858A]" />
               <input
                 type="text"
-                placeholder="Rechercher..."
+                placeholder="Rechercher par nom ou commune..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#F2FCFC]/60 border border-[#DCECEF] text-sm text-[#073B4C] focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#F2FCFC]/60 border border-[#DCECEF] text-sm text-[#073B4C] placeholder-[#6E858A]/70 focus:outline-none focus:ring-2 focus:ring-[#087E8B] font-medium"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6E858A] hover:text-[#073B4C] p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
             
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="py-2.5 px-4 rounded-2xl bg-[#F2FCFC]/80 hover:bg-white border border-[#DCECEF] hover:border-[#087E8B] text-sm text-[#073B4C] font-semibold transition-all flex items-center gap-2.5 shadow-xs cursor-pointer"
+                className="py-2.5 px-4 rounded-2xl bg-[#F2FCFC]/80 hover:bg-white border border-[#DCECEF] hover:border-[#087E8B] text-sm text-[#073B4C] font-bold transition-all flex items-center gap-2.5 shadow-2xs cursor-pointer"
               >
                 <span className="text-base">{currentCategoryOption.icon}</span>
                 <span>{currentCategoryOption.label}</span>
-                <ChevronDown className={`w-4 h-4 text-[#6E858A] transition-transform duration-200 ${categoryDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-[#6E858A] transition-transform duration-200 ${categoryDropdownOpen ? 'rotate-180 text-[#087E8B]' : ''}`} />
               </button>
 
               {categoryDropdownOpen && (
@@ -841,7 +943,7 @@ export default function AdminDashboardPage() {
                             <span className="text-base">{opt.icon}</span>
                             <span>{opt.label}</span>
                           </div>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
                             isSelected ? 'bg-[#087E8B] text-white' : 'bg-slate-100 text-[#6E858A]'
                           }`}>
                             {opt.count}
@@ -853,39 +955,6 @@ export default function AdminDashboardPage() {
                 </>
               )}
             </div>
-            
-            <button
-              onClick={() => {
-                setEditingPlace({
-                  id: `lieu-${Date.now()}`,
-                  name: '',
-                  category: 'beach',
-                  commune: '',
-                  description: '',
-                  coords: [0, 0],
-                  photos: [],
-                  website: '',
-                  phone: '',
-                  priceRange: '€€',
-                  rating: 5.0,
-                  reviewsCount: 0,
-                  featured: false,
-                  isHiddenGem: false
-                } as any);
-                setGoogleMapsInput('');
-                setCoordsDetected(false);
-                setResolvedMapsUrl(null);
-                setDetectedGmapsPhoto(null);
-                setPhotoRequiredError(false);
-                setAutoFillNotice(null);
-                setShowCommuneSuggestions(false);
-                setIsCreateModalOpen(true);
-              }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#087E8B] hover:bg-[#087E8B]/90 text-white rounded-2xl font-bold text-sm shadow-xs transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Nouveau Lieu
-            </button>
           </div>
         </div>
 
@@ -897,55 +966,103 @@ export default function AdminDashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPlaces.map(place => (
-              <div key={place.id} className="bg-white rounded-3xl border border-[#DCECEF] overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
-                <div className="h-40 relative overflow-hidden bg-slate-100">
-                  <img src={place.photos[0] || '/images/spots/salines.jpg'} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <span className="bg-white/90 backdrop-blur-sm text-[#073B4C] text-[10px] font-bold px-2 py-1 rounded-lg">
-                      {place.category}
-                    </span>
-                    {place.featured && <span className="bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm">⭐ Vedette</span>}
-                  </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-extrabold text-[#073B4C] text-lg leading-tight mb-1">{place.name}</h3>
-                  <div className="flex items-center gap-1.5 text-xs text-[#6E858A] mb-4">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {place.commune}
-                  </div>
-                  
-                  <div className="mt-auto grid grid-cols-2 gap-2 pt-4 border-t border-[#DCECEF]/60">
-                    <button
-                      onClick={() => {
-                        setEditingPlace({...place});
-                        setGoogleMapsInput(
-                          place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)
-                            ? `${place.coords[0]}, ${place.coords[1]}`
-                            : ''
-                        );
-                        setCoordsDetected(Boolean(place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)));
-                        setResolvedMapsUrl(null);
-                        setDetectedGmapsPhoto(null);
-                        setPhotoRequiredError(false);
-                        setAutoFillNotice(null);
-                        setShowCommuneSuggestions(false);
-                        setIsCreateModalOpen(false);
+            {filteredPlaces.map(place => {
+              const badge = getPlaceCategoryBadge(place.category);
+              return (
+                <div key={place.id} className="bg-white rounded-3xl border border-[#DCECEF] overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 group flex flex-col">
+                  {/* Photo & Badges */}
+                  <div className="h-44 relative overflow-hidden bg-slate-100">
+                    <img 
+                      src={place.photos[0] || '/images/spots/salines.jpg'} 
+                      alt={place.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/spots/salines.jpg';
                       }}
-                      className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#F2FCFC] hover:bg-[#087E8B] text-[#087E8B] hover:text-white text-xs font-bold transition-colors border border-[#DCECEF] hover:border-[#087E8B]"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" /> Modifier
-                    </button>
-                    <button
-                      onClick={() => setDeletingPlaceId(place.id)}
-                      className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white hover:bg-rose-50 text-rose-600 text-xs font-bold transition-colors border border-rose-200"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Supprimer
-                    </button>
+                    />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      <span className={`backdrop-blur-md text-[11px] font-extrabold px-2.5 py-1 rounded-xl shadow-xs border ${badge.bg}`}>
+                        {badge.icon} {badge.label}
+                      </span>
+                      {place.featured && (
+                        <span className="bg-amber-400 text-amber-950 text-[11px] font-black px-2.5 py-1 rounded-xl shadow-xs">
+                          ⭐ Vedette
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Nombre de photos */}
+                    {place.photos && place.photos.length > 1 && (
+                      <div className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3" />
+                        <span>{place.photos.length} photos</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contenu de la fiche */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <h3 className="font-black text-[#073B4C] text-lg leading-tight line-clamp-1 mb-1.5" title={place.name}>
+                        {place.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6E858A]">
+                        <MapPin className="w-3.5 h-3.5 text-[#087E8B] shrink-0" />
+                        <span className="truncate">{place.commune || 'Martinique'}</span>
+                      </div>
+                    </div>
+
+                    {/* Coordonnées GPS / Statut rapide */}
+                    <div className="text-[11px] text-[#6E858A] flex items-center justify-between pt-1 border-t border-[#DCECEF]/40">
+                      <span className="font-medium">
+                        {place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0) ? (
+                          <span className="text-emerald-700 font-bold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Coordonnées GPS OK
+                          </span>
+                        ) : (
+                          <span className="text-amber-700 font-bold">⚠️ GPS à renseigner</span>
+                        )}
+                      </span>
+                      {place.priceRange && (
+                        <span className="font-bold text-[#073B4C] bg-slate-100 px-2 py-0.5 rounded-md">
+                          {place.priceRange}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Boutons d'action : Modifier (primaire) et Supprimer */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#DCECEF]/60">
+                      <button
+                        onClick={() => {
+                          setEditingPlace({...place});
+                          setGoogleMapsInput(
+                            place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)
+                              ? `${place.coords[0]}, ${place.coords[1]}`
+                              : ''
+                          );
+                          setCoordsDetected(Boolean(place.coords && (place.coords[0] !== 0 || place.coords[1] !== 0)));
+                          setResolvedMapsUrl(null);
+                          setDetectedGmapsPhoto(null);
+                          setPhotoRequiredError(false);
+                          setAutoFillNotice(null);
+                          setShowCommuneSuggestions(false);
+                          setIsCreateModalOpen(false);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" /> Modifier
+                      </button>
+                      <button
+                        onClick={() => setDeletingPlaceId(place.id)}
+                        className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-white hover:bg-rose-50 text-rose-600 text-xs font-bold transition-colors border border-rose-200 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Supprimer
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -994,21 +1111,21 @@ export default function AdminDashboardPage() {
               )}
 
               {/* 📍 SECTION 1 : Auto-remplissage via Google Maps (En haut) */}
-              <div className="bg-gradient-to-br from-[#087E8B]/10 via-[#BFEFF2]/30 to-[#F2FCFC] border-2 border-[#087E8B]/30 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="bg-gradient-to-br from-[#087E8B]/10 via-[#BFEFF2]/30 to-[#F2FCFC] border-2 border-[#087E8B]/40 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#087E8B] text-white flex items-center justify-center shadow-md shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-[#087E8B] text-white flex items-center justify-center shadow-md shrink-0">
                       <Sparkles className="w-5 h-5 text-amber-300" />
                     </div>
                     <div>
-                      <h3 className="text-base font-extrabold text-[#073B4C] flex items-center gap-2">
-                        <span>1. Auto-Remplissage Google Maps</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-[#087E8B] text-white px-2.5 py-0.5 rounded-full">
-                          Recommandé
+                      <h3 className="text-base font-black text-[#073B4C] flex items-center gap-2">
+                        <span>Étape 1 : Collez le lien Google Maps</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-2xs">
+                          Facile & Recommandé
                         </span>
                       </h3>
                       <p className="text-xs text-[#6E858A]">
-                        Collez le lien Google Maps du lieu : le nom, la commune, la catégorie et les coordonnées GPS seront pré-remplis automatiquement.
+                        Collez l'adresse ou le lien de partage Google Maps : le système remplit automatiquement le nom, la commune, la catégorie, le GPS et trouve la première photo.
                       </p>
                     </div>
                   </div>
@@ -1100,11 +1217,11 @@ export default function AdminDashboardPage() {
               {/* 📝 SECTION 2 : Vérification et Informations Générales */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-[#DCECEF] pb-2">
-                  <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider">
-                    2. Informations Générales
+                  <h3 className="text-sm font-black text-[#087E8B] uppercase tracking-wider flex items-center gap-2">
+                    <span>Étape 2 : Vérifiez les informations</span>
                   </h3>
                   <span className="text-[11px] font-bold text-[#6E858A] bg-slate-100 px-2.5 py-0.5 rounded-full">
-                    À vérifier
+                    Général
                   </span>
                 </div>
 
@@ -1182,8 +1299,8 @@ export default function AdminDashboardPage() {
               {/* 🌍 SECTION 3 : Coordonnées GPS & Photos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-[#DCECEF] pb-2">
-                  <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider">
-                    3. Coordonnées GPS & Photos
+                  <h3 className="text-sm font-black text-[#087E8B] uppercase tracking-wider flex items-center gap-2">
+                    <span>Étape 3 : Coordonnées GPS & Photos</span>
                   </h3>
                   {coordsDetected && (
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
@@ -1497,8 +1614,9 @@ export default function AdminDashboardPage() {
 
               {/* 📋 SECTION 4 : Infos Pratiques */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider border-b border-[#DCECEF] pb-2">
-                  4. Infos Pratiques
+                <h3 className="text-sm font-black text-[#087E8B] uppercase tracking-wider border-b border-[#DCECEF] pb-2 flex items-center justify-between">
+                  <span>Étape 4 : Infos Pratiques (Optionnel)</span>
+                  <span className="text-[11px] font-bold text-[#6E858A] bg-slate-100 px-2.5 py-0.5 rounded-full lowercase">facultatif</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">

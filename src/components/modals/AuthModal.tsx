@@ -60,7 +60,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setIsLoading(true);
     const res = await login('papa@martinique-explorer.com', 'admin');
     setIsLoading(false);
-    setSuccessMsg('Bienvenue Papa ! Accès complet à votre Back-Office Zéro Code.');
+    setSuccessMsg('Bienvenue Papa ! Accès complet à votre Espace Gestion Zéro Code.');
     setTimeout(() => {
       closeModal();
       if (onAdminNavigate) onAdminNavigate();

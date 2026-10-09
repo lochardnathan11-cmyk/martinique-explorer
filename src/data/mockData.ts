@@ -1148,6 +1148,34 @@ export const INITIAL_PLACES: PlaceItem[] = [
     priceRange: '€€',
     tags: ['Hébergement', 'Résidence', 'Trois-Îlets', 'Anse Mitan'],
     badges: ['🌴 Résidence']
+  },
+  {
+    id: 'lieu-1791547378967',
+    slug: 'h-tel-panoramic',
+    name: "Hôtel Panoramic",
+    category: 'accommodation',
+    subCategory: "",
+    commune: "Les Trois-Îlets",
+    description: "",
+    coords: [14.5386683, -61.068276299999994],
+    photos: [
+      'https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Q6TLpKwQrW1epFhENM6JzWKQFoBOLAssiAD9i2H8jAg5O3leQuZIBANw_lZWNRUdgq7DrwfpQH4UQEwYLugKlwP8yZtVlXDr6tuZW4LWV8RhF6DlM6o6KUAgqpsgDkHAeBg94-Uw=w1200-h800-k-no'
+    ],
+    rating: 4.5,
+    reviewsCount: 308,
+    featured: false,
+    isHiddenGem: false,
+    crowdLevel: 'Modérée',
+    parking: 'Facile et gratuit',
+    toilets: false,
+    restaurantsNearby: false,
+    website: "http://www.lepanoramic.fr/",
+    phone: "+596 596 68 78 48",
+    address: "Hôtel Panoramic, Anse a l'Ane, Rue du Dauphin, Les Trois-Îlets 97229, Martinique",
+    schedules: 'Tous les jours',
+    priceRange: "€€",
+    tags: ['Martinique'],
+    badges: []
   }
 ];
 

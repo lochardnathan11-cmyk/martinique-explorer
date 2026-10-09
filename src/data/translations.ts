@@ -35,7 +35,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     lowSargassum: '🟡 Présence minime',
     highSargassum: '🔴 Présence forte',
     addToTrip: 'Ajouter au planning',
-    adminZeroCode: 'Back-Office Admin (Zéro Code)'
+    adminZeroCode: 'Espace Gestion (Zéro Code)'
   },
   en: {
     siteTitle: 'Martinique Explorer',
@@ -71,7 +71,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     lowSargassum: '🟡 Minor presence',
     highSargassum: '🔴 High presence',
     addToTrip: 'Add to itinerary',
-    adminZeroCode: 'Zero-Code Admin Back-Office'
+    adminZeroCode: 'Admin Management (Zero-Code)'
   },
   de: {
     siteTitle: 'Martinique Explorer',
