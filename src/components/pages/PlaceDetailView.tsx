@@ -592,24 +592,24 @@ export default function PlaceDetailView({
             </a>
           </div>
 
-          {/* GPS Navigation Launcher */}
+          {/* Google Maps Fiche & Navigation */}
           <div className="p-6 rounded-3xl bg-white border border-lagon-border shadow-soft space-y-4">
             <h4 className="font-semibold text-deep text-sm flex items-center gap-2">
               <Compass className="w-4 h-4 text-action" />
-              S&apos;y rendre en voiture / GPS
+              Localisation & Fiche Google Maps
             </h4>
             <p className="text-xs text-ink-muted leading-relaxed">
-              Ouvrez directement l&apos;itinéraire sur votre smartphone vers {place.name}.
+              Consultez directement la fiche officielle Google Maps de {place.name} (horaires, photos, accès et navigation).
             </p>
 
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${place.coords[0]},${place.coords[1]}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name}, ${place.commune || ''}, Martinique`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 px-4 rounded-2xl bg-action hover:bg-action-hover text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-soft cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
-              <span>Ouvrir l&apos;itinéraire GPS</span>
+              <span>Ouvrir sur Google Maps</span>
             </a>
           </div>
 

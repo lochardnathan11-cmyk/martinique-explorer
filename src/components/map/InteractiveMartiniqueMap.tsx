@@ -652,13 +652,13 @@ export default function InteractiveMartiniqueMap({
 
                 <div className="grid grid-cols-2 gap-2">
                   <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.coords[0]},${selectedPlace.coords[1]}`}
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedPlace.name}, ${selectedPlace.commune || ''}, Martinique`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-2 px-3 rounded-xl bg-lagon-bg hover:bg-lagon-light/60 border border-lagon-border text-deep text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <Navigation className="w-3.5 h-3.5 text-action" />
-                    <span>Itinéraire GPS</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-action" />
+                    <span>Google Maps</span>
                   </a>
 
                   {selectedPlace.website ? (
