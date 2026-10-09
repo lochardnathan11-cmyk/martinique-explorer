@@ -81,3 +81,17 @@ body {
   animation-play-state: paused;
 }
 
+/* Verrouillage du défilement de l'arrière-plan quand une modale est ouverte */
+body:has(.fixed.inset-0) {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+.fixed.inset-0 {
+  overscroll-behavior: contain !important;
+}
+
+.fixed.inset-0 > div {
+  overscroll-behavior: contain !important;
+}
+

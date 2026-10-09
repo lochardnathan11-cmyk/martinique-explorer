@@ -206,6 +206,23 @@ export default function AdminDashboardPage() {
     return () => clearTimeout(timer);
   }, [currentUser, userRole, router]);
 
+  // Verrouiller le défilement de l'arrière-plan quand une modale admin est ouverte
+  useEffect(() => {
+    const isModalOpen = Boolean(editingPlace || deletingPlaceId || showEditConfirm);
+    if (typeof document !== 'undefined') {
+      if (isModalOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [editingPlace, deletingPlaceId, showEditConfirm]);
+
   const fetchPlaces = async () => {
     try {
       setLoading(true);

@@ -205,7 +205,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-    const login = async (email: string, password?: string): Promise<{ success: boolean; isAdmin: boolean; error?: string }> => {
+  // Verrouiller le défilement de la page arrière-plan quand une modale est ouverte
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (activeModal.type) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [activeModal.type]);
+
+  const login = async (email: string, password?: string): Promise<{ success: boolean; isAdmin: boolean; error?: string }> => {
     const clean = email.trim().toLowerCase();
     const isAdmin = clean.includes('papa') || clean.includes('admin') || clean === 'papa@martinique-explorer.com' || clean === 'nathan.test@gmail.com';
 

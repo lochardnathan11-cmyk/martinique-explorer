@@ -63,6 +63,23 @@ export default function PhotoManagementStudioPage() {
       }
     }
   }, []);
+
+  // Verrouiller le défilement de l'arrière-plan quand la modale de confirmation photo est ouverte
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (confirmPhotoChange) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [confirmPhotoChange]);
+
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   
   // Upload state per spot: { [spotId]: { file, preview, isUploading, successMsg, errorMsg } }
