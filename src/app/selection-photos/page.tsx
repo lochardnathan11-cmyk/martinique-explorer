@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
+  Shield, 
+  Globe, 
   UploadCloud, 
   CheckCircle2, 
   Sparkles, 
@@ -25,6 +27,19 @@ type CategoryFilter = 'all' | 'beach' | 'activity' | 'accommodation' | 'restaura
 export default function PhotoManagementStudioPage() {
   const [spots, setSpots] = useState<PlaceItem[]>(INITIAL_PLACES);
   const [searchQuery, setSearchQuery] = useState('');
+  const [confirmPhotoChange, setConfirmPhotoChange] = useState<{ spotId: string; spotName: string; photoUrl: string } | null>(null);
+
+  // Charger les lieux à jour depuis la base de données
+  useEffect(() => {
+    fetch('/api/admin/spots/list')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.places && data.places.length > 0) {
+          setSpots(data.places);
+        }
+      })
+      .catch(e => console.error('Erreur chargement spots:', e));
+  }, []);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   
   // Upload state per spot: { [spotId]: { file, preview, isUploading, successMsg, errorMsg } }
@@ -222,13 +237,27 @@ export default function PhotoManagementStudioPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#F2FCFC] hover:bg-[#DCECEF] text-[#073B4C] font-bold text-sm transition-colors border border-[#DCECEF]"
+            >
+              <Shield className="w-4 h-4 text-[#087E8B]" />
+              Retour Admin
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-[#073B4C] font-bold text-sm transition-colors border border-[#DCECEF]"
+            >
+              <Globe className="w-4 h-4 text-[#087E8B]" />
+              Voir le Site
+            </Link>
             <Link
               href="/carte"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold text-sm shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold text-sm shadow-xs transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voir la Carte en direct
+              Carte en direct
             </Link>
           </div>
         </div>
@@ -356,7 +385,7 @@ export default function PhotoManagementStudioPage() {
                         return (
                           <div
                             key={idx}
-                            onClick={() => !isMain && handleSetActivePhoto(spot.id, photoUrl)}
+                            onClick={() => !isMain && setConfirmPhotoChange({ spotId: spot.id, spotName: spot.name, photoUrl })}
                             className={`relative aspect-4/3 rounded-xl overflow-hidden border-2 cursor-pointer transition-all group ${
                               isMain 
                                 ? 'border-emerald-500 ring-2 ring-emerald-200' 
@@ -462,6 +491,60 @@ export default function PhotoManagementStudioPage() {
           })}
         </div>
       </div>
+
+      {/* Modal de Double Vérification pour le changement de photo */}
+      {confirmPhotoChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#073B4C]/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-3xl p-6 border border-[#DCECEF] shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#BFEFF2]/50 text-[#087E8B] flex items-center justify-center mx-auto">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-[#073B4C]">Changer la photo principale ?</h3>
+              <p className="text-xs text-[#6E858A]">
+                Voulez-vous définir ce cliché comme la nouvelle photo officielle pour <strong className="text-[#073B4C]">{confirmPhotoChange.spotName}</strong> ?
+              </p>
+            </div>
+
+            <div className="aspect-video w-full rounded-2xl overflow-hidden border border-[#DCECEF] bg-slate-100">
+              <img 
+                src={confirmPhotoChange.photoUrl} 
+                alt="Aperçu" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+
+            <div className="bg-[#F2FCFC] p-3 rounded-xl border border-[#DCECEF] text-xs text-[#087E8B] font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>Cette photo sera immédiatement visible sur tout le site et la carte.</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmPhotoChange(null)}
+                className="py-2.5 px-4 rounded-xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-xs"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const { spotId, photoUrl } = confirmPhotoChange;
+                  setConfirmPhotoChange(null);
+                  handleSetActivePhoto(spotId, photoUrl);
+                }}
+                className="py-2.5 px-4 rounded-xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-colors text-xs flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Check className="w-3.5 h-3.5" />
+                Confirmer & Publier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

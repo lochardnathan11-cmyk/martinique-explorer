@@ -18,7 +18,8 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronDown,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { PlaceItem } from '@/types';
@@ -41,6 +42,8 @@ export default function AdminDashboardPage() {
   const [editingPlace, setEditingPlace] = useState<PlaceItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingPlaceId, setDeletingPlaceId] = useState<string | null>(null);
+  const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
 
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -116,8 +119,7 @@ export default function AdminDashboardPage() {
 
   // ----- CRUD Operations ----- //
   
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveEdit = async () => {
     if (!editingPlace) return;
     
     try {
@@ -131,10 +133,22 @@ export default function AdminDashboardPage() {
       if (!res.ok) throw new Error(data.error);
       
       showSuccess(data.message);
+      setShowEditConfirm(false);
       setEditingPlace(null);
       fetchPlaces(); // Refresh list
     } catch (err: any) {
       showError(err.message);
+      setShowEditConfirm(false);
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlace) return;
+    if (isCreateModalOpen) {
+      handleCreate(e);
+    } else {
+      setShowEditConfirm(true);
     }
   };
 
@@ -257,6 +271,13 @@ export default function AdminDashboardPage() {
             </div>
             
             <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#073B4C] rounded-xl font-bold text-sm transition-colors border border-[#DCECEF]"
+              >
+                <Globe className="w-4 h-4 text-[#087E8B]" />
+                <span className="hidden sm:inline">Voir le site</span>
+              </Link>
               <Link
                 href="/admin/photos"
                 className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl font-bold text-sm transition-colors border border-indigo-100"
@@ -405,7 +426,7 @@ export default function AdminDashboardPage() {
               </button>
             </div>
             
-            <form onSubmit={isCreateModalOpen ? handleCreate : handleSaveEdit} className="p-6 overflow-y-auto flex-1 space-y-8">
+            <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto flex-1 space-y-8">
               {/* Informations Générales */}
               <div>
                 <h3 className="text-sm font-bold text-[#087E8B] uppercase tracking-wider mb-4 border-b border-[#DCECEF] pb-2">Informations Générales</h3>
@@ -561,7 +582,7 @@ export default function AdminDashboardPage() {
               </button>
               <button 
                 type="submit" 
-                onClick={isCreateModalOpen ? handleCreate : handleSaveEdit}
+                onClick={handleFormSubmit}
                 className="px-8 py-2.5 rounded-2xl bg-[#087E8B] hover:bg-[#087E8B]/90 text-white font-bold shadow-xs transition-colors flex items-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -572,27 +593,105 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Double Vérification : Modal de Suppression */}
       {deletingPlaceId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-deep/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white max-w-sm w-full rounded-3xl p-6 text-center border border-rose-100 shadow-xl">
-            <div className="w-16 h-16 rounded-full bg-rose-100 mx-auto flex items-center justify-center mb-4">
-              <Trash2 className="w-8 h-8 text-rose-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#073B4C]/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-4xl p-7 text-center border border-rose-200 shadow-2xl space-y-5">
+            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 mx-auto flex items-center justify-center shadow-inner">
+              <Trash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-[#073B4C] mb-2">Supprimer le lieu ?</h3>
-            <p className="text-sm text-[#6E858A] mb-6">Cette action supprimera définitivement le lieu de la base de données. Êtes-vous sûr ?</p>
-            <div className="flex gap-3">
+            
+            <div className="space-y-2">
+              <h3 className="text-2xl font-extrabold text-[#073B4C]">Double Vérification Requise</h3>
+              <p className="text-sm text-[#6E858A]">
+                Vous êtes sur le point de supprimer définitivement :
+              </p>
+              <div className="p-3 bg-rose-50 text-rose-900 font-bold rounded-2xl border border-rose-200 text-base">
+                {places.find(p => p.id === deletingPlaceId)?.name || deletingPlaceId}
+              </div>
+              <p className="text-xs text-rose-600 font-medium">
+                ⚠️ Cette action est irréversible et supprimera le lieu de la base de données Supabase.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-3 p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-[#DCECEF] cursor-pointer text-left transition-colors">
+              <input
+                type="checkbox"
+                checked={deleteConfirmChecked}
+                onChange={e => setDeleteConfirmChecked(e.target.checked)}
+                className="w-5 h-5 mt-0.5 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+              />
+              <span className="text-xs font-semibold text-[#073B4C] select-none leading-relaxed">
+                Je confirme vouloir supprimer définitivement ce lieu et ses photos du site et de la base de données.
+              </span>
+            </label>
+
+            <div className="flex gap-3 pt-2">
               <button 
-                onClick={() => setDeletingPlaceId(null)}
-                className="flex-1 py-3 rounded-2xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors"
+                onClick={() => {
+                  setDeletingPlaceId(null);
+                  setDeleteConfirmChecked(false);
+                }}
+                className="flex-1 py-3 rounded-2xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
               >
                 Annuler
               </button>
               <button 
-                onClick={() => handleDelete(deletingPlaceId)}
-                className="flex-1 py-3 rounded-2xl font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-soft"
+                disabled={!deleteConfirmChecked}
+                onClick={() => {
+                  if (deleteConfirmChecked) {
+                    handleDelete(deletingPlaceId);
+                    setDeleteConfirmChecked(false);
+                  }
+                }}
+                className={`flex-1 py-3 rounded-2xl font-bold text-white text-sm transition-all shadow-md ${
+                  deleteConfirmChecked 
+                    ? 'bg-rose-600 hover:bg-rose-700 cursor-pointer opacity-100 shadow-rose-200' 
+                    : 'bg-rose-300 cursor-not-allowed opacity-50'
+                }`}
               >
-                Oui, supprimer
+                Confirmer la suppression
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Double Vérification : Modal de Modification */}
+      {showEditConfirm && editingPlace && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#073B4C]/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-4xl p-7 text-center border border-[#DCECEF] shadow-2xl space-y-5">
+            <div className="w-16 h-16 rounded-3xl bg-[#BFEFF2]/50 text-[#087E8B] mx-auto flex items-center justify-center shadow-inner">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-2xl font-extrabold text-[#073B4C]">Confirmer les modifications ?</h3>
+              <p className="text-sm text-[#6E858A]">
+                Voulez-vous enregistrer et publier ces modifications pour :
+              </p>
+              <div className="p-3 bg-[#F2FCFC] text-[#087E8B] font-bold rounded-2xl border border-[#DCECEF] text-base">
+                {editingPlace.name} ({editingPlace.commune})
+              </div>
+              <p className="text-xs text-[#6E858A]">
+                Les nouvelles données seront immédiatement synchronisées avec Supabase et visibles par tous les visiteurs du site.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button 
+                type="button"
+                onClick={() => setShowEditConfirm(false)}
+                className="flex-1 py-3 rounded-2xl font-bold text-[#6E858A] bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
+              >
+                Revenir en arrière
+              </button>
+              <button 
+                type="button"
+                onClick={handleSaveEdit}
+                className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#087E8B] hover:bg-[#087E8B]/90 transition-all text-sm shadow-md shadow-[#087E8B]/20"
+              >
+                Oui, Enregistrer
               </button>
             </div>
           </div>
