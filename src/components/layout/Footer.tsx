@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 export default function Footer({ onNavigate }: { onNavigate: (section: string) => void }) {
   return (
@@ -94,11 +95,11 @@ export default function Footer({ onNavigate }: { onNavigate: (section: string) =
 
         {/* Legal Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-white/60 gap-4">
-          <p>© 2026 Martinique Explorer — Pensé pour la Martinique</p>
-          <div className="flex items-center gap-6">
-            <span>Données en temps réel</span>
-            <span>Éco-responsabilité</span>
-            <span>RGPD & Confidentialité</span>
+          <p>© {new Date().getFullYear()} Martinique Explorer — Pensé pour la Martinique</p>
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-center">
+            <Link href="/mentions-legales" className="hover:text-white transition-colors">Mentions Légales</Link>
+            <Link href="/politique-confidentialite" className="hover:text-white transition-colors">Politique de Confidentialité (RGPD)</Link>
+            <Link href="/cgu" className="hover:text-white transition-colors">CGU</Link>
           </div>
         </div>
       </div>
