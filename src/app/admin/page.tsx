@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -20,7 +20,10 @@ import {
   ChevronDown,
   X,
   Globe,
-  Sparkles
+  Sparkles,
+  UploadCloud,
+  Star,
+  Eye
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { PlaceItem } from '@/types';
@@ -207,6 +210,11 @@ export default function AdminDashboardPage() {
   const [coordsDetected, setCoordsDetected] = useState(false);
   const [showCommuneSuggestions, setShowCommuneSuggestions] = useState(false);
   const [isResolvingGmaps, setIsResolvingGmaps] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isDragOverPhoto, setIsDragOverPhoto] = useState(false);
+  const [showManualUrlInput, setShowManualUrlInput] = useState(false);
+
   const [autoFillNotice, setAutoFillNotice] = useState<{
     type: 'success' | 'warning' | 'info';
     title: string;
@@ -452,6 +460,84 @@ export default function AdminDashboardPage() {
       showError(err.message);
       setShowEditConfirm(false);
     }
+  };
+
+  const handlePhotoFiles = async (files: FileList | File[]) => {
+    if (!files || files.length === 0 || !editingPlace) return;
+
+    const fileList = Array.from(files);
+    const imageFiles = fileList.filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|avif|heic)$/i.test(f.name));
+
+    if (imageFiles.length === 0) {
+      showError('Veuillez sélectionner un fichier image valide (JPG, PNG, WEBP, AVIF).');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of imageFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('spotId', editingPlace.id || '');
+        formData.append('spotName', editingPlace.name || 'lieu');
+
+        const res = await fetch('/api/admin/spots/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (res.ok && data.photoUrl) {
+          uploadedUrls.push(data.photoUrl);
+        } else {
+          throw new Error(data.error || 'Erreur lors de l\'envoi du fichier');
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setEditingPlace(prev => {
+          if (!prev) return null;
+          const currentPhotos = Array.isArray(prev.photos) ? prev.photos : [];
+          return {
+            ...prev,
+            photos: [...uploadedUrls, ...currentPhotos]
+          };
+        });
+
+        showSuccess(`${uploadedUrls.length} photo(s) déposée(s) et ajoutée(s) avec succès !`);
+      }
+    } catch (err: any) {
+      showError(err.message || 'Erreur lors du téléversement de la photo');
+    } finally {
+      setIsUploadingPhoto(false);
+      setIsDragOverPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleSetPrimaryPhoto = (index: number) => {
+    if (!editingPlace || !editingPlace.photos) return;
+    const current = [...editingPlace.photos];
+    const [selected] = current.splice(index, 1);
+    setEditingPlace({
+      ...editingPlace,
+      photos: [selected, ...current]
+    });
+    showSuccess('Photo définie comme photo principale de couverture !');
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    if (!editingPlace || !editingPlace.photos) return;
+    const updated = editingPlace.photos.filter((_, i) => i !== index);
+    setEditingPlace({
+      ...editingPlace,
+      photos: updated
+    });
   };
 
   const handleConfirmSave = async () => {
@@ -1028,24 +1114,206 @@ export default function AdminDashboardPage() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 md:col-span-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs font-bold text-[#073B4C]">Photos (URLs séparées par des virgules)</span>
-                      <Link 
-                        href={`/admin/photos?spotId=${editingPlace.id}&search=${encodeURIComponent(editingPlace.name || '')}`} 
-                        target="_blank" 
-                        className="text-[#087E8B] hover:underline flex items-center gap-1.5 text-xs font-bold bg-[#BFEFF2]/40 hover:bg-[#BFEFF2]/70 px-2.5 py-1 rounded-lg transition-colors border border-[#087E8B]/20"
-                      >
-                        <ImageIcon className="w-3.5 h-3.5" /> Ouvrir le Studio Photos de ce lieu
-                      </Link>
+                  <div className="space-y-3 md:col-span-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-bold text-[#073B4C] flex items-center gap-1.5">
+                          <ImageIcon className="w-4 h-4 text-[#087E8B]" />
+                          Photos du Lieu & Couverture
+                        </span>
+                        <p className="text-[11px] text-[#6E858A]">
+                          Déposez vos images ici. La première photo servira d'illustration principale sur le site et la base de données.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Link 
+                          href={`/admin/photos?spotId=${editingPlace.id}&search=${encodeURIComponent(editingPlace.name || '')}`} 
+                          target="_blank" 
+                          className="text-[#087E8B] hover:underline flex items-center gap-1.5 text-xs font-bold bg-[#BFEFF2]/40 hover:bg-[#BFEFF2]/70 px-2.5 py-1.5 rounded-xl transition-colors border border-[#087E8B]/20 shrink-0"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> Ouvrir le Studio Photos
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setShowManualUrlInput(!showManualUrlInput)}
+                          className="text-xs font-bold text-[#6E858A] hover:text-[#073B4C] bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl transition-colors shrink-0 cursor-pointer"
+                        >
+                          {showManualUrlInput ? 'Masquer URLs' : 'URLs manuelles'}
+                        </button>
+                      </div>
                     </div>
-                    <textarea 
-                      rows={2}
-                      value={(editingPlace.photos || []).join(',\n')} 
-                      onChange={e => setEditingPlace({...editingPlace, photos: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-sm focus:outline-none focus:border-[#087E8B]"
-                      placeholder="/images/spots/photo1.jpg, https://example.com/photo2.jpg"
-                    />
+
+                    {/* Zone de Dépôt / Drag & Drop */}
+                    <div
+                      onDragOver={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOverPhoto(true);
+                      }}
+                      onDragEnter={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOverPhoto(true);
+                      }}
+                      onDragLeave={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOverPhoto(false);
+                      }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOverPhoto(false);
+                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                          handlePhotoFiles(e.dataTransfer.files);
+                        }
+                      }}
+                      onClick={() => {
+                        if (!isUploadingPhoto && fileInputRef.current) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className={`relative border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-2.5 ${
+                        isDragOverPhoto
+                          ? 'border-[#087E8B] bg-[#BFEFF2]/40 scale-[1.01] ring-4 ring-[#087E8B]/20 shadow-md'
+                          : 'border-[#DCECEF] hover:border-[#087E8B] bg-[#F2FCFC]/40 hover:bg-[#F2FCFC] shadow-2xs'
+                      }`}
+                    >
+                      <input 
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        multiple
+                        onChange={e => {
+                          if (e.target.files) {
+                            handlePhotoFiles(e.target.files);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      {isUploadingPhoto ? (
+                        <div className="py-4 flex flex-col items-center gap-2">
+                          <div className="w-8 h-8 border-3 border-[#087E8B] border-t-transparent rounded-full animate-spin" />
+                          <p className="text-xs font-bold text-[#087E8B]">Téléversement de la photo en cours...</p>
+                          <p className="text-[11px] text-[#6E858A]">La photo sera enregistrée sur le site et dans la base à la validation.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                            isDragOverPhoto ? 'bg-[#087E8B] text-white scale-110' : 'bg-[#BFEFF2]/60 text-[#087E8B]'
+                          }`}>
+                            <UploadCloud className="w-6 h-6" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-bold text-[#073B4C]">
+                              <span className="text-[#087E8B] underline underline-offset-2">Cliquez pour parcourir</span> ou déposez vos photos ici
+                            </p>
+                            <p className="text-xs text-[#6E858A]">
+                              JPG, PNG, WEBP, AVIF • Glissez directement vos fichiers depuis l'ordinateur
+                            </p>
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#DCECEF] text-[11px] font-bold text-[#087E8B] shadow-2xs">
+                            <Plus className="w-3.5 h-3.5" /> Déposer une photo
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Galerie des photos actuelles */}
+                    {editingPlace.photos && editingPlace.photos.length > 0 && (
+                      <div className="space-y-2 pt-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-[#073B4C]">
+                          <span>Photos associées ({editingPlace.photos.length}) :</span>
+                          <span className="text-[11px] text-[#6E858A]">⭐ La première photo est la couverture du lieu</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {editingPlace.photos.map((photoUrl, idx) => (
+                            <div 
+                              key={`${photoUrl}-${idx}`}
+                              className="group relative rounded-2xl overflow-hidden border-2 border-[#DCECEF] bg-slate-100 shadow-xs hover:border-[#087E8B] transition-all aspect-video sm:aspect-square"
+                            >
+                              <img 
+                                src={photoUrl} 
+                                alt={`Photo ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/images/spots/salines.jpg';
+                                }}
+                              />
+
+                              {/* Badge Photo Principale */}
+                              {idx === 0 ? (
+                                <div className="absolute top-2 left-2 bg-[#087E8B] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1">
+                                  <Star className="w-3 h-3 fill-amber-300 text-amber-300" /> Principale
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSetPrimaryPhoto(idx);
+                                  }}
+                                  title="Définir comme photo principale"
+                                  className="absolute top-2 left-2 bg-black/60 hover:bg-[#087E8B] text-white text-[10px] font-bold px-2 py-0.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Star className="w-3 h-3" /> Mettre en avant
+                                </button>
+                              )}
+
+                              {/* Boutons d'action overlay */}
+                              <div className="absolute top-2 right-2 flex items-center gap-1">
+                                <a
+                                  href={photoUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  title="Voir l'image en grand"
+                                  className="w-7 h-7 rounded-xl bg-black/60 hover:bg-black text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemovePhoto(idx);
+                                  }}
+                                  title="Supprimer cette photo"
+                                  className="w-7 h-7 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-center">
+                                <span className="text-[10px] text-white font-medium truncate block px-1">
+                                  {photoUrl.split('/').pop()}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Saisie textuelle avancée (URLs séparées par virgules) */}
+                    {showManualUrlInput && (
+                      <div className="pt-2 animate-fadeIn space-y-1.5">
+                        <label className="text-xs font-bold text-[#6E858A]">
+                          URLs manuelles (séparées par des virgules ou retours à la ligne) :
+                        </label>
+                        <textarea 
+                          rows={2}
+                          value={(editingPlace.photos || []).join(',\n')} 
+                          onChange={e => setEditingPlace({...editingPlace, photos: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})}
+                          className="w-full px-4 py-2.5 rounded-xl border border-[#DCECEF] bg-[#F2FCFC]/50 text-xs focus:outline-none focus:border-[#087E8B]"
+                          placeholder="/images/spots/photo1.jpg, https://example.com/photo2.jpg"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1241,9 +1509,21 @@ export default function AdminDashboardPage() {
                   </span>
                 )}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-[#6E858A]">Photos configurées :</span>
-                <span className="font-bold">{editingPlace.photos?.length || 0} photo(s)</span>
+              <div className="flex justify-between items-center border-t border-[#DCECEF]/60 pt-2">
+                <span className="font-semibold text-[#6E858A]">Photo principale :</span>
+                {editingPlace.photos && editingPlace.photos.length > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={editingPlace.photos[0]} 
+                      alt="" 
+                      className="w-9 h-9 object-cover rounded-xl border border-[#DCECEF] shadow-xs" 
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/spots/salines.jpg'; }}
+                    />
+                    <span className="font-bold text-[#087E8B]">{editingPlace.photos.length} photo(s)</span>
+                  </div>
+                ) : (
+                  <span className="text-amber-700 font-bold">Aucune photo</span>
+                )}
               </div>
             </div>
 
