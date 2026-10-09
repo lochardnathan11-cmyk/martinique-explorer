@@ -80,6 +80,27 @@ export default function InteractiveMartiniqueMap({
   const [activeThematic, setActiveThematic] = useState<string | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
 
+  // Read search query from URL on mount and auto-select
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      if (q) {
+        setSearchQuery(q);
+        const match = places.find(p => p.name.toLowerCase() === q.toLowerCase());
+        if (match) {
+          setSelectedPlace(match);
+          // Allow Leaflet to initialize before panning
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.panTo(match.coords, { animate: true, duration: 0.6 });
+            }
+          }, 600);
+        }
+      }
+    }
+  }, [places]);
+
   // Prebuilt itineraries according to spec
   const prebuiltRoutes = [
     {

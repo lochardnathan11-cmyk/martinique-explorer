@@ -584,7 +584,7 @@ export default function PlaceDetailView({
               Retrouvez {place.name} à tout moment parmi vos coups de cœur et affichez-le directement sur la carte de l&apos;île.
             </p>
             <a
-              href="/carte"
+              href={`/carte?q=${encodeURIComponent(place.name)}`}
               className="w-full py-2.5 rounded-xl bg-lagon-bg hover:bg-lagon-light/60 border border-lagon-border text-deep text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <Compass className="w-3.5 h-3.5 text-action" />
