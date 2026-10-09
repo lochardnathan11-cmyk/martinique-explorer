@@ -40,7 +40,6 @@ const PRIMARY_FILTERS = [
   { id: 'accommodation', label: 'Hôtels', icon: '🏨', color: '#2563EB' },
   { id: 'restaurant', label: 'Restos', icon: '🍽️', color: '#EA580C' },
   { id: 'activity', label: 'Activités', icon: '🏄', color: '#0891B2' },
-  { id: 'hidden_gem', label: 'Secrets', icon: '💎', color: '#DB2777' },
 ];
 
 // Distance calculation (Haversine formula in km)
