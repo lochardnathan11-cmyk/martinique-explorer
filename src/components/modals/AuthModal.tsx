@@ -120,15 +120,6 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
               <span className="text-xs font-semibold tracking-wider uppercase text-action">
                 Espace Membre & Administration
               </span>
-              {isSupabaseConfigured ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  ⚡ Supabase
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                  Démo Locale
-                </span>
-              )}
             </div>
             <h3 className="text-2xl font-semibold text-deep">
               {tab === 'login' ? 'Connexion' : 'Créer un compte'}
@@ -242,32 +233,6 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
                 </>
               )}
             </button>
-
-            {/* Quick 1-click Father shortcut */}
-            <div className="pt-3 border-t border-lagon-border space-y-2">
-              <span className="text-[11px] font-medium text-ink-muted block text-center">
-                Accès direct pour démonstration :
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleQuickPapaLogin}
-                  disabled={isLoading}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-sand-light hover:bg-sand-border text-deep text-xs font-semibold border border-sand-border transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <Shield className="w-3.5 h-3.5 text-coral" />
-                  <span>Accès Papa (Admin)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleQuickMemberLogin}
-                  disabled={isLoading}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-lagon-bg hover:bg-lagon-light/60 text-ink text-xs font-medium border border-lagon-border transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <span>Accès Membre</span>
-                </button>
-              </div>
-            </div>
           </form>
         )}
 
