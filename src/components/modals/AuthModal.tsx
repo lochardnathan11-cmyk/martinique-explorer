@@ -41,10 +41,8 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
       if (res.isAdmin) {
         closeModal();
         if (onAdminNavigate) onAdminNavigate();
-        router.push('/admin');
       } else {
         closeModal();
-        router.push('/compte');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur inattendue est survenue.');
@@ -61,7 +59,6 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     await new Promise(r => setTimeout(r, 2000));
     closeModal();
     if (onAdminNavigate) onAdminNavigate();
-    router.push('/admin');
   };
 
   const handleQuickMemberLogin = async () => {
@@ -71,7 +68,6 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     await login('voyageur@martinique-explorer.com');
     await new Promise(r => setTimeout(r, 2000));
     closeModal();
-    router.push('/compte');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
