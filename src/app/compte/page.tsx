@@ -21,6 +21,7 @@ import {
   Star
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import LogoIcon from '@/components/ui/LogoIcon';
 
 export default function UserAccountPage() {
   const router = useRouter();
@@ -130,18 +131,39 @@ export default function UserAccountPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-lagon-border sticky top-0 z-30 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer" title="Retour à l'accueil">
+              <div className="transition-transform duration-300 group-hover:scale-105 shrink-0 shadow-sm rounded-[14px]">
+                <LogoIcon className="w-10 h-10" />
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-lg sm:text-xl font-semibold tracking-tight text-deep">
+                  Martinique <span className="font-light text-action">Explorer</span>
+                </span>
+              </div>
+            </Link>
+
+            <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+
+            {/* Back Button */}
             <Link
               href="/"
-              className="w-10 h-10 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-ink-muted hover:text-deep transition-all border border-slate-200 shadow-sm"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-ink-muted hover:text-deep transition-all border border-slate-200 shadow-sm text-sm font-semibold"
+              title="Retour au site"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Retour au site
+            </Link>
+            {/* Mobile Back Button (Icon only) */}
+            <Link
+              href="/"
+              className="sm:hidden w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-ink-muted hover:text-deep transition-all border border-slate-200 shadow-sm"
               title="Retour au site"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <div>
-              <h1 className="text-xl font-bold text-deep leading-tight tracking-tight">Mon Espace</h1>
-              <span className="text-[11px] uppercase tracking-wider text-action font-semibold">Martinique Explorer</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
