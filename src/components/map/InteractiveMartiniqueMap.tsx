@@ -305,20 +305,24 @@ export default function InteractiveMartiniqueMap({
       }
 
       // Exact SVG Teardrop Pin where tip is mathematically anchored at (pinWidth/2, pinHeight)
-      const pinWidth = isSelected ? 34 : 28;
-      const pinHeight = isSelected ? 42 : 36;
+      const pinWidth = isSelected ? 46 : 28;
+      const pinHeight = isSelected ? 58 : 36;
       const anchorX = pinWidth / 2;
       const anchorY = pinHeight;
-      const fontSize = isSelected ? 15 : 12;
+      const fontSize = isSelected ? 20 : 12;
 
       const pinHtml = `
-        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: transform 0.15s ease; position: relative;" class="hover:scale-110">
-          <svg width="100%" height="100%" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
-            <path d="M14 36C14 36 28 22.5 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 22.5 14 36 14 36Z" fill="${pinColor}"/>
-            <circle cx="14" cy="14" r="11" fill="white"/>
-          </svg>
-          <div style="position: absolute; top: 0; left: 0; width: 100%; height: ${(pinWidth / 28) * 28}px; display: flex; align-items: center; justify-content: center; font-size: ${fontSize}px; line-height: 1; pointer-events: none;">
-            ${pinIcon}
+        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; z-index: ${isSelected ? 1000 : 1};" class="hover:scale-110">
+          ${isSelected ? `<div class="absolute animate-ping rounded-full" style="background-color: ${pinColor}; width: ${pinWidth * 0.8}px; height: ${pinWidth * 0.8}px; top: ${pinHeight - pinWidth * 0.8}px; left: ${pinWidth * 0.1}px; opacity: 0.6; z-index: 0;"></div>` : ''}
+          <div style="position: relative; z-index: 10; width: 100%; height: 100%;">
+            <svg width="100%" height="100%" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 ${isSelected ? 6 : 3}px ${isSelected ? 12 : 6}px rgba(0,0,0,0.4));">
+              <path d="M14 36C14 36 28 22.5 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 22.5 14 36 14 36Z" fill="${isSelected ? '#FDE047' : pinColor}"/>
+              <circle cx="14" cy="14" r="11" fill="white"/>
+              ${isSelected ? `<circle cx="14" cy="14" r="10.5" fill="none" stroke="${pinColor}" stroke-width="2"/>` : ''}
+            </svg>
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: ${(pinWidth / 28) * 28}px; display: flex; align-items: center; justify-content: center; font-size: ${fontSize}px; line-height: 1; pointer-events: none;">
+              ${pinIcon}
+            </div>
           </div>
         </div>
       `;
