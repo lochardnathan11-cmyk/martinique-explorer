@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Menu, X, Shield, User, LogOut } from 'lucide-react';
+import { Menu, X, Shield, User, LogOut, Loader2 } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
 import LanguageSelector from '@/components/layout/LanguageSelector';
 import { TRANSLATIONS } from '@/data/translations';
@@ -15,10 +16,22 @@ interface NavbarProps {
 
 export default function Navbar({ activeSection, setActiveSection }: NavbarProps) {
   const { language, openModal, setSelectedCategory, currentUser, logout } = useApp();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await new Promise(r => setTimeout(r, 600));
+    await logout();
+    setUserDropdownOpen(false);
+    setMobileOpen(false);
+    setIsLoggingOut(false);
+    router.push('/');
+  };
 
   // Fermer le menu si on clique à côté
   useEffect(() => {
@@ -209,14 +222,16 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
 
                       <button
                         type="button"
-                        onClick={() => {
-                          logout();
-                          setUserDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-xs text-coral hover:bg-coral-soft rounded-xl transition-colors flex items-center gap-2 mt-1 border-t border-lagon-border/70"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="w-full text-left px-3 py-2 text-xs text-coral hover:bg-coral-soft rounded-xl transition-colors flex items-center gap-2 mt-1 border-t border-lagon-border/70 disabled:opacity-50"
                       >
-                        <LogOut className="w-3.5 h-3.5 shrink-0" />
-                        <span>Se déconnecter</span>
+                        {isLoggingOut ? (
+                          <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" />
+                        ) : (
+                          <LogOut className="w-3.5 h-3.5 shrink-0" />
+                        )}
+                        <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
                       </button>
                     </div>
                   </>
@@ -286,10 +301,12 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                     <span>Mon Compte ({currentUser.name})</span>
                   </Link>
                   <button
-                    onClick={() => { logout(); setMobileOpen(false); }}
-                    className="text-coral hover:underline"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="text-coral hover:underline flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    Déconnexion
+                    {isLoggingOut && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {isLoggingOut ? 'Déconnexion...' : 'Déconnexion'}
                   </button>
                 </div>
                 {currentUser.role === 'admin' && (

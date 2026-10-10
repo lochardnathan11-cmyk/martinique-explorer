@@ -18,7 +18,8 @@ import {
   Edit3,
   Sparkles,
   Compass,
-  Star
+  Star,
+  Loader2
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import LogoIcon from '@/components/ui/LogoIcon';
@@ -40,6 +41,7 @@ export default function UserAccountPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'favorites' | 'badges'>('favorites');
   const [nameInput, setNameInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -80,6 +82,9 @@ export default function UserAccountPage() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
+    // Petit délai visuel pour voir le bouton charger
+    await new Promise(r => setTimeout(r, 600));
     await logout();
     router.push('/');
   };
@@ -87,33 +92,26 @@ export default function UserAccountPage() {
   // Récupérer les objets complets des lieux favoris
   const favoritePlaces = places.filter(place => favorites.includes(place.id));
 
+  // Redirection automatique si déconnecté (par ex via la navbar)
+  useEffect(() => {
+    if (!currentUser) {
+      router.push('/');
+    }
+  }, [currentUser, router]);
+
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#F2FCFC] flex items-center justify-center p-4">
-        <div className="bg-white p-8 sm:p-10 rounded-4xl shadow-xl text-center max-w-md w-full border border-[#DCECEF] space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-[#BFEFF2]/50 text-[#087E8B] mx-auto flex items-center justify-center">
-            <User className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-[#073B4C]">Espace Membre</h1>
-          <p className="text-sm text-[#6E858A]">
-            Connectez-vous pour retrouver vos coups de cœur, gérer vos favoris et accéder à votre profil.
-          </p>
-          <div className="pt-2">
-            <Link 
-              href="/"
-              className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#087E8B] text-white rounded-2xl font-bold hover:bg-[#087E8B]/90 transition-colors shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Retour à l'accueil pour se connecter
-            </Link>
-          </div>
+      <div className="min-h-screen bg-lagon-soft flex items-center justify-center p-4">
+        <div className="bg-white p-8 sm:p-10 rounded-[32px] shadow-card text-center max-w-md w-full border border-slate-100 space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-action mx-auto" />
+          <h1 className="text-xl font-bold text-deep">Redirection en cours...</h1>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F2FCFC] text-[#17343D] pb-24">
+    <div className="min-h-screen bg-lagon-soft text-ink pb-24">
       {/* Toast Notifications */}
       {successMsg && (
         <div className="fixed top-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-xl bg-emerald-600 text-white border border-emerald-500 flex items-center gap-3 animate-fadeIn">
@@ -178,10 +176,20 @@ export default function UserAccountPage() {
             )}
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-ink-muted hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl font-bold text-xs sm:text-sm transition-all border border-slate-200 shadow-sm cursor-pointer"
+              disabled={isLoggingOut}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-ink-muted hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl font-bold text-xs sm:text-sm transition-all border border-slate-200 shadow-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
+              {isLoggingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+                  <span className="hidden sm:inline text-rose-500">Déconnexion...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Déconnexion</span>
+                </>
+              )}
             </button>
           </div>
         </div>
