@@ -253,7 +253,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             localStorage.setItem('mq_current_user', JSON.stringify(user));
           } catch (e) {}
 
-          addPoints(20);
           return { success: true, isAdmin: isUserAdmin };
         }
       } catch (err: any) {
@@ -275,7 +274,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem('mq_current_user', JSON.stringify(user));
     } catch (e) {}
 
-    addPoints(20);
     return { success: true, isAdmin };
   };
 
@@ -297,6 +295,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return { success: false, error: data.error || 'Erreur lors de la création du compte' };
         }
 
+        addPoints(50);
         // Connexion automatique immédiate après création
         const loginRes = await login(clean, password);
         return { success: loginRes.success, error: loginRes.error };
