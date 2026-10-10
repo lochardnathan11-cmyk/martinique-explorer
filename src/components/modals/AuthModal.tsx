@@ -191,9 +191,38 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
             </div>
           )}
 
-          {/* Tab 1: Login Form */}
-          {tab === 'login' && !successMsg && (
-            <form onSubmit={handleLogin} className="space-y-4.5 animate-fadeIn">
+          {/* Unified Form with Fluid Transitions */}
+          {!successMsg && (
+            <form onSubmit={tab === 'login' ? handleLogin : handleSignup} className="space-y-4.5">
+              
+              {/* Name Field (Only for Signup, animates height smoothly) */}
+              <div 
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                  tab === 'signup' ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="space-y-1.5 pb-4.5">
+                    <label className="block text-xs font-semibold text-deep pl-1">
+                      Prénom & Nom
+                    </label>
+                    <div className="relative group">
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Ex : Aurélie Martin"
+                        className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-ink placeholder:text-slate-400 focus:border-action focus:ring-4 focus:ring-action/10 focus:bg-white transition-all outline-none"
+                        required={tab === 'signup'}
+                        tabIndex={tab === 'signup' ? 0 : -1}
+                      />
+                      <User className="w-4 h-4 text-slate-400 group-focus-within:text-action transition-colors absolute left-4 top-1/2 -translate-y-1/2" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Field */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-deep pl-1">
                   Adresse e-mail
@@ -211,10 +240,14 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
                 </div>
               </div>
 
+              {/* Password Field */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between pl-1 pr-1">
                   <label className="block text-xs font-semibold text-deep">
-                    Mot de passe
+                    Mot de passe 
+                    <span className={`transition-opacity duration-300 ${tab === 'signup' ? 'opacity-100' : 'opacity-0'} font-normal text-ink-muted`}>
+                      {' '}(6 caractères min.)
+                    </span>
                   </label>
                 </div>
                 <div className="relative group">
@@ -225,98 +258,32 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
                     placeholder="••••••••"
                     className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-ink placeholder:text-slate-400 focus:border-action focus:ring-4 focus:ring-action/10 focus:bg-white transition-all outline-none"
                     required
+                    minLength={tab === 'signup' ? 6 : undefined}
                   />
                   <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-action transition-colors absolute left-4 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2 py-3.5 rounded-2xl bg-action hover:bg-action-hover text-white text-sm font-semibold transition-all shadow-lg shadow-action/30 hover:shadow-xl hover:shadow-action/40 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                className={`w-full mt-2 py-3.5 rounded-2xl text-white text-sm font-semibold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed ${
+                  tab === 'login' 
+                    ? 'bg-action hover:bg-action-hover shadow-action/30 hover:shadow-xl hover:shadow-action/40' 
+                    : 'bg-deep hover:bg-deep-muted shadow-deep/30 hover:shadow-xl hover:shadow-deep/40'
+                }`}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Connexion...</span>
+                    <span>{tab === 'login' ? 'Connexion...' : 'Création en cours...'}</span>
                   </>
                 ) : (
                   <>
-                    <span>Accéder à mon espace</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>{tab === 'login' ? 'Accéder à mon espace' : 'Rejoindre la communauté'}</span>
+                    {tab === 'login' && <ArrowRight className="w-4 h-4" />}
                   </>
-                )}
-              </button>
-            </form>
-          )}
-
-          {/* Tab 2: Signup Form */}
-          {tab === 'signup' && !successMsg && (
-            <form onSubmit={handleSignup} className="space-y-4.5 animate-fadeIn">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-deep pl-1">
-                  Prénom & Nom
-                </label>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="Ex : Aurélie Martin"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-ink placeholder:text-slate-400 focus:border-action focus:ring-4 focus:ring-action/10 focus:bg-white transition-all outline-none"
-                    required
-                  />
-                  <User className="w-4 h-4 text-slate-400 group-focus-within:text-action transition-colors absolute left-4 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-deep pl-1">
-                  Adresse e-mail
-                </label>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="exemple@email.com"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-ink placeholder:text-slate-400 focus:border-action focus:ring-4 focus:ring-action/10 focus:bg-white transition-all outline-none"
-                    required
-                  />
-                  <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-action transition-colors absolute left-4 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-deep pl-1">
-                  Mot de passe <span className="font-normal text-ink-muted">(6 caractères min.)</span>
-                </label>
-                <div className="relative group">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-ink placeholder:text-slate-400 focus:border-action focus:ring-4 focus:ring-action/10 focus:bg-white transition-all outline-none"
-                    required
-                    minLength={6}
-                  />
-                  <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-action transition-colors absolute left-4 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full mt-2 py-3.5 rounded-2xl bg-deep hover:bg-deep-hover text-white text-sm font-semibold transition-all shadow-lg shadow-deep/30 hover:shadow-xl hover:shadow-deep/40 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Création en cours...</span>
-                  </>
-                ) : (
-                  <span>Rejoindre la communauté</span>
                 )}
               </button>
             </form>
