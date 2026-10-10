@@ -312,12 +312,14 @@ export default function InteractiveMartiniqueMap({
       const fontSize = isSelected ? 15 : 12;
 
       const pinHtml = `
-        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: transform 0.15s ease;" class="hover:scale-110">
-          <svg width="${pinWidth}" height="${pinHeight}" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: transform 0.15s ease; position: relative;" class="hover:scale-110">
+          <svg width="100%" height="100%" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
             <path d="M14 36C14 36 28 22.5 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 22.5 14 36 14 36Z" fill="${pinColor}"/>
             <circle cx="14" cy="14" r="11" fill="white"/>
-            <text x="14" y="19" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central">${pinIcon}</text>
           </svg>
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: ${(pinWidth / 28) * 28}px; display: flex; align-items: center; justify-content: center; font-size: ${fontSize}px; line-height: 1; pointer-events: none;">
+            ${pinIcon}
+          </div>
         </div>
       `;
 
