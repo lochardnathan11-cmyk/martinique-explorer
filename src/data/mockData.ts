@@ -1335,7 +1335,7 @@ export const BADGES_LIST: UserBadge[] = [
     name: 'Explorateur Madinina',
     description: 'A visité et commenté plus de 5 plages et spots différents',
     icon: '🧭',
-    unlocked: true,
+    unlocked: false,
     requiredPoints: 50
   },
   {
@@ -1343,7 +1343,7 @@ export const BADGES_LIST: UserBadge[] = [
     name: 'Expert Plages',
     description: 'A partagé plus de 3 états de plage ou conditions en direct',
     icon: '🏖️',
-    unlocked: true,
+    unlocked: false,
     requiredPoints: 100
   },
   {
@@ -1359,7 +1359,7 @@ export const BADGES_LIST: UserBadge[] = [
     name: 'Ami des Tortues',
     description: 'A rédigé un guide respectueux du snorkeling responsable',
     icon: '🐢',
-    unlocked: true,
+    unlocked: false,
     requiredPoints: 150
   },
   {
