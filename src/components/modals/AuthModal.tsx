@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useRouter } from 'next/navigation';
 import { X, Shield, User, Mail, Lock, CheckCircle2, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabaseClient';
 
@@ -11,6 +12,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
   const { closeModal, login, signup } = useApp();
+  const router = useRouter();
   const [tab, setTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,11 +41,13 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
         setTimeout(() => {
           closeModal();
           if (onAdminNavigate) onAdminNavigate();
+          router.push('/admin');
         }, 900);
       } else {
         setSuccessMsg('Connexion réussie ! Bon retour sur Martinique Explorer.');
         setTimeout(() => {
           closeModal();
+          router.push('/compte');
         }, 900);
       }
     } catch (err: any) {
@@ -64,6 +68,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setTimeout(() => {
       closeModal();
       if (onAdminNavigate) onAdminNavigate();
+      router.push('/admin');
     }, 800);
   };
 
@@ -76,6 +81,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setSuccessMsg('Connecté en tant que membre !');
     setTimeout(() => {
       closeModal();
+      router.push('/compte');
     }, 800);
   };
 
@@ -102,6 +108,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
       setSuccessMsg(`Bienvenue ${name} ! Votre compte membre a été créé.`);
       setTimeout(() => {
         closeModal();
+        router.push('/compte');
       }, 900);
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur inattendue est survenue.');
