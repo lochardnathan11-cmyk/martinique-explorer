@@ -84,7 +84,7 @@ export default function UserAccountPage() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     // Petit délai visuel pour voir le bouton charger
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 2000));
     await logout();
     router.push('/');
   };

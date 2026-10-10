@@ -36,6 +36,8 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
         return;
       }
 
+      await new Promise(r => setTimeout(r, 2000));
+      
       if (res.isAdmin) {
         closeModal();
         if (onAdminNavigate) onAdminNavigate();
@@ -56,6 +58,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setErrorMsg(null);
     setIsLoading(true);
     await login('papa@martinique-explorer.com', 'admin');
+    await new Promise(r => setTimeout(r, 2000));
     closeModal();
     if (onAdminNavigate) onAdminNavigate();
     router.push('/admin');
@@ -66,6 +69,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setErrorMsg(null);
     setIsLoading(true);
     await login('voyageur@martinique-explorer.com');
+    await new Promise(r => setTimeout(r, 2000));
     closeModal();
     router.push('/compte');
   };
@@ -90,6 +94,7 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
         return;
       }
 
+      await new Promise(r => setTimeout(r, 2000));
       closeModal();
       router.push('/compte');
     } catch (err: any) {

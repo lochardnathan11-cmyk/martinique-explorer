@@ -25,7 +25,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 2000));
     await logout();
     setUserDropdownOpen(false);
     setMobileOpen(false);
