@@ -37,22 +37,15 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
       }
 
       if (res.isAdmin) {
-        setSuccessMsg('Bienvenue Papa ! Connexion Administrateur confirmée.');
-        setTimeout(() => {
-          closeModal();
-          if (onAdminNavigate) onAdminNavigate();
-          router.push('/admin');
-        }, 900);
+        closeModal();
+        if (onAdminNavigate) onAdminNavigate();
+        router.push('/admin');
       } else {
-        setSuccessMsg('Connexion réussie ! Bon retour sur Martinique Explorer.');
-        setTimeout(() => {
-          closeModal();
-          router.push('/compte');
-        }, 900);
+        closeModal();
+        router.push('/compte');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur inattendue est survenue.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -62,14 +55,10 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setPassword('admin');
     setErrorMsg(null);
     setIsLoading(true);
-    const res = await login('papa@martinique-explorer.com', 'admin');
-    setIsLoading(false);
-    setSuccessMsg('Bienvenue Papa ! Accès complet à votre Espace Gestion Zéro Code.');
-    setTimeout(() => {
-      closeModal();
-      if (onAdminNavigate) onAdminNavigate();
-      router.push('/admin');
-    }, 800);
+    await login('papa@martinique-explorer.com', 'admin');
+    closeModal();
+    if (onAdminNavigate) onAdminNavigate();
+    router.push('/admin');
   };
 
   const handleQuickMemberLogin = async () => {
@@ -77,12 +66,8 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
     setErrorMsg(null);
     setIsLoading(true);
     await login('voyageur@martinique-explorer.com');
-    setIsLoading(false);
-    setSuccessMsg('Connecté en tant que membre !');
-    setTimeout(() => {
-      closeModal();
-      router.push('/compte');
-    }, 800);
+    closeModal();
+    router.push('/compte');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -105,14 +90,10 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
         return;
       }
 
-      setSuccessMsg(`Bienvenue ${name} ! Votre compte membre a été créé.`);
-      setTimeout(() => {
-        closeModal();
-        router.push('/compte');
-      }, 900);
+      closeModal();
+      router.push('/compte');
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur inattendue est survenue.');
-    } finally {
       setIsLoading(false);
     }
   };
