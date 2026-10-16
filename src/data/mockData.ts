@@ -1227,18 +1227,18 @@ export const INITIAL_POSTS: SocialPost[] = [
     author: {
       name: 'Yannick B.',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-      badge: 'Guide Local 🌟',
+      badge: 'Habitant',
       isLocal: true
     },
     timestamp: 'Il y a 2h',
-    content: 'Coucher de soleil grandiose ce soir au Diamant après une session baignade magique. Pas un gramme de sargasses côté sud caraïbe cette semaine, profitez-en les amis ! 🌅🌊',
+    content: 'Fin d’après-midi très calme au Diamant aujourd’hui. La houle est retombée sur la partie ouest de la plage et il n’y a aucune sargasse côté sud-caraïbe cette semaine.',
     location: 'Le Diamant',
     photos: [
       'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=800&q=80'
     ],
     likes: 42,
     commentsCount: 6,
-    tags: ['#Martinique', '#LeDiamant', '#Sunset', '#BonPlan'],
+    tags: ['#Plage', '#LeDiamant'],
     category: 'plage'
   },
   {
@@ -1246,34 +1246,34 @@ export const INITIAL_POSTS: SocialPost[] = [
     author: {
       name: 'Chloé & Thomas',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      badge: 'Explorateur 🧭',
+      badge: 'Voyageurs',
       isLocal: false
     },
     timestamp: 'Il y a 4h',
-    content: 'On a suivi la recommandation de l\'application pour Anse Dufour à 8h du matin : incroyable ! Nous avons nagé avec deux tortues vertes pendant 45 minutes dans un silence complet. Merci à la communauté pour le conseil de venir tôt !',
+    content: 'Arrivés à Anse Dufour à 7h45 ce matin : l’eau était comme un miroir et il restait encore de la place sur le petit parking. Deux tortues vertes broutaient tranquillement sur l’herbier au centre de l’anse.',
     location: 'Anse Dufour',
     photos: [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80'
     ],
     likes: 67,
     commentsCount: 11,
-    tags: ['#Tortues', '#Snorkeling', '#MadininaMagic'],
+    tags: ['#Tortues', '#Snorkeling'],
     category: 'conseil'
   },
   {
     id: 'post-3',
     author: {
-      name: 'Restaurant Ti Sable',
+      name: 'Ti Sable · Grande Anse',
       avatar: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=150&q=80',
-      badge: 'Pro Vérifié ✅',
+      badge: 'Adresse locale',
       isLocal: true
     },
     timestamp: 'Il y a 6h',
-    content: 'Ce soir c\'est soirée jazz acoustique pieds dans le sable à Grande Anse ! Arrivage direct de thon rouge et langoustes des pêcheurs locaux. Réservez votre table face au couchant ! 🎷🦞',
-    location: 'Les Anses d\'Arlet',
+    content: 'Retour de pêche ce matin aux Anses-d’Arlet avec de belles dorades coryphènes et langoustes fraîches. Concert acoustique sur la plage à partir de 18h30 pour le coucher du soleil.',
+    location: 'Les Anses-d\'Arlet',
     likes: 89,
     commentsCount: 14,
-    tags: ['#Gastronomie', '#Soiree', '#LiveMusic'],
+    tags: ['#Gastronomie', '#BonPlan'],
     category: 'restaurant'
   }
 ];
