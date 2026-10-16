@@ -276,6 +276,8 @@ export default function InteractiveMartiniqueMap({
       return true;
     });
 
+    const hasSelection = Boolean(selectedPlace);
+
     filtered.forEach((place) => {
       const isSelected = selectedPlace?.id === place.id;
       const isHidden = place.isHiddenGem || place.category === 'hidden_gem';
@@ -305,20 +307,33 @@ export default function InteractiveMartiniqueMap({
       }
 
       // Exact SVG Teardrop Pin where tip is mathematically anchored at (pinWidth/2, pinHeight)
-      const pinWidth = isSelected ? 46 : 28;
-      const pinHeight = isSelected ? 58 : 36;
+      const pinWidth = isSelected ? 48 : 28;
+      const pinHeight = isSelected ? 60 : 36;
       const anchorX = pinWidth / 2;
       const anchorY = pinHeight;
-      const fontSize = isSelected ? 20 : 12;
+      const fontSize = isSelected ? 21 : 12;
+      const unselectedStyle = hasSelection && !isSelected
+        ? 'opacity: 0.45; filter: saturate(0.6); transform: scale(0.9);'
+        : 'opacity: 1;';
+
+      const safeName = place.name.replace(/"/g, '&quot;');
 
       const pinHtml = `
-        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; z-index: ${isSelected ? 1000 : 1};" class="hover:scale-110">
-          ${isSelected ? `<div class="absolute animate-ping rounded-full" style="background-color: ${pinColor}; width: ${pinWidth * 0.8}px; height: ${pinWidth * 0.8}px; top: ${pinHeight - pinWidth * 0.8}px; left: ${pinWidth * 0.1}px; opacity: 0.6; z-index: 0;"></div>` : ''}
+        <div style="width: ${pinWidth}px; height: ${pinHeight}px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; ${unselectedStyle}" class="hover:scale-110 hover:!opacity-100">
+          ${isSelected ? `
+            <!-- Floating label pill above selected pin -->
+            <div style="position: absolute; bottom: ${pinHeight + 8}px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #073B4C; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; box-shadow: 0 6px 16px rgba(0,0,0,0.45); border: 2px solid #FFFFFF; display: flex; align-items: center; gap: 5px; pointer-events: none; z-index: 30;">
+              <span style="width: 7px; height: 7px; border-radius: 9999px; background: #38BDF8; display: inline-block; box-shadow: 0 0 6px #38BDF8;"></span>
+              <span>${safeName}</span>
+            </div>
+            <!-- Ground target rings at the exact pin tip -->
+            <div class="animate-ping" style="position: absolute; width: 44px; height: 44px; left: ${anchorX - 22}px; top: ${anchorY - 22}px; border-radius: 9999px; background-color: ${pinColor}; opacity: 0.55; pointer-events: none; z-index: 1;"></div>
+            <div style="position: absolute; width: 22px; height: 22px; left: ${anchorX - 11}px; top: ${anchorY - 11}px; border-radius: 9999px; background-color: rgba(255,255,255,0.35); border: 2px solid #FFFFFF; box-shadow: 0 0 12px ${pinColor}; pointer-events: none; z-index: 2;"></div>
+          ` : ''}
           <div style="position: relative; z-index: 10; width: 100%; height: 100%;">
-            <svg width="100%" height="100%" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 ${isSelected ? 6 : 3}px ${isSelected ? 12 : 6}px rgba(0,0,0,0.4));">
-              <path d="M14 36C14 36 28 22.5 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 22.5 14 36 14 36Z" fill="${isSelected ? '#FDE047' : pinColor}"/>
-              <circle cx="14" cy="14" r="11" fill="white"/>
-              ${isSelected ? `<circle cx="14" cy="14" r="10.5" fill="none" stroke="${pinColor}" stroke-width="2"/>` : ''}
+            <svg width="100%" height="100%" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 ${isSelected ? 8 : 3}px ${isSelected ? 14 : 6}px rgba(0,0,0,${isSelected ? 0.55 : 0.3}));">
+              <path d="M14 36C14 36 28 22.5 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 22.5 14 36 14 36Z" fill="${pinColor}" ${isSelected ? 'stroke="#FFFFFF" stroke-width="2"' : ''}/>
+              <circle cx="14" cy="14" r="10.5" fill="white"/>
             </svg>
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: ${(pinWidth / 28) * 28}px; display: flex; align-items: center; justify-content: center; font-size: ${fontSize}px; line-height: 1; pointer-events: none;">
               ${pinIcon}
@@ -335,12 +350,19 @@ export default function InteractiveMartiniqueMap({
         popupAnchor: [0, -anchorY]
       });
 
-      const marker = L.marker(place.coords, { icon: customIcon });
+      const marker = L.marker(place.coords, {
+        icon: customIcon,
+        zIndexOffset: isSelected ? 2000 : 0
+      });
 
       marker.on('click', () => {
         setSelectedPlace(place);
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.panTo(place.coords, { animate: true, duration: 0.6 });
+          const currentZoom = mapInstanceRef.current.getZoom();
+          mapInstanceRef.current.flyTo(place.coords, Math.max(currentZoom, 13), {
+            animate: true,
+            duration: 0.7
+          });
         }
       });
 
@@ -574,7 +596,12 @@ export default function InteractiveMartiniqueMap({
               {/* Bouton pour revenir à la liste */}
               <button
                 type="button"
-                onClick={() => setSelectedPlace(null)}
+                onClick={() => {
+                  setSelectedPlace(null);
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.flyTo([14.6415, -61.0242], 10, { animate: true, duration: 0.7 });
+                  }
+                }}
                 className="absolute top-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white text-deep text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-soft cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
@@ -738,7 +765,11 @@ export default function InteractiveMartiniqueMap({
                   onClick={() => {
                     setSelectedPlace(place);
                     if (mapInstanceRef.current) {
-                      mapInstanceRef.current.panTo(place.coords, { animate: true, duration: 0.6 });
+                      const currentZoom = mapInstanceRef.current.getZoom();
+                      mapInstanceRef.current.flyTo(place.coords, Math.max(currentZoom, 13), {
+                        animate: true,
+                        duration: 0.7
+                      });
                     }
                   }}
                   className="group flex items-center gap-3 p-2.5 rounded-2xl hover:bg-lagon-bg/70 border border-transparent hover:border-lagon-border transition-all cursor-pointer"
