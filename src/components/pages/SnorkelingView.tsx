@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { PlaceItem } from '@/types';
 import PlaceCard from '@/components/places/PlaceCard';
-import { Compass, Sparkles, ShieldCheck, Search, Eye, Clock, Waves, X } from 'lucide-react';
+import Marine3DViewer from '@/components/snorkeling/Marine3DViewer';
+import { Compass, ShieldCheck, Search, Eye, X } from 'lucide-react';
 
 interface SnorkelingViewProps {
   places: PlaceItem[];
@@ -13,7 +14,7 @@ interface SnorkelingViewProps {
 export default function SnorkelingView({ places, onOpenMap }: SnorkelingViewProps) {
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFauna, setSelectedFauna] = useState<string | null>(null);
+  const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>('green_turtle');
 
   const snorkelingPlaces = places.filter(
     p =>
@@ -23,51 +24,6 @@ export default function SnorkelingView({ places, onOpenMap }: SnorkelingViewProp
       p.tags?.includes('Tortues marines') ||
       p.tags?.includes('Fonds marins')
   );
-
-  const marineFauna = [
-    {
-      name: 'Tortue Verte',
-      icon: '🐢',
-      spots: 'Anse Dufour, Grande Anse',
-      bestTime: '7h30 – 9h30 & 16h30',
-      keyword: 'tortue',
-      desc: 'Broute paisiblement les herbiers marins entre 1,5m et 4m de profondeur à quelques coups de palmes du rivage.',
-    },
-    {
-      name: 'Tortue Imbriquée',
-      icon: '🐚',
-      spots: 'Anse Noire, Rocher du Diamant',
-      bestTime: 'Toute la matinée',
-      keyword: 'cora',
-      desc: 'Reconnaissable à son bec crochu, elle évolue le long des tombants rocheux riches en éponges et coraux.',
-    },
-    {
-      name: 'Raie Pastenague & Léopard',
-      icon: '🪁',
-      spots: 'Anse Noire, Sainte-Luce',
-      bestTime: 'Matin calme',
-      keyword: 'anse',
-      desc: 'Se repose sur les fonds sableux clairs en bordure d’herbier. Observez-la en planant calmement en surface.',
-    },
-    {
-      name: 'Perroquets & Chirurgiens',
-      icon: '🐠',
-      spots: 'Pointe Borgnèse, Anse Figuier',
-      bestTime: '10h00 – 15h00 (Plein soleil)',
-      keyword: 'snorkeling',
-      desc: 'Des centaines de poissons multicolores qui broutent le corail sous les rayons du soleil zénithal.',
-    },
-    {
-      name: 'Gorgones, Poulpes & Étoiles',
-      icon: '🪸',
-      spots: 'Criques des Anses-d’Arlet, Carbet',
-      bestTime: 'Mer d’huile',
-      keyword: '',
-      desc: 'Éponges barriques géantes, oursins diadèmes, étoiles de mer coussins et petits poulpes camouflés dans la roche.',
-    },
-  ];
-
-  const activeFaunaObj = marineFauna.find(f => f.name === selectedFauna);
 
   const filtered = snorkelingPlaces.filter(p => {
     if (searchTerm.trim()) {
@@ -80,21 +36,16 @@ export default function SnorkelingView({ places, onOpenMap }: SnorkelingViewProp
       if (!match) return false;
     }
 
-    if (activeFaunaObj && activeFaunaObj.keyword) {
-      const kw = activeFaunaObj.keyword.toLowerCase();
-      const matchFauna =
-        p.name.toLowerCase().includes(kw) ||
-        p.description.toLowerCase().includes(kw) ||
-        p.tags?.some(t => t.toLowerCase().includes(kw)) ||
-        p.observableFauna?.some(f => f.toLowerCase().includes(kw));
-      if (!matchFauna) return false;
-    }
-
     if (difficultyFilter === 'all') return true;
     if (difficultyFilter === 'beginner')
       return p.spotDifficulty === 'Débutant' || p.tags?.includes('Famille') || p.tags?.includes('Tortues');
     if (difficultyFilter === 'reef')
-      return p.spotDifficulty === 'Intermédiaire' || p.spotDifficulty === 'Confirmé' || p.tags?.includes('Fonds marins') || p.tags?.includes('Spot Secret');
+      return (
+        p.spotDifficulty === 'Intermédiaire' ||
+        p.spotDifficulty === 'Confirmé' ||
+        p.tags?.includes('Fonds marins') ||
+        p.tags?.includes('Spot Secret')
+      );
     return true;
   });
 
@@ -161,73 +112,11 @@ export default function SnorkelingView({ places, onOpenMap }: SnorkelingViewProp
         </div>
       </div>
 
-      {/* 2. INTERACTIVE MARINE BIODIVERSITY GUIDE */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-action block">
-              Guide de la faune sous-marine
-            </span>
-            <h2 className="text-xl sm:text-2xl font-semibold text-deep">
-              Que pouvez-vous observer sous l&apos;eau aujourd&apos;hui ?
-            </h2>
-          </div>
-          {selectedFauna && (
-            <button
-              type="button"
-              onClick={() => setSelectedFauna(null)}
-              className="text-xs font-semibold text-action hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span>Réinitialiser l&apos;espèce</span>
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-          {marineFauna.map((item, idx) => {
-            const isSelected = selectedFauna === item.name;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setSelectedFauna(isSelected ? null : item.name)}
-                className={`text-left p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
-                  isSelected
-                    ? 'bg-deep text-white border-deep shadow-card scale-[1.01]'
-                    : 'bg-white hover:bg-lagon-bg/50 border-lagon-border text-ink hover:border-action/50 shadow-2xs'
-                }`}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-3xl">{item.icon}</span>
-                    <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        isSelected ? 'bg-sky-400/20 text-sky-200' : 'bg-lagon-bg text-action'
-                      }`}
-                    >
-                      {item.bestTime}
-                    </span>
-                  </div>
-                  <h4 className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-deep'}`}>
-                    {item.name}
-                  </h4>
-                  <p className={`text-xs leading-relaxed ${isSelected ? 'text-white/80' : 'text-ink-muted'}`}>
-                    {item.desc}
-                  </p>
-                </div>
-                <div
-                  className={`pt-2 border-t text-[11px] font-medium ${
-                    isSelected ? 'border-white/15 text-amber-300' : 'border-lagon-border/70 text-deep'
-                  }`}
-                >
-                  📍 {item.spots}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* 2. INTERACTIVE 3D ROTATABLE MARINE OBSERVATORY */}
+      <Marine3DViewer
+        selectedSpeciesId={selectedSpeciesId}
+        onSelectSpecies={setSelectedSpeciesId}
+      />
 
       {/* 3. ECO-RESPONSIBLE CHARTER + SEARCH & FILTERS */}
       <div className="bg-white rounded-3xl border border-lagon-border p-6 sm:p-8 shadow-soft space-y-6">
@@ -308,13 +197,12 @@ export default function SnorkelingView({ places, onOpenMap }: SnorkelingViewProp
       ) : (
         <div className="py-20 text-center bg-white rounded-3xl border border-lagon-border p-8 space-y-4">
           <p className="text-base text-deep font-semibold">Aucun spot ne correspond à votre filtre</p>
-          <p className="text-xs text-ink-muted">Réinitialisez la recherche ou l&apos;espèce sélectionnée pour voir tous les spots.</p>
+          <p className="text-xs text-ink-muted">Réinitialisez la recherche pour voir tous les spots.</p>
           <button
             type="button"
             onClick={() => {
               setDifficultyFilter('all');
               setSearchTerm('');
-              setSelectedFauna(null);
             }}
             className="px-5 py-2.5 rounded-2xl bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors cursor-pointer"
           >
