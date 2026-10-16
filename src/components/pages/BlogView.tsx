@@ -113,8 +113,8 @@ export default function BlogView({ onOpenArticle, onNavigateHome }: BlogViewProp
       <section className="relative rounded-3xl overflow-hidden bg-slate-900 text-white border border-slate-200/80 shadow-xs">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1800&q=80"
-            alt="Voiles et littoral de Martinique"
+            src="/images/spots/morne-gommier.jpg"
+            alt="Panorama côtier de la Martinique"
             className="w-full h-full object-cover opacity-35"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/80 to-slate-900/45" />

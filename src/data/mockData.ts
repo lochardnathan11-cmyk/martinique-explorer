@@ -1273,7 +1273,7 @@ export const INITIAL_POSTS: SocialPost[] = [
     content: 'Fin de matinée lumineuse face au Rocher du Diamant. La houle s’est bien calmée sur l’extrémité ouest vers Dizac, l’eau est à 28°C et il n’y a aucune trace de sargasse sur toute la côte Sud-Caraïbe cette semaine.',
     location: 'Le Diamant',
     photos: [
-      'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80'
+      '/images/spots/diamant.jpg'
     ],
     likes: 42,
     commentsCount: 6,
@@ -1292,7 +1292,7 @@ export const INITIAL_POSTS: SocialPost[] = [
     content: 'Arrivés à Anse Dufour à 7h45 ce matin : l’eau était comme un miroir et il restait encore une dizaine de places sur le petit parking. Deux tortues vertes broutaient tranquillement sur l’herbier au centre de l’anse, puis nous avons basculé à pied à Anse Noire voir les gorgones le long de la falaise.',
     location: 'Anse Dufour / Anse Noire',
     photos: [
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80'
+      '/images/spots/anse-dufour.jpg'
     ],
     likes: 67,
     commentsCount: 11,
@@ -1311,7 +1311,7 @@ export const INITIAL_POSTS: SocialPost[] = [
     content: 'Retour de pêche ce matin aux Anses-d’Arlet avec de belles dorades coryphènes, du thon jaune et des langoustes fraîches. Pensez à réserver si vous voulez dîner les pieds dans le sable au coucher du soleil.',
     location: 'Les Anses-d\'Arlet',
     photos: [
-      'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1000&q=80'
+      '/images/spots/ti-sable.jpg'
     ],
     likes: 89,
     commentsCount: 14,
@@ -1330,7 +1330,7 @@ export const INITIAL_POSTS: SocialPost[] = [
     content: 'Boucle du Phare de la Caravelle effectuée à la fraîche à 7h00 depuis Tartane : le vent marin rend la marche super agréable et la vue à 360° depuis la table d’orientation sur la baie du Trésor est splendide. Prévoyez au moins 1,5 L d’eau par personne car la fin est bien ensoleillée.',
     location: 'Presqu\'île de la Caravelle',
     photos: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80'
+      '/images/spots/sentier-caravelle.jpg'
     ],
     likes: 53,
     commentsCount: 8,
@@ -1346,10 +1346,10 @@ export const INITIAL_POSTS: SocialPost[] = [
       isLocal: false
     },
     timestamp: 'Hier',
-    content: 'Petit retour d’expérience pour les familles : la Pointe Marin et l’Anse Figuier à Sainte-Luce sont parfaites avec des enfants en bas âge. Fond de sable doux sans rochers au bord, ombrage naturel sous les raisiniers et petits lolos créoles juste derrière pour le poisson grillé du midi.',
-    location: 'Sainte-Luce',
+    content: 'Petit retour d’expérience pour les familles : la Pointe Marin et l’Anse Figuier sont parfaites avec des enfants en bas âge. Fond de sable doux sans rochers au bord, ombrage naturel sous les raisiniers et petits lolos créoles juste derrière pour le poisson grillé du midi.',
+    location: 'Sainte-Anne / Rivière-Pilote',
     photos: [
-      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000&q=80'
+      '/images/spots/pointe-marin-lagon.jpg'
     ],
     likes: 74,
     commentsCount: 9,
@@ -1365,8 +1365,11 @@ export const INITIAL_POSTS: SocialPost[] = [
       isLocal: true
     },
     timestamp: 'Hier',
-    content: 'Conditions idéales sur les Fonds Blancs du François et autour de l’Îlet Thierry et de l’Îlet Oscar. L’eau est cristalline sur les bancs de sable au large grace à la barrière de corail. Pensez aux t-shirts anti-UV, la réverbération sur le sable blanc est très forte entre 11h et 14h.',
+    content: 'Conditions idéales sur les Fonds Blancs du François et autour de l’Îlet Thierry et de l’Îlet Oscar. L’eau est cristalline sur les bancs de sable au large grâce à la barrière de corail. Pensez aux t-shirts anti-UV, la réverbération sur le sable blanc est très forte entre 11h et 14h.',
     location: 'Le François / Le Robert',
+    photos: [
+      '/images/spots/baignoire-josephine.jpg'
+    ],
     likes: 61,
     commentsCount: 5,
     tags: ['#Plage', '#FondsBlancs'],
@@ -1509,7 +1512,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '6 min de lecture',
     author: 'Rédaction Martinique Explorer',
     date: '15 Janvier 2026',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/salines.jpg',
     summary: 'De la grande plage bordée de cocotiers des Salines aux criques de sable noir d’Anse Céron et d’Anse Couleuvre, tour d’horizon des plus belles anses de l’île et des heures idéales pour en profiter.',
     content: 'La Martinique offre une diversité côtière rare dans les Petites Antilles. Au sud, les anses de sable blond issues du corail bordent une mer Caraïbe tiède et abritée, idéale pour la baignade au long cours. En remontant vers le nord après Saint-Pierre, le relief volcanique de la Montagne Pelée façonne des plages de sable gris-noir serties dans une végétation tropicale dense.'
   },
@@ -1533,7 +1536,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '8 min de lecture',
     author: 'Cécile Fontaine',
     date: '02 Février 2026',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/ponton-anses-arlet.jpg',
     summary: 'Choix du secteur (Sainte-Luce, Le Diamant, Les Trois-Îlets, Le Marin), accès aux soins, marchés locaux et conseils concrets pour préparer un séjour long ou une retraite au soleil.',
     content: 'Passer plusieurs mois par an ou s’installer durablement en Martinique attire de nombreux résidents séduits par la douceur du climat, la qualité des infrastructures médicales (CHU de Martinique) et la richesse de la vie locale. Le choix de la commune de résidence reste l’étape déterminante pour éviter les temps de trajet vers Fort-de-France.'
   },
@@ -1545,7 +1548,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '7 min de lecture',
     author: 'Mathieu D.',
     date: '10 Février 2026',
-    image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/tartane-barques.jpg',
     summary: 'Inscrite au patrimoine culturel immatériel de l’UNESCO, la yole ronde navigue sans quille ni gouvernail. Découvrez comment suivre les étapes depuis les plages et les falaises de l’île.',
     content: 'Chaque été entre fin juillet et début août, toute la Martinique vibre au rythme du Tour des Yoles Rondes. Héritières des embarcations traditionnelles des pêcheurs, ces voiliers en bois dépourvus de lest ne tiennent debout que grâce à l’adresse des coursiers perchés sur les « bois dressés » au-dessus des flots.'
   },
@@ -1557,8 +1560,8 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '4 min de lecture',
     author: 'Réseau Tortues Marines',
     date: '18 Février 2026',
-    image: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Chaque printemps, les plus grandes tortues marines du monde reviennent pondre la nuit sur les plages de Martinique. Règles essentielles pour ne pas désorienter les femelles et les nouveau-nés.',
+    image: '/images/spots/anse-ceron.jpg',
+    summary: 'Chaque printemps, les plus grandes tortues marines du monde reviennent pondre la nuit sur les plages volcaniques de Martinique. Règles essentielles pour ne pas désorienter les femelles et les nouveau-nés.',
     content: 'Entre mars et juillet, les tortues luths (Dermochelys coriacea), qui peuvent peser jusqu’à 500 kg pour près de deux mètres de long, traversent l’Atlantique pour venir enfouir leurs œufs sur le haut des plages martiniquaises. La discrétion absolue et l’absence totale de lumière blanche la nuit sont indispensables à leur survie.'
   },
   {
@@ -1569,7 +1572,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '5 min de lecture',
     author: 'Observatoire du Littoral',
     date: '24 Février 2026',
-    image: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/anse-figuier.jpg',
     summary: 'Alizés d’est, relief montagneux et abri naturel de la côte Ouest : comment lire la carte des vents pour toujours trouver une mer calme et limpide en Martinique.',
     content: 'En Martinique, les vents dominants — les alizés — soufflent d’est en ouest depuis l’océan Atlantique. Grâce à cette orientation géographique, toute la façade ouest (la côte Caraïbe, du Prêcheur jusqu’aux Anses-d’Arlet et Sainte-Luce) se trouve naturellement protégée de la houle du large et des dérives d’algues sargasses.'
   },
@@ -1581,7 +1584,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '6 min de lecture',
     author: 'Marie-Paule K.',
     date: '01 Mars 2026',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/carnaval.jpg',
     summary: 'Du Dimanche Gras multicolore au Mercredi des Cendres en noir et blanc, repères pratiques pour participer aux défilés de Fort-de-France et des communes du Sud.',
     content: 'Le carnaval martiniquais est une fête populaire, satirique et participative où il n’y a pas de barrière entre les groupes à pied et le public. Durant quatre jours intenses, chaque journée répond à un thème vestimentaire précis que les habitants comme les visiteurs adoptent dans les rues.'
   },
@@ -1593,7 +1596,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '8 min de lecture',
     author: 'Rédaction Martinique Explorer',
     date: '04 Mars 2026',
-    image: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/babaorum.jpg',
     summary: 'De la distillerie Depaz au pied de la Montagne Pelée jusqu’à l’Habitation Clément au François, itinéraire à travers le seul rhum agricole au monde reconnu par une AOC.',
     content: 'Élaboré uniquement à partir du pur jus de canne à sucre fraîchement pressé (le vesou), le rhum agricole de la Martinique bénéficie depuis 1996 d’une Appellation d’Origine Contrôlée exigeante. La période de récolte, de février à juin, est le moment idéal pour voir fonctionner les moulins et les colonnes de distillation.'
   },
@@ -1605,7 +1608,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '6 min de lecture',
     author: 'Cédric V.',
     date: '09 Mars 2026',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/baignoire-josephine.jpg',
     summary: 'Baignade en pleine mer avec de l’eau à la taille, iguanes des Petites Antilles sur l’Îlet Chancel et navigation dans la mangrove : comment organiser sa sortie côté Atlantique.',
     content: 'Protégées de la houle océanique par une longue barrière de corail, les baies du François et du Robert abritent une dizaine d’îlets sauvages et de hauts-fonds de sable blanc appelés « fonds blancs ». On s’y baigne au milieu du lagon dans une eau transparente à 28°C.'
   },
@@ -1617,9 +1620,9 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     readTime: '7 min de lecture',
     author: 'Olivier D.',
     date: '14 Mars 2026',
-    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=80',
+    image: '/images/spots/montagne-pelee.jpg',
     summary: 'Forêt tropicale humide, fougères arborescentes, rivières fraîches et panoramas volcaniques classés à l’UNESCO : les trois plus beaux sentiers du Nord et nos conseils météo.',
-    content: 'Inscrit au patrimoine mondial de l’UNESCO pour ses forêts et ses pitons volcaniques, le Nord de la Martinique offre un contraste saisissant avec les plages du Sud. Partir dès 7h00 du matin permet d’profiter d’un ciel dégagé sur la caldeira de la Montagne Pelée avant l’arrivée des nuages d’alizés.'
+    content: 'Inscrit au patrimoine mondial de l’UNESCO pour ses forêts et ses pitons volcaniques, le Nord de la Martinique offre un contraste saisissant avec les plages du Sud. Partir dès 7h00 du matin permet de profiter d’un ciel dégagé sur la caldeira de la Montagne Pelée avant l’arrivée des nuages d’alizés.'
   }
 ];
 

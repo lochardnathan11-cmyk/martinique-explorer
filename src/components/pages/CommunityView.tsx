@@ -43,19 +43,19 @@ const COMMUNES_LIST = [
 const QUICK_PHOTOS = [
   {
     label: 'Anse Dufour',
-    url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=80'
+    url: '/images/spots/anse-dufour.jpg'
   },
   {
     label: 'Les Salines',
-    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80'
+    url: '/images/spots/salines.jpg'
   },
   {
     label: 'Le Diamant',
-    url: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=900&q=80'
+    url: '/images/spots/diamant.jpg'
   },
   {
     label: 'Fonds Blancs',
-    url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80'
+    url: '/images/spots/baignoire-josephine.jpg'
   }
 ];
 
@@ -66,7 +66,7 @@ const MORNING_PHOTO_STORIES = [
     commune: 'Anses-d’Arlet',
     time: '07h45',
     condition: 'Eau miroir · 2 tortues',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80'
+    image: '/images/spots/anse-dufour.jpg'
   },
   {
     id: 'st-2',
@@ -74,7 +74,7 @@ const MORNING_PHOTO_STORIES = [
     commune: 'Sainte-Anne',
     time: '08h30',
     condition: 'Sable propre · Mer calme',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80'
+    image: '/images/spots/salines.jpg'
   },
   {
     id: 'st-3',
@@ -82,7 +82,7 @@ const MORNING_PHOTO_STORIES = [
     commune: 'Le Diamant',
     time: '09h15',
     condition: 'Houle modérée · Ciel clair',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=700&q=80'
+    image: '/images/spots/diamant.jpg'
   },
   {
     id: 'st-4',
@@ -90,7 +90,7 @@ const MORNING_PHOTO_STORIES = [
     commune: 'Le François',
     time: '10h00',
     condition: 'Eau turquoise · Alizés 15 nds',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80'
+    image: '/images/spots/baignoire-josephine.jpg'
   }
 ];
 

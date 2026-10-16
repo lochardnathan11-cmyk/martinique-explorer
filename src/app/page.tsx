@@ -363,6 +363,7 @@ export default function HomePage() {
               places={places}
               onBack={handleStepBack}
               onOpenPlace={handleOpenPlace}
+              onOpenArticle={handleOpenArticle}
               onNavigateHome={() => navigateToSection('home')}
             />
           </div>
