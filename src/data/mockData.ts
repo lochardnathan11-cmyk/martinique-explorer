@@ -1181,43 +1181,82 @@ export const INITIAL_PLACES: PlaceItem[] = [
 
 export const INITIAL_ALERTS: CommunityAlert[] = [
   {
-    id: 'alt-1',
-    type: 'sargasses',
-    title: 'Arrivage modéré de sargasses',
-    location: 'Plage de Cap Est',
-    commune: 'Le François',
-    description: 'Présence d\'un banc d\'algues sargasses sur la partie est de la baie. Nettoyage communal prévu demain matin.',
-    timestamp: 'Il y a 35 min',
-    reportedBy: 'Kévin R. (Habitant François)',
-    severity: 'warning',
-    verified: true,
-    coords: [14.602, -60.865]
-  },
-  {
     id: 'alt-2',
     type: 'info',
-    title: 'Excellentes conditions de baignade & tortues actives',
-    location: 'Anse Dufour',
+    title: 'Mer d’huile et excellente visibilité (18 m+)',
+    location: 'Anse Dufour & Anse Noire',
     commune: 'Les Anses-d\'Arlet',
-    description: 'Eau à 28°C parfaitement limpide, visibilité exceptionnelle sous l\'eau (plus de 15m), 3 tortues observées à 20m de la rive.',
-    timestamp: 'Il y a 1h',
-    reportedBy: 'Mélissa G.',
+    description: 'Eau à 28°C très claire ce matin. Trois tortues vertes observées sur l’herbier central et bancs de poissons-coffres le long de la falaise gauche.',
+    timestamp: 'Il y a 35 min',
+    reportedBy: 'Mélissa G. (Anses-d’Arlet)',
     severity: 'info',
     verified: true,
     coords: [14.5264, -61.0858]
   },
   {
+    id: 'alt-4',
+    type: 'info',
+    title: 'Lagon calme, sans aucune sargasse',
+    location: 'Grande Anse des Salines',
+    commune: 'Sainte-Anne',
+    description: 'Plage parfaitement propre sur toute la longueur, alizé léger agréable et stationnement encore fluide sous les cocotiers côté sous-bois.',
+    timestamp: 'Il y a 50 min',
+    reportedBy: 'Jean-Marc L.',
+    severity: 'info',
+    verified: true,
+    coords: [14.419, -60.876]
+  },
+  {
+    id: 'alt-1',
+    type: 'sargasses',
+    title: 'Échouage ponctuel de sargasses côté Est',
+    location: 'Baie de Cap Est',
+    commune: 'Le François',
+    description: 'Présence d’algues sur la bordure sud de la baie poussées par les alizés. Les îlets du large (Fonds Blancs) restent en revanche bien dégagés.',
+    timestamp: 'Il y a 1h 15',
+    reportedBy: 'Kévin R. (Le François)',
+    severity: 'warning',
+    verified: true,
+    coords: [14.602, -60.865]
+  },
+  {
     id: 'alt-3',
     type: 'houle',
-    title: 'Forte houle australe',
-    location: 'Plage du Diamant',
+    title: 'Rouleaux soutenus et courant de fond',
+    location: 'Plage du Diamant (secteur central)',
     commune: 'Le Diamant',
-    description: 'Rouleaux puissants et courant de fond important. Baignade déconseillée aux enfants ce jour.',
+    description: 'Houle du sud-est formant de beaux rouleaux près du bourg. Préférez l’Anse Mabouya ou Sainte-Luce si vous vous baignez avec de jeunes enfants.',
     timestamp: 'Il y a 2h',
-    reportedBy: 'Poste SNSM / Observateur local',
+    reportedBy: 'Poste de secours / Observateur local',
     severity: 'danger',
     verified: true,
     coords: [14.4789, -61.0261]
+  },
+  {
+    id: 'alt-5',
+    type: 'info',
+    title: 'Belles vagues propres pour le surf, lagon abrité à la Brèche',
+    location: 'Plage de la Brèche & Anse Bonneville',
+    commune: 'La Trinité (Tartane)',
+    description: 'Superbes séries d’1m20 à Anse Bonneville pour les surfeurs, et baignade très calme sans vague côté plage de la Brèche à Tartane.',
+    timestamp: 'Il y a 2h 30',
+    reportedBy: 'Lucas T. (Moniteur glisse)',
+    severity: 'info',
+    verified: true,
+    coords: [14.765, -60.915]
+  },
+  {
+    id: 'alt-6',
+    type: 'info',
+    title: 'Eau limpide au pied de la Pelée, sommet dégagé',
+    location: 'Anse Céron & Anse Couleuvre',
+    commune: 'Le Prêcheur',
+    description: 'Piste d’accès vers Anse Couleuvre sèche et praticable. Très belle lumière sur le sable volcanique et peu de monde ce matin.',
+    timestamp: 'Il y a 3h',
+    reportedBy: 'Olivier D.',
+    severity: 'info',
+    verified: true,
+    coords: [14.841, -61.219]
   }
 ];
 
@@ -1230,11 +1269,11 @@ export const INITIAL_POSTS: SocialPost[] = [
       badge: 'Habitant',
       isLocal: true
     },
-    timestamp: 'Il y a 2h',
-    content: 'Fin d’après-midi très calme au Diamant aujourd’hui. La houle est retombée sur la partie ouest de la plage et il n’y a aucune sargasse côté sud-caraïbe cette semaine.',
+    timestamp: 'Il y a 1h',
+    content: 'Fin de matinée lumineuse face au Rocher du Diamant. La houle s’est bien calmée sur l’extrémité ouest vers Dizac, l’eau est à 28°C et il n’y a aucune trace de sargasse sur toute la côte Sud-Caraïbe cette semaine.',
     location: 'Le Diamant',
     photos: [
-      'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80'
     ],
     likes: 42,
     commentsCount: 6,
@@ -1249,11 +1288,11 @@ export const INITIAL_POSTS: SocialPost[] = [
       badge: 'Voyageurs',
       isLocal: false
     },
-    timestamp: 'Il y a 4h',
-    content: 'Arrivés à Anse Dufour à 7h45 ce matin : l’eau était comme un miroir et il restait encore de la place sur le petit parking. Deux tortues vertes broutaient tranquillement sur l’herbier au centre de l’anse.',
-    location: 'Anse Dufour',
+    timestamp: 'Il y a 3h',
+    content: 'Arrivés à Anse Dufour à 7h45 ce matin : l’eau était comme un miroir et il restait encore une dizaine de places sur le petit parking. Deux tortues vertes broutaient tranquillement sur l’herbier au centre de l’anse, puis nous avons basculé à pied à Anse Noire voir les gorgones le long de la falaise.',
+    location: 'Anse Dufour / Anse Noire',
     photos: [
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80'
     ],
     likes: 67,
     commentsCount: 11,
@@ -1268,64 +1307,153 @@ export const INITIAL_POSTS: SocialPost[] = [
       badge: 'Adresse locale',
       isLocal: true
     },
-    timestamp: 'Il y a 6h',
-    content: 'Retour de pêche ce matin aux Anses-d’Arlet avec de belles dorades coryphènes et langoustes fraîches. Concert acoustique sur la plage à partir de 18h30 pour le coucher du soleil.',
+    timestamp: 'Il y a 5h',
+    content: 'Retour de pêche ce matin aux Anses-d’Arlet avec de belles dorades coryphènes, du thon jaune et des langoustes fraîches. Pensez à réserver si vous voulez dîner les pieds dans le sable au coucher du soleil.',
     location: 'Les Anses-d\'Arlet',
+    photos: [
+      'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1000&q=80'
+    ],
     likes: 89,
     commentsCount: 14,
     tags: ['#Gastronomie', '#BonPlan'],
     category: 'restaurant'
+  },
+  {
+    id: 'post-4',
+    author: {
+      name: 'Mathilde R.',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+      badge: 'Habitante',
+      isLocal: true
+    },
+    timestamp: 'Il y a 7h',
+    content: 'Boucle du Phare de la Caravelle effectuée à la fraîche à 7h00 depuis Tartane : le vent marin rend la marche super agréable et la vue à 360° depuis la table d’orientation sur la baie du Trésor est splendide. Prévoyez au moins 1,5 L d’eau par personne car la fin est bien ensoleillée.',
+    location: 'Presqu\'île de la Caravelle',
+    photos: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80'
+    ],
+    likes: 53,
+    commentsCount: 8,
+    tags: ['#Randonnee', '#Caravelle', '#Plage'],
+    category: 'plage'
+  },
+  {
+    id: 'post-5',
+    author: {
+      name: 'famille_moreau',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      badge: 'Voyageurs',
+      isLocal: false
+    },
+    timestamp: 'Hier',
+    content: 'Petit retour d’expérience pour les familles : la Pointe Marin et l’Anse Figuier à Sainte-Luce sont parfaites avec des enfants en bas âge. Fond de sable doux sans rochers au bord, ombrage naturel sous les raisiniers et petits lolos créoles juste derrière pour le poisson grillé du midi.',
+    location: 'Sainte-Luce',
+    photos: [
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000&q=80'
+    ],
+    likes: 74,
+    commentsCount: 9,
+    tags: ['#Plage', '#Famille'],
+    category: 'plage'
+  },
+  {
+    id: 'post-6',
+    author: {
+      name: 'Cédric V. (Skipper au François)',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+      badge: 'Habitant',
+      isLocal: true
+    },
+    timestamp: 'Hier',
+    content: 'Conditions idéales sur les Fonds Blancs du François et autour de l’Îlet Thierry et de l’Îlet Oscar. L’eau est cristalline sur les bancs de sable au large grace à la barrière de corail. Pensez aux t-shirts anti-UV, la réverbération sur le sable blanc est très forte entre 11h et 14h.',
+    location: 'Le François / Le Robert',
+    likes: 61,
+    commentsCount: 5,
+    tags: ['#Plage', '#FondsBlancs'],
+    category: 'plage'
   }
 ];
 
 export const INITIAL_FORUM_TOPICS: ForumTopic[] = [
   {
     id: 'f-1',
-    title: 'Voyage en famille 10 jours en avril : quelle côte choisir pour loger ?',
+    title: 'Séjour en famille 10 jours : vaut-il mieux loger aux Trois-Îlets ou à Sainte-Luce ?',
     category: 'Tourisme',
     author: {
       name: 'Famille Dupont',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-      badge: 'Nouveau Membre'
+      badge: 'Voyageurs'
     },
     createdAt: 'Aujourd\'hui à 11h',
     repliesCount: 18,
     views: 340,
     solved: true,
-    lastReplyAuthor: 'Yannick B. (Guide Local)',
-    excerpt: 'Bonjour à tous ! Nous venons avec 2 enfants (6 et 9 ans). On hésite entre loger aux Trois-Îlets ou vers Sainte-Luce pour rayonner facilement sur les plages sans trop d\'embouteillages...'
+    lastReplyAuthor: 'Yannick B.',
+    excerpt: 'Nous venons avec 2 enfants (6 et 9 ans). On hésite entre loger aux Trois-Îlets ou vers Sainte-Luce pour rayonner facilement sur les plages du Sud et faire une journée dans le Nord sans passer trop de temps dans les embouteillages...'
   },
   {
     id: 'f-2',
-    title: 'Installation retraite en Martinique : conseils pour le secteur Sainte-Luce / Marin ?',
-    category: 'Retraite',
+    title: 'À quelle heure arriver à Anse Dufour et Grande Anse d’Arlet pour se garer facilement ?',
+    category: 'Plages',
     author: {
-      name: 'Gérard & Sylvie',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-      badge: 'Membre Passionné'
+      name: 'Camille & Julien',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      badge: 'Voyageurs'
     },
-    createdAt: 'Hier',
-    repliesCount: 24,
-    views: 620,
-    solved: false,
-    lastReplyAuthor: 'Marie-Paule (Résidente Sainte-Luce)',
-    excerpt: 'Nous envisageons de passer 6 mois par an en Martinique. Quels sont vos retours sur la vie quotidienne, la proximité des centres médicaux, et les activités pour seniors ?'
+    createdAt: 'Aujourd\'hui à 09h15',
+    repliesCount: 14,
+    views: 290,
+    solved: true,
+    lastReplyAuthor: 'Mélissa G.',
+    excerpt: 'Nous aimerions observer les tortues au calme et éviter de nous garer trop loin sur la route en côte. Quel est le créneau le plus fluide en semaine ?'
   },
   {
     id: 'f-3',
-    title: 'Où manger le meilleur poulet boucané authentique sur la route des plages ?',
+    title: 'Où trouver le meilleur poulet boucané et poisson grillé sur la route des plages ?',
     category: 'Restaurants',
     author: {
       name: 'Loïc V.',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
-      badge: 'Explorateur 🧭'
+      badge: 'Voyageur'
     },
-    createdAt: 'Il y a 3 jours',
+    createdAt: 'Hier',
     repliesCount: 31,
     views: 890,
     solved: true,
     lastReplyAuthor: 'Fabrice K.',
-    excerpt: 'Amis gourmands, quel est votre spot secret préféré pour le poulet boucané au feu de canne à sucre avec la vraie sauce chien ?'
+    excerpt: 'Quelles sont vos adresses authentiques préférées (cabanes de bord de route ou petits lolos de plage) pour le vrai poulet boucané à la canne à sucre et la sauce chien maison ?'
+  },
+  {
+    id: 'f-4',
+    title: 'Location de voiture : une petite citadine suffit-elle pour les routes du Nord et des Anses ?',
+    category: 'Tourisme',
+    author: {
+      name: 'Marc-Antoine P.',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      badge: 'Voyageur'
+    },
+    createdAt: 'Il y a 2 jours',
+    repliesCount: 22,
+    views: 510,
+    solved: true,
+    lastReplyAuthor: 'Olivier D.',
+    excerpt: 'On lit souvent que certaines côtes (route de la Trace, descente d’Anse Noire, hauteurs du Diamant) sont très raides. Faut-il privilégier un moteur plus puissant ou boîte automatique ?'
+  },
+  {
+    id: 'f-5',
+    title: 'Passer 6 mois par an en Martinique à la retraite : retours sur le secteur Sainte-Luce / Le Marin ?',
+    category: 'Retraite',
+    author: {
+      name: 'Gérard & Sylvie',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
+      badge: 'Membres'
+    },
+    createdAt: 'Il y a 3 jours',
+    repliesCount: 24,
+    views: 620,
+    solved: false,
+    lastReplyAuthor: 'Marie-Paule',
+    excerpt: 'Nous envisageons de passer l’hiver en Martinique chaque année. Quels sont vos retours sur la vie quotidienne, le marché local, la proximité des médecins et les clubs de marche ou voile ?'
   }
 ];
 
@@ -1376,97 +1504,122 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
   {
     id: 'blog-1',
     slug: 'top-10-plages-martinique',
-    title: 'Top 10 des plus belles plages de Martinique en 2026',
+    title: 'Les 10 plus belles plages de Martinique : du Sud corallien aux criques volcaniques du Nord',
     category: 'Guide Plages',
     readTime: '6 min de lecture',
-    author: 'Équipe Martinique Explorer',
+    author: 'Rédaction Martinique Explorer',
     date: '15 Janvier 2026',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Du sable blanc bordé de cocotiers des Salines aux criques sauvages de sable noir du Prêcheur, découvrez notre classement exclusif testé par la communauté.',
-    content: 'La Martinique offre une diversité côtière unique dans toutes les Petites Antilles. Au sud, les anses dorées et les eaux tièdes caribéennes invitent à la baignade sereine en famille. Au nord, sous le regard de la Montagne Pelée, le sable noir confère un caractère sauvage inoubliable...'
+    summary: 'De la grande plage bordée de cocotiers des Salines aux criques de sable noir d’Anse Céron et d’Anse Couleuvre, tour d’horizon des plus belles anses de l’île et des heures idéales pour en profiter.',
+    content: 'La Martinique offre une diversité côtière rare dans les Petites Antilles. Au sud, les anses de sable blond issues du corail bordent une mer Caraïbe tiède et abritée, idéale pour la baignade au long cours. En remontant vers le nord après Saint-Pierre, le relief volcanique de la Montagne Pelée façonne des plages de sable gris-noir serties dans une végétation tropicale dense.'
   },
   {
     id: 'blog-2',
     slug: 'ou-observer-tortues-martinique',
-    title: 'Où et quand observer les tortues marines en Martinique ? Le guide complet',
+    title: 'Observer les tortues marines en Martinique : horaires, herbiers et règles de respect',
     category: 'Snorkeling & Faune',
     readTime: '5 min de lecture',
-    author: 'Yannick B. (Biologiste marin amateur)',
+    author: 'Yannick B.',
     date: '28 Janvier 2026',
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Anse Dufour, Grande Anse d\'Arlet, Anse Noire... Nos conseils d\'experts locaux pour observer les tortues vertes sans les déranger et à quelle heure venir pour éviter la foule.',
-    content: 'Les herbiers de phanérogames des Anses d\'Arlet sont le garde-manger favori des tortues vertes (Chelonia mydas). En arrivant dès 7h30 du matin, avant l\'arrivée des premiers groupes de visiteurs, la surface est comme un miroir...'
+    summary: 'Anse Dufour, Grande Anse d’Arlet, Anse Noire : comprendre où se nourrissent les tortues vertes et imbriquées, à quelle heure se mettre à l’eau et comment les observer sans les déranger.',
+    content: 'Les herbiers marins des Anses-d’Arlet constituent l’aire d’alimentation privilégiée des tortues vertes (Chelonia mydas). En arrivant entre 7h30 et 9h00, lorsque le soleil commence à pénétrer l’eau et que le plan d’eau est encore parfaitement calme, l’observation se fait simplement en flottant à la surface avec un masque et un tuba.'
   },
   {
     id: 'blog-3',
     slug: 'retraite-et-installation-martinique',
-    title: 'S\'installer ou passer sa retraite en Martinique : Tout ce qu\'il faut savoir',
+    title: 'S’installer ou passer l’hiver en Martinique : communes, vie pratique et budget',
     category: 'Vivre en Martinique',
     readTime: '8 min de lecture',
     author: 'Cécile Fontaine',
     date: '02 Février 2026',
     image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Coût de la vie, système de santé, sélection des communes les plus paisibles (Sainte-Luce, Diamant, Marin), vie associative : le guide concret pour une installation réussie.',
-    content: 'De plus en plus de retraités font le choix de vivre l\'hiver ou toute l\'année sous la douceur du climat tropical. Avec un décalage horaire modéré et les infrastructures sanitaires européennes (CHU de Fort-de-France), l\'île présente des atouts majeurs...'
+    summary: 'Choix du secteur (Sainte-Luce, Le Diamant, Les Trois-Îlets, Le Marin), accès aux soins, marchés locaux et conseils concrets pour préparer un séjour long ou une retraite au soleil.',
+    content: 'Passer plusieurs mois par an ou s’installer durablement en Martinique attire de nombreux résidents séduits par la douceur du climat, la qualité des infrastructures médicales (CHU de Martinique) et la richesse de la vie locale. Le choix de la commune de résidence reste l’étape déterminante pour éviter les temps de trajet vers Fort-de-France.'
   },
   {
     id: 'blog-4',
     slug: 'tour-des-yoles-rondes-2026',
-    title: 'Tour des Yoles Rondes 2026 : Parcours officiel et meilleurs points de vue côtiers',
+    title: 'Tour des Yoles Rondes : l’histoire, le parcours côtier et les meilleurs points de vue',
     category: 'Actualités & Événements',
     readTime: '7 min de lecture',
-    author: 'Mathieu D. (Chroniqueur Nautique)',
+    author: 'Mathieu D.',
     date: '10 Février 2026',
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1000&q=80',
-    summary: 'L\'événement sportif et populaire le plus vibrant de l\'année arrive ! Découvrez les étapes clés entre Le François, Saint-Pierre et Sainte-Anne, et où vous placer pour vivre l\'effervescence.',
-    content: 'Emblème absolu du patrimoine martiniquais inscrit à l\'UNESCO, le Tour des Yoles Rondes mobilise chaque été des dizaines de milliers de passionnés. Naviguer sans quille ni gouvernail avec pour seul contrepoids les équipiers juchés sur les bois dressés est un spectacle grandiose...'
+    summary: 'Inscrite au patrimoine culturel immatériel de l’UNESCO, la yole ronde navigue sans quille ni gouvernail. Découvrez comment suivre les étapes depuis les plages et les falaises de l’île.',
+    content: 'Chaque été entre fin juillet et début août, toute la Martinique vibre au rythme du Tour des Yoles Rondes. Héritières des embarcations traditionnelles des pêcheurs, ces voiliers en bois dépourvus de lest ne tiennent debout que grâce à l’adresse des coursiers perchés sur les « bois dressés » au-dessus des flots.'
   },
   {
     id: 'blog-5',
     slug: 'saison-ponte-tortues-luths',
-    title: 'Saison de ponte des tortues luths : Les plages du Nord sous haute surveillance écologique',
+    title: 'Saison de ponte des tortues luths : veiller sur les géantes des mers de mars à juillet',
     category: 'Faune & Écologie',
     readTime: '4 min de lecture',
-    author: 'Réseau Tortues Marines Martinique',
+    author: 'Réseau Tortues Marines',
     date: '18 Février 2026',
     image: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Les plus grandes tortues marines du monde reviennent nicher sur les plages de sable volcanique. Comment observer ce phénomène nocturne dans le strict respect de l\'espèce.',
-    content: 'Chaque année entre mars et juillet, les géantes des mers (jusqu\'à 500 kg pour près de 2 mètres) gravissent les pentes de sable noir d\'Anse Couleuvre, de Saint-Pierre et du Carbet pour enfouir leurs œufs. Les bénévoles patrouillent chaque nuit pour sécuriser les nids...'
+    summary: 'Chaque printemps, les plus grandes tortues marines du monde reviennent pondre la nuit sur les plages de Martinique. Règles essentielles pour ne pas désorienter les femelles et les nouveau-nés.',
+    content: 'Entre mars et juillet, les tortues luths (Dermochelys coriacea), qui peuvent peser jusqu’à 500 kg pour près de deux mètres de long, traversent l’Atlantique pour venir enfouir leurs œufs sur le haut des plages martiniquaises. La discrétion absolue et l’absence totale de lumière blanche la nuit sont indispensables à leur survie.'
   },
   {
     id: 'blog-6',
     slug: 'bilan-sargasses-météo-cote-caraibe',
-    title: 'Sargasses en Martinique : Pourquoi la côte Caraïbe reste protégée et limpide',
+    title: 'Comprendre la météo des plages et les courants : pourquoi la côte Caraïbe reste épargnée',
     category: 'Météo & Littoral',
     readTime: '5 min de lecture',
-    author: 'Observatoire Littoral Madinina',
+    author: 'Observatoire du Littoral',
     date: '24 Février 2026',
     image: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Comprendre les courants marins et les alizés pour choisir ses plages en toute sérénité. Toutes les explications sur la barrière naturelle de la côte Ouest.',
-    content: 'Grâce à la géographie de l\'île et à la dorsale montagneuse qui bloque les vents d\'Est, les plages de la côte Sud-Caraïbe (Anses d\'Arlet, Anse Dufour, Grande Anse, Saint-Pierre) demeurent naturellement préservées de la quasi-totalité des bancs d\'algues sargasses...'
+    summary: 'Alizés d’est, relief montagneux et abri naturel de la côte Ouest : comment lire la carte des vents pour toujours trouver une mer calme et limpide en Martinique.',
+    content: 'En Martinique, les vents dominants — les alizés — soufflent d’est en ouest depuis l’océan Atlantique. Grâce à cette orientation géographique, toute la façade ouest (la côte Caraïbe, du Prêcheur jusqu’aux Anses-d’Arlet et Sainte-Luce) se trouve naturellement protégée de la houle du large et des dérives d’algues sargasses.'
   },
   {
     id: 'blog-7',
     slug: 'carnaval-martinique-programme-conseils',
-    title: 'Carnaval de Martinique : Guide pratique des jours gras et des traditions du Vaval',
+    title: 'Carnaval de Martinique : les quatre jours gras, les couleurs rituelles et les vidés',
     category: 'Actualités & Événements',
     readTime: '6 min de lecture',
     author: 'Marie-Paule K.',
     date: '01 Mars 2026',
     image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Dimanche gras, Lundi des mariages burlesques, Mardi rouge des diables rouges et Mercredi des cendres : codes vestimentaires, horaires et ambiance unique au monde.',
-    content: 'Le carnaval en Martinique ne ressemble à aucun autre dans les Caraïbes. Spontané, populaire et satirique, il invite chaque visiteur à se vêtir selon les couleurs rituelles de chaque journée pour défiler au rythme envoûtant des groupes à pied et des tambours chouval bwa...'
+    summary: 'Du Dimanche Gras multicolore au Mercredi des Cendres en noir et blanc, repères pratiques pour participer aux défilés de Fort-de-France et des communes du Sud.',
+    content: 'Le carnaval martiniquais est une fête populaire, satirique et participative où il n’y a pas de barrière entre les groupes à pied et le public. Durant quatre jours intenses, chaque journée répond à un thème vestimentaire précis que les habitants comme les visiteurs adoptent dans les rues.'
   },
   {
     id: 'blog-8',
     slug: 'route-des-rhums-aoc-visites',
-    title: 'Route des Rhums AOC : Les 5 distilleries historiques incontournables à visiter',
+    title: 'Route des Rhums AOC de Martinique : 5 habitations et distilleries chargées d’histoire',
     category: 'Gastronomie & Patrimoine',
     readTime: '8 min de lecture',
-    author: 'Équipe Martinique Explorer',
+    author: 'Rédaction Martinique Explorer',
     date: '04 Mars 2026',
     image: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=1000&q=80',
-    summary: 'Habitation Clément, Distillerie Depaz au pied de la Pelée, Neisson au Carbet... Parcourez le seul rhum agricole au monde bénéficiant d\'une Appellation d\'Origine Contrôlée.',
-    content: 'Nectar né du pur jus de canne fraîchement pressé et distillé en colonnes traditionnelles, le rhum agricole martiniquais est un trésor national. Visiter les domaines, c\'est plonger au cœur des parcs botaniques centenaires et comprendre le vieillissement en fûts de chêne...'
+    summary: 'De la distillerie Depaz au pied de la Montagne Pelée jusqu’à l’Habitation Clément au François, itinéraire à travers le seul rhum agricole au monde reconnu par une AOC.',
+    content: 'Élaboré uniquement à partir du pur jus de canne à sucre fraîchement pressé (le vesou), le rhum agricole de la Martinique bénéficie depuis 1996 d’une Appellation d’Origine Contrôlée exigeante. La période de récolte, de février à juin, est le moment idéal pour voir fonctionner les moulins et les colonnes de distillation.'
+  },
+  {
+    id: 'blog-9',
+    slug: 'fonds-blancs-francois-robert-ilets',
+    title: 'Les Fonds Blancs du François et du Robert : Baignoire de Joséphine, Îlet Chancel et kayak',
+    category: 'Guide Plages',
+    readTime: '6 min de lecture',
+    author: 'Cédric V.',
+    date: '09 Mars 2026',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+    summary: 'Baignade en pleine mer avec de l’eau à la taille, iguanes des Petites Antilles sur l’Îlet Chancel et navigation dans la mangrove : comment organiser sa sortie côté Atlantique.',
+    content: 'Protégées de la houle océanique par une longue barrière de corail, les baies du François et du Robert abritent une dizaine d’îlets sauvages et de hauts-fonds de sable blanc appelés « fonds blancs ». On s’y baigne au milieu du lagon dans une eau transparente à 28°C.'
+  },
+  {
+    id: 'blog-10',
+    slug: 'randonnee-montagne-pelee-nord-caraibe',
+    title: 'Nord Sauvage : randonner sur la Montagne Pelée, les Gorges de la Falaise et le canal des Esclaves',
+    category: 'Faune & Écologie',
+    readTime: '7 min de lecture',
+    author: 'Olivier D.',
+    date: '14 Mars 2026',
+    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=80',
+    summary: 'Forêt tropicale humide, fougères arborescentes, rivières fraîches et panoramas volcaniques classés à l’UNESCO : les trois plus beaux sentiers du Nord et nos conseils météo.',
+    content: 'Inscrit au patrimoine mondial de l’UNESCO pour ses forêts et ses pitons volcaniques, le Nord de la Martinique offre un contraste saisissant avec les plages du Sud. Partir dès 7h00 du matin permet d’profiter d’un ciel dégagé sur la caldeira de la Montagne Pelée avant l’arrivée des nuages d’alizés.'
   }
 ];
+

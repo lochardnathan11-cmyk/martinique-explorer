@@ -203,6 +203,52 @@ const ARTICLE_DETAILS_MAP: Record<string, ArticleExtraContent> = {
       }
     ],
     localTip: 'Les visites de distilleries sont particulièrement vivantes le matin en semaine pendant la période de récolte (février à mai) lorsque les moulins tournent.'
+  },
+  'blog-9': {
+    takeaways: [
+      'Baignade au large : les « fonds blancs » sont des bancs de sable clair immergés à 1 mètre de profondeur derrière la barrière de corail.',
+      'Îlet Chancel (Le Robert) : abrite l’une des dernières colonies d’iguanes délicatissimes des Petites Antilles.',
+      'Accès : en kayak des mers depuis la Pointe Savane, en yole traditionnelle ou avec un marin-pêcheur local.'
+    ],
+    sections: [
+      {
+        heading: '1. La Baignoire de Joséphine et les îlets du François',
+        paragraphs: [
+          'Située entre l’Îlet Thierry et l’Îlet Oscar dans la baie du François, la célèbre Baignoire de Joséphine est un haut-fond de sable corallien entouré d’eaux plus profondes. Protégée de la houle de l’Atlantique par la barrière récifale, l’eau y reste chaude et transparente.',
+          'Pour éviter l’affluence de la mi-journée, privilégiez les départs matinaux vers 8h30 ou les sorties en petit comité vers les fonds blancs du Robert et de l’Îlet Madame.'
+        ]
+      },
+      {
+        heading: '2. Explorer la baie du Robert en kayak',
+        paragraphs: [
+          'Au départ du Robert, la traversée en kayak permet de rejoindre à son rythme l’Îlet Chancel pour observer les iguanes endémiques et les vestiges de l’ancienne poterie du XVIIIe siècle, avant de faire halte sur la petite plage de sable clair de l’Îlet Madame.'
+        ]
+      }
+    ],
+    localTip: 'Prévoyez impérativement un t-shirt anti-UV à manches longues et un chapeau : la réverbération du soleil sur l’eau claire des fonds blancs est très intense.'
+  },
+  'blog-10': {
+    takeaways: [
+      'Départ matinal : commencez l’ascension de la Montagne Pelée par l’Aileron dès 6h45 – 7h00 pour devancer les nuages au sommet.',
+      'Gorges de la Falaise (Ajoupa-Bouillon) : remontée aquatique rafraîchissante entre deux hautes parois volcaniques.',
+      'Canal de Beauregard (Canal des Esclaves) : marche plate et panoramique au cœur de la forêt tropicale.'
+    ],
+    sections: [
+      {
+        heading: '1. L’ascension de la Montagne Pelée (1 397 m)',
+        paragraphs: [
+          'Point culminant de l’île inscrit au patrimoine mondial de l’UNESCO, le volcan se gravit principalement depuis le parking de l’Aileron au Morne-Rouge. Le sentier grimpe de façon soutenue jusqu’au rebord de la caldeira, offrant par temps clair une vue saisissante sur la mer des Caraïbes, l’océan Atlantique et la Dominique.',
+          'Même lorsqu’il fait 30°C sur la plage, la température au sommet peut descendre à 16°C avec du vent et de l’humidité : emportez toujours un coupe-vent imperméable et des chaussures crantées.'
+        ]
+      },
+      {
+        heading: '2. Après la randonnée : les plages volcaniques du Prêcheur',
+        paragraphs: [
+          'En redescendant vers Saint-Pierre et Le Prêcheur, les plages d’Anse Turin, d’Anse Céron et d’Anse Couleuvre sont idéales pour se détendre à l’ombre des cocotiers face à l’îlet la Perle.'
+        ]
+      }
+    ],
+    localTip: 'Consultez la webcam ou la météo du Morne-Rouge tôt le matin : si le dôme de la Pelée est dégagé à 6h30, c’est la journée idéale pour monter.'
   }
 };
 
