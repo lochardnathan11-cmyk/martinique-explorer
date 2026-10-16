@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -8,12 +8,10 @@ import RealTimeConditionsBar from '@/components/weather/RealTimeConditionsBar';
 import SmartSearchBar from '@/components/search/SmartSearchBar';
 import InteractiveMartiniqueMap from '@/components/map/InteractiveMartiniqueMap';
 import PlaceCard from '@/components/places/PlaceCard';
-import SocialFeed from '@/components/social/SocialFeed';
 import ForumSection from '@/components/forum/ForumSection';
 import BlogSection from '@/components/blog/BlogSection';
 import AdBanner from '@/components/layout/AdBanner';
 import AdminDashboard from '@/components/admin/AdminDashboard';
-import DetailModal from '@/components/modals/DetailModal';
 import BeachesView from '@/components/pages/BeachesView';
 import SnorkelingView from '@/components/pages/SnorkelingView';
 import ActivitiesView from '@/components/pages/ActivitiesView';
@@ -21,8 +19,16 @@ import CommunityView from '@/components/pages/CommunityView';
 import PlaceDetailView from '@/components/pages/PlaceDetailView';
 import ArticleDetailView from '@/components/pages/ArticleDetailView';
 import BlogView from '@/components/pages/BlogView';
+import { INITIAL_BLOG_POSTS, INITIAL_PLACES } from '@/data/mockData';
 import { PlaceItem, BlogPost } from '@/types';
 import { ArrowDown, Compass } from 'lucide-react';
+
+interface HistoryNavState {
+  section: string;
+  placeId?: string | null;
+  articleId?: string | null;
+  fromInApp?: boolean;
+}
 
 export default function HomePage() {
   const {
@@ -32,54 +38,237 @@ export default function HomePage() {
     selectedCategory,
     setSelectedCategory,
     activeModal,
-    openModal,
     closeModal,
   } = useApp();
 
-  const [activeSection, setActiveSection] = useState<string>('home');
+  const [activeSection, setActiveSectionState] = useState<string>('home');
   const [selectedPlace, setSelectedPlace] = useState<PlaceItem | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(null);
   const [previousSection, setPreviousSection] = useState<string>('home');
+  const inAppHistoryDepthRef = useRef<number>(0);
+  const placesRef = useRef<PlaceItem[]>(places);
 
-  // Seamless full-page navigation replacing modals
-  const handleOpenPlace = (place: PlaceItem) => {
-    setPreviousSection(activeSection === 'place_detail' ? 'home' : activeSection);
-    setSelectedPlace(place);
-    setActiveSection('place_detail');
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+  useEffect(() => {
+    placesRef.current = places;
+  }, [places]);
+
+  // Construire l'URL correspondant à la vue active
+  const buildUrlForState = (state: HistoryNavState): string => {
+    if (!state.section || state.section === 'home') {
+      return '/';
+    }
+    if (state.section === 'place_detail' && state.placeId) {
+      return `/?page=lieu&id=${encodeURIComponent(state.placeId)}`;
+    }
+    if (state.section === 'article_detail' && state.articleId) {
+      return `/?page=article&id=${encodeURIComponent(state.articleId)}`;
+    }
+    return `/?page=${encodeURIComponent(state.section)}`;
   };
 
-  const handleOpenArticle = (post: BlogPost) => {
-    setPreviousSection(activeSection === 'article_detail' ? 'home' : activeSection);
-    setSelectedArticle(post);
-    setActiveSection('article_detail');
+  // Appliquer un état de navigation sans repousser dans window.history (utilisé par popstate & init)
+  const applyNavigationState = useCallback(
+    (state: HistoryNavState) => {
+      const sec = state.section || 'home';
+      const currentPlaces = placesRef.current;
+      const allKnownPlaces = currentPlaces.length > 0 ? currentPlaces : INITIAL_PLACES;
+
+      if (sec === 'place_detail' && state.placeId) {
+        const foundPlace =
+          allKnownPlaces.find(
+            p => p.id === state.placeId || p.slug === state.placeId
+          ) || null;
+        if (foundPlace) {
+          setSelectedPlace(foundPlace);
+          setActiveSectionState('place_detail');
+          return;
+        }
+      }
+
+      if (sec === 'article_detail' && state.articleId) {
+        const foundArticle =
+          INITIAL_BLOG_POSTS.find(
+            a => a.id === state.articleId || a.slug === state.articleId
+          ) || null;
+        if (foundArticle) {
+          setSelectedArticle(foundArticle);
+          setActiveSectionState('article_detail');
+          return;
+        }
+      }
+
+      setActiveSectionState(sec);
+      if (sec === 'home') setSelectedCategory(null);
+      else if (sec === 'beaches') setSelectedCategory('beach');
+      else if (sec === 'snorkeling') setSelectedCategory('snorkeling');
+      else if (sec === 'activities') setSelectedCategory('activity');
+    },
+    [setSelectedCategory]
+  );
+
+  // Navigation vers une section principale avec enregistrement dans l'historique du navigateur
+  const navigateToSection = useCallback(
+    (sec: string) => {
+      setPreviousSection(activeSection);
+      setActiveSectionState(sec);
+
+      if (sec === 'home') setSelectedCategory(null);
+      else if (sec === 'beaches') setSelectedCategory('beach');
+      else if (sec === 'snorkeling') setSelectedCategory('snorkeling');
+      else if (sec === 'activities') setSelectedCategory('activity');
+
+      if (typeof window !== 'undefined') {
+        const navState: HistoryNavState = {
+          section: sec,
+          placeId: null,
+          articleId: null,
+          fromInApp: true,
+        };
+        const url = buildUrlForState(navState);
+        window.history.pushState(navState, '', url);
+        inAppHistoryDepthRef.current += 1;
+      }
+    },
+    [activeSection, setSelectedCategory]
+  );
+
+  // Ouverture d'une fiche lieu avec enregistrement dans l'historique du navigateur
+  const handleOpenPlace = useCallback(
+    (place: PlaceItem) => {
+      setPreviousSection(activeSection === 'place_detail' ? 'home' : activeSection);
+      setSelectedPlace(place);
+      setActiveSectionState('place_detail');
+
+      if (typeof window !== 'undefined') {
+        const navState: HistoryNavState = {
+          section: 'place_detail',
+          placeId: place.id,
+          articleId: null,
+          fromInApp: true,
+        };
+        const url = buildUrlForState(navState);
+        window.history.pushState(navState, '', url);
+        inAppHistoryDepthRef.current += 1;
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
+    },
+    [activeSection]
+  );
+
+  // Ouverture d'un article avec enregistrement dans l'historique du navigateur
+  const handleOpenArticle = useCallback(
+    (post: BlogPost) => {
+      setPreviousSection(activeSection === 'article_detail' ? 'home' : activeSection);
+      setSelectedArticle(post);
+      setActiveSectionState('article_detail');
+
+      if (typeof window !== 'undefined') {
+        const navState: HistoryNavState = {
+          section: 'article_detail',
+          placeId: null,
+          articleId: post.id,
+          fromInApp: true,
+        };
+        const url = buildUrlForState(navState);
+        window.history.pushState(navState, '', url);
+        inAppHistoryDepthRef.current += 1;
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
+    },
+    [activeSection]
+  );
+
+  // Bouton "Retour" interne aux fiches : utilise l'historique navigateur si disponible
+  const handleStepBack = useCallback(() => {
+    if (typeof window !== 'undefined' && inAppHistoryDepthRef.current > 0) {
+      window.history.back();
+    } else {
+      const target =
+        previousSection &&
+        previousSection !== 'place_detail' &&
+        previousSection !== 'article_detail'
+          ? previousSection
+          : 'home';
+      navigateToSection(target);
+    }
+  }, [previousSection, navigateToSection]);
+
+  // Lecture de l'URL initiale (?page=... ou #...) et écoute du bouton Retour/Suivant du navigateur (popstate)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const parseCurrentLocation = (): HistoryNavState => {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get('page');
+      const idParam = params.get('id');
+      const hashParam = window.location.hash.replace('#', '').trim();
+
+      if (pageParam === 'lieu' && idParam) {
+        return { section: 'place_detail', placeId: idParam };
+      }
+      if (pageParam === 'article' && idParam) {
+        return { section: 'article_detail', articleId: idParam };
+      }
+      if (pageParam) {
+        return { section: pageParam };
+      }
+      if (
+        hashParam &&
+        ['beaches', 'snorkeling', 'activities', 'map', 'blog', 'community', 'admin', 'forum'].includes(
+          hashParam
+        )
+      ) {
+        return { section: hashParam };
+      }
+      return { section: 'home' };
+    };
+
+    const initialState = window.history.state?.section
+      ? (window.history.state as HistoryNavState)
+      : parseCurrentLocation();
+
+    applyNavigationState(initialState);
+    window.history.replaceState(initialState, '', buildUrlForState(initialState));
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (inAppHistoryDepthRef.current > 0) {
+        inAppHistoryDepthRef.current -= 1;
+      }
+      const nextState: HistoryNavState = event.state?.section
+        ? (event.state as HistoryNavState)
+        : parseCurrentLocation();
+      applyNavigationState(nextState);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [applyNavigationState]);
+
+  // Remonter en haut de page à chaque changement de section
+  useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-  };
+  }, [activeSection, selectedPlace?.id, selectedArticle?.id]);
 
-  // Forcer systématiquement le scroll tout en haut dès que la section active change
-  React.useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, [activeSection]);
-
-  // Intercept any detail modal calls from elsewhere and divert to full page
-  React.useEffect(() => {
+  // Intercepter les ouvertures de fiches depuis PlaceCard / Carte (openModal('detail', place))
+  useEffect(() => {
     if (activeModal.type === 'detail' && activeModal.data) {
       handleOpenPlace(activeModal.data as PlaceItem);
       closeModal();
     }
-  }, [activeModal]);
+  }, [activeModal, handleOpenPlace, closeModal]);
 
-  // Filtered places for homepage
+  // Filtrage des lieux pour la page d'accueil
   const filteredPlaces = places.filter(place => {
     if (selectedCategory) {
       if (selectedCategory === 'activity') {
-        if (place.category !== 'activity' && place.category !== 'hiking' && place.category !== 'excursion') return false;
+        if (
+          place.category !== 'activity' &&
+          place.category !== 'hiking' &&
+          place.category !== 'excursion'
+        )
+          return false;
       } else if (place.category !== selectedCategory) {
         return false;
       }
@@ -91,11 +280,26 @@ export default function HomePage() {
       const matchCommune = place.commune.toLowerCase().includes(q);
       const matchTags = place.tags?.some(tag => tag.toLowerCase().includes(q));
       const matchSubCat = place.subCategory?.toLowerCase().includes(q);
-      const isTurtle = q.includes('tortue') && (place.id === 'anse-dufour' || place.observableFauna?.some(f => f.toLowerCase().includes('tortue')));
-      const isCalm = q.includes('calme') && (place.crowdLevel === 'Faible' || place.crowdLevel === 'Modérée');
-      const isSargassum = q.includes('sargasse') && (place.realTime?.sargassum === 'none');
+      const isTurtle =
+        q.includes('tortue') &&
+        (place.id === 'anse-dufour' ||
+          place.observableFauna?.some(f => f.toLowerCase().includes('tortue')));
+      const isCalm =
+        q.includes('calme') &&
+        (place.crowdLevel === 'Faible' || place.crowdLevel === 'Modérée');
+      const isSargassum =
+        q.includes('sargasse') && place.realTime?.sargassum === 'none';
 
-      return matchName || matchDesc || matchCommune || matchTags || matchSubCat || isTurtle || isCalm || isSargassum;
+      return (
+        matchName ||
+        matchDesc ||
+        matchCommune ||
+        matchTags ||
+        matchSubCat ||
+        isTurtle ||
+        isCalm ||
+        isSargassum
+      );
     }
     return true;
   });
@@ -110,40 +314,36 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-lagon-bg text-ink selection:bg-lagon-light selection:text-deep">
       {/* 1. Primary Navigation */}
-      <Navbar activeSection={activeSection} setActiveSection={setActiveSection} />
+      <Navbar activeSection={activeSection} setActiveSection={navigateToSection} />
 
       {/* Main Container */}
       <main className="flex-1">
         {/* DEDICATED SECTIONS */}
         {activeSection === 'beaches' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
-            <BeachesView places={places} onOpenMap={() => setActiveSection('map')} />
+            <BeachesView places={places} onOpenMap={() => navigateToSection('map')} />
           </div>
         ) : activeSection === 'snorkeling' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
-            <SnorkelingView places={places} onOpenMap={() => setActiveSection('map')} />
+            <SnorkelingView places={places} onOpenMap={() => navigateToSection('map')} />
           </div>
         ) : activeSection === 'activities' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
-            <ActivitiesView places={places} onOpenMap={() => setActiveSection('map')} />
+            <ActivitiesView places={places} onOpenMap={() => navigateToSection('map')} />
           </div>
         ) : activeSection === 'admin' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
             <AdminDashboard />
           </div>
-
         ) : activeSection === 'community' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
-            <CommunityView onNavigate={(tab) => setActiveSection(tab)} />
+            <CommunityView onNavigate={tab => navigateToSection(tab)} />
           </div>
         ) : activeSection === 'blog' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
             <BlogView
               onOpenArticle={handleOpenArticle}
-              onNavigateHome={() => {
-                setActiveSection('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigateHome={() => navigateToSection('home')}
             />
           </div>
         ) : activeSection === 'place_detail' && selectedPlace ? (
@@ -151,15 +351,9 @@ export default function HomePage() {
             <PlaceDetailView
               place={selectedPlace}
               places={places}
-              onBack={() => {
-                setActiveSection(previousSection);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onBack={handleStepBack}
               onSelectPlace={handleOpenPlace}
-              onNavigateHome={() => {
-                setActiveSection('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigateHome={() => navigateToSection('home')}
             />
           </div>
         ) : activeSection === 'article_detail' && selectedArticle ? (
@@ -167,15 +361,9 @@ export default function HomePage() {
             <ArticleDetailView
               post={selectedArticle}
               places={places}
-              onBack={() => {
-                setActiveSection(previousSection);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onBack={handleStepBack}
               onOpenPlace={handleOpenPlace}
-              onNavigateHome={() => {
-                setActiveSection('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigateHome={() => navigateToSection('home')}
             />
           </div>
         ) : activeSection === 'forum' ? (
@@ -196,50 +384,42 @@ export default function HomePage() {
              HOME EXPERIENCE: IMMERSIVE, WARM, AIRY, PREMIUM
              ======================================================== */
           <div className="space-y-24 sm:space-y-32">
-            {/* 1. HERO SECTION (Left-aligned, immersive, generous desktop height) */}
+            {/* 1. HERO SECTION */}
             <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-start text-white overflow-hidden">
-              {/* Background Photography with Calm Dark Overlay */}
               <div className="absolute inset-0 z-0">
                 <img
                   src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=85"
                   alt="Plage de sable blanc et eau turquoise en Martinique"
                   className="w-full h-full object-cover object-center scale-100"
                 />
-                {/* Subtle dark overlay ensuring strict contrast */}
                 <div className="absolute inset-0 bg-gradient-to-r from-deep/80 via-deep/50 to-deep/20" />
                 <div className="absolute inset-0 bg-gradient-to-t from-deep/70 via-transparent to-deep/30" />
               </div>
 
-              {/* Hero Left-aligned Content */}
               <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-32 pb-20 w-full">
                 <div className="max-w-2xl text-left space-y-6">
-                  {/* Subtle Tag */}
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs text-white tracking-wide font-normal">
                     <span className="w-1.5 h-1.5 rounded-full bg-coral" />
                     <span>Guide & communauté de Madinina</span>
                   </div>
 
-                  {/* Expressive Title */}
                   <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.15]">
                     Voyagez au rythme <br className="hidden sm:inline" />
                     de la Martinique.
                   </h1>
 
-                  {/* Evocative Subtitle with Generous Line Height */}
                   <p className="text-base sm:text-lg text-white/85 font-normal leading-relaxed max-w-xl">
                     Les anses calmes du Sud, les herbiers marins où nagent les tortues et les conseils d&apos;habitants partagés avec authenticité.
                   </p>
 
-                  {/* Clean Search Input */}
                   <div className="pt-2">
                     <SmartSearchBar onSearchSubmit={handleScrollToDirectory} />
                   </div>
 
-                  {/* Single Primary Action */}
                   <div className="pt-4 flex flex-wrap items-center gap-5">
                     <button
                       type="button"
-                      onClick={() => setActiveSection('map')}
+                      onClick={() => navigateToSection('map')}
                       className="px-7 py-3.5 rounded-2xl bg-action hover:bg-action-hover text-white text-sm font-medium transition-all duration-300 shadow-soft hover:shadow-card flex items-center gap-2"
                     >
                       <Compass className="w-4 h-4" />
@@ -249,7 +429,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Discreet Bottom Scroll Cue */}
               <button
                 type="button"
                 onClick={handleScrollToDirectory}
@@ -260,7 +439,7 @@ export default function HomePage() {
               </button>
             </section>
 
-            {/* 2. REAL-TIME RIBBON (Serene, non-cluttered) */}
+            {/* 2. REAL-TIME RIBBON */}
             <div className="-mt-12 sm:-mt-16 relative z-20 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
               <div className="rounded-3xl overflow-hidden shadow-soft">
                 <RealTimeConditionsBar />
@@ -270,7 +449,6 @@ export default function HomePage() {
             {/* 3. ASYMMETRIC EDITORIAL SPOTLIGHT */}
             <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-                {/* Left: Editorial Statement */}
                 <div className="lg:col-span-5 space-y-6 text-left">
                   <span className="text-xs font-semibold tracking-wider uppercase text-action">
                     L&apos;esprit du voyage
@@ -293,7 +471,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Right: Asymmetric Large Featured Card */}
                 <div className="lg:col-span-7">
                   <div
                     onClick={() => handleOpenPlace(featuredSpot)}
@@ -346,11 +523,11 @@ export default function HomePage() {
                     { id: null, label: 'Tous les lieux' },
                     { id: 'beach', label: 'Plages' },
                     { id: 'snorkeling', label: 'Snorkeling' },
-                    { id: 'hiking', label: '🥾 Randonnées' },
-                    { id: 'excursion', label: '⛵ Sorties en Mer' },
-                    { id: 'accommodation', label: '🏨 Hébergements' },
-                    { id: 'activity', label: '🎯 Expériences' },
-                    { id: 'restaurant', label: '🍽️ Gastronomie' },
+                    { id: 'hiking', label: 'Randonnées' },
+                    { id: 'excursion', label: 'Sorties en Mer' },
+                    { id: 'accommodation', label: 'Hébergements' },
+                    { id: 'activity', label: 'Expériences' },
+                    { id: 'restaurant', label: 'Gastronomie' },
                   ].map(cat => {
                     const isSelected = selectedCategory === cat.id;
                     return (
@@ -358,7 +535,7 @@ export default function HomePage() {
                         key={cat.id || 'all'}
                         type="button"
                         onClick={() => setSelectedCategory(cat.id as any)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-medium transition-all duration-200 ${
+                        className={`px-4 py-2 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
                           isSelected
                             ? 'bg-deep text-white font-semibold shadow-soft'
                             : 'bg-white text-ink border border-lagon-border hover:bg-lagon-bg'
@@ -388,7 +565,7 @@ export default function HomePage() {
               )}
             </section>
 
-            {/* 5. INTERACTIVE MAP SECTION (Split-Screen: Carte 3/5, Infos 2/5) */}
+            {/* 5. INTERACTIVE MAP SECTION */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <InteractiveMartiniqueMap
                 places={places}
@@ -412,10 +589,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <Footer onNavigate={sec => {
-        setActiveSection(sec);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }} />
+      <Footer onNavigate={sec => navigateToSection(sec)} />
     </div>
   );
 }

@@ -14,27 +14,21 @@ export default function BlogPageContainer() {
     router.push(`/guides/${post.slug || post.id}`);
   };
 
+  const handleNav = (sec: string) => {
+    if (sec === 'home') router.push('/');
+    else router.push(`/?page=${encodeURIComponent(sec)}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-lagon-bg text-ink">
-      <Navbar
-        activeSection="blog"
-        setActiveSection={(sec) => {
-          if (sec === 'home') router.push('/');
-          else router.push(`/#${sec}`);
-        }}
-      />
+      <Navbar activeSection="blog" setActiveSection={handleNav} />
       <main className="flex-1 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20 w-full">
         <BlogView
           onOpenArticle={handleOpenArticle}
-          onNavigateHome={() => router.push('/')}
+          onNavigateHome={() => router.push('/?page=map')}
         />
       </main>
-      <Footer
-        onNavigate={(sec) => {
-          if (sec === 'home') router.push('/');
-          else router.push(`/#${sec}`);
-        }}
-      />
+      <Footer onNavigate={handleNav} />
     </div>
   );
 }

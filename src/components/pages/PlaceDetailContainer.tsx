@@ -15,30 +15,30 @@ interface PlaceDetailContainerProps {
 export default function PlaceDetailContainer({ place, allPlaces }: PlaceDetailContainerProps) {
   const router = useRouter();
 
+  const handleNav = (sec: string) => {
+    if (sec === 'home') router.push('/');
+    else router.push(`/?page=${encodeURIComponent(sec)}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-lagon-bg text-ink">
-      <Navbar
-        activeSection="beaches"
-        setActiveSection={(sec) => {
-          if (sec === 'home') router.push('/');
-          else router.push(`/#${sec}`);
-        }}
-      />
+      <Navbar activeSection="beaches" setActiveSection={handleNav} />
       <main className="flex-1 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20 w-full">
         <PlaceDetailView
           place={place}
           places={allPlaces}
-          onBack={() => router.push('/')}
+          onBack={() => {
+            if (typeof window !== 'undefined' && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push('/');
+            }
+          }}
           onSelectPlace={(p) => router.push(`/lieux/${p.id}`)}
           onNavigateHome={() => router.push('/')}
         />
       </main>
-      <Footer
-        onNavigate={(sec) => {
-          if (sec === 'home') router.push('/');
-          else router.push(`/#${sec}`);
-        }}
-      />
+      <Footer onNavigate={handleNav} />
     </div>
   );
 }
