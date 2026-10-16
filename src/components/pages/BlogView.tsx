@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { INITIAL_BLOG_POSTS } from '@/data/mockData';
 import { BlogPost } from '@/types';
 import {
@@ -12,7 +12,9 @@ import {
   MapPin,
   X,
   BookOpen,
-  Sun
+  Sun,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface BlogViewProps {
@@ -69,6 +71,13 @@ const ISLAND_SEASONS_CALENDAR = [
 export default function BlogView({ onOpenArticle, onNavigateHome }: BlogViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScrollCategories = (direction: 'left' | 'right') => {
+    if (!categoryScrollRef.current) return;
+    const scrollAmount = direction === 'left' ? -260 : 260;
+    categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  };
 
   const featuredPost =
     INITIAL_BLOG_POSTS.find(p => p.id === 'blog-4') || INITIAL_BLOG_POSTS[0];
@@ -147,25 +156,48 @@ export default function BlogView({ onOpenArticle, onNavigateHome }: BlogViewProp
             </div>
           </div>
 
-          {/* Rubriques du journal */}
-          <div className="pt-4 border-t border-white/15 flex items-center gap-2 overflow-x-auto no-scrollbar">
-            {CATEGORIES.map(cat => {
-              const active = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                    active
-                      ? 'bg-white text-slate-900 font-semibold'
-                      : 'bg-white/10 text-white/85 hover:bg-white/20 border border-white/15'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
+          {/* Rubriques du journal avec flèches gauche / droite (sans barre de défilement) */}
+          <div className="pt-4 border-t border-white/15 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleScrollCategories('left')}
+              aria-label="Faire défiler les rubriques vers la gauche"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div
+              ref={categoryScrollRef}
+              className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+            >
+              {CATEGORIES.map(cat => {
+                const active = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
+                      active
+                        ? 'bg-white text-slate-900 font-semibold'
+                        : 'bg-white/10 text-white/85 hover:bg-white/20 border border-white/15'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleScrollCategories('right')}
+              aria-label="Faire défiler les rubriques vers la droite"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>
