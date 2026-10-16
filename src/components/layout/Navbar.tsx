@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Menu, X, Shield, User, LogOut, Loader2 } from 'lucide-react';
+import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
 import LanguageSelector from '@/components/layout/LanguageSelector';
 import { TRANSLATIONS } from '@/data/translations';
@@ -20,8 +20,11 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [discoverDropdownOpen, setDiscoverDropdownOpen] = useState(false);
+  const [mobileDiscoverOpen, setMobileDiscoverOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const discoverDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -33,15 +36,18 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
     router.push('/');
   };
 
-  // Fermer le menu si on clique à côté
+  // Fermer les menus si on clique à côté
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
         setUserDropdownOpen(false);
       }
+      if (discoverDropdownRef.current && !discoverDropdownRef.current.contains(e.target as Node)) {
+        setDiscoverDropdownOpen(false);
+      }
     };
 
-    if (userDropdownOpen) {
+    if (userDropdownOpen || discoverDropdownOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
       document.addEventListener('touchstart', handleOutsideClick);
     }
@@ -49,7 +55,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
       document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('touchstart', handleOutsideClick);
     };
-  }, [userDropdownOpen]);
+  }, [userDropdownOpen, discoverDropdownOpen]);
   const t = TRANSLATIONS[language] || TRANSLATIONS.fr;
 
   useEffect(() => {
@@ -72,13 +78,36 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
     document.body.scrollTop = 0;
     setMobileOpen(false);
     setUserDropdownOpen(false);
+    setDiscoverDropdownOpen(false);
   };
+
+  const discoverSubLinks = [
+    {
+      id: 'beaches',
+      label: 'Plages',
+      desc: 'Anses de sable blanc & volcanique',
+      icon: '🏖️',
+    },
+    {
+      id: 'snorkeling',
+      label: 'Snorkeling',
+      desc: 'Tortues, récifs & fonds marins',
+      icon: '🤿',
+    },
+    {
+      id: 'activities',
+      label: 'Expériences',
+      desc: 'Randos, excursions & nautisme',
+      icon: '🏄',
+    },
+  ];
+
+  const isDiscoverActive = discoverSubLinks.some(sub => sub.id === activeSection);
+  const activeDiscoverItem = discoverSubLinks.find(sub => sub.id === activeSection);
 
   const navLinks = [
     { id: 'home', label: 'Explorer' },
-    { id: 'beaches', label: 'Plages' },
-    { id: 'snorkeling', label: 'Snorkeling' },
-    { id: 'activities', label: 'Expériences' },
+    { id: 'discover_group', label: 'Découvrir', isDropdown: true },
     { id: 'map', label: 'Carte', shortLabel: 'Carte' },
     { id: 'blog', label: 'Actualités', shortLabel: 'Actus' },
     { id: 'community', label: 'Communauté' },
@@ -121,8 +150,79 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
         </button>
 
         {/* Desktop Navigation with Comfortable Spacing */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-7 mx-4">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-8 mx-4">
           {navLinks.map(link => {
+            if (link.isDropdown) {
+              return (
+                <div
+                  key={link.id}
+                  ref={discoverDropdownRef}
+                  className="relative"
+                  onMouseEnter={() => setDiscoverDropdownOpen(true)}
+                  onMouseLeave={() => setDiscoverDropdownOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setDiscoverDropdownOpen(prev => !prev)}
+                    className={`flex items-center gap-1.5 text-sm font-medium transition-colors relative py-1.5 whitespace-nowrap cursor-pointer ${
+                      scrolled || activeSection !== 'home'
+                        ? isDiscoverActive
+                          ? 'text-action font-semibold'
+                          : 'text-ink-muted hover:text-deep'
+                        : isDiscoverActive
+                        ? 'text-white font-semibold'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    <span>{activeDiscoverItem ? activeDiscoverItem.label : link.label}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        discoverDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                    {isDiscoverActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-action rounded-full" />
+                    )}
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {discoverDropdownOpen && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2.5 w-72 z-50 animate-fadeIn">
+                      <div className="bg-white rounded-2xl shadow-modal border border-lagon-border p-2 space-y-1">
+                        {discoverSubLinks.map(sub => {
+                          const isSubActive = activeSection === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => handleNavClick(sub.id)}
+                              className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                                isSubActive
+                                  ? 'bg-lagon-bg text-action'
+                                  : 'hover:bg-lagon-bg/60 text-deep'
+                              }`}
+                            >
+                              <span className="w-9 h-9 rounded-xl bg-lagon-bg border border-lagon-border/60 flex items-center justify-center text-base shrink-0">
+                                {sub.icon}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className={`text-xs font-semibold ${isSubActive ? 'text-action' : 'text-deep'}`}>
+                                  {sub.label}
+                                </div>
+                                <div className="text-[11px] text-ink-muted truncate">
+                                  {sub.desc}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             const isActive = activeSection === link.id;
             return (
               <button
@@ -270,20 +370,67 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
         <div className="lg:hidden bg-white border-b border-lagon-border px-6 py-6 shadow-modal space-y-4 animate-fadeIn">
-          <nav className="flex flex-col gap-2">
-            {navLinks.map(link => (
-              <button
-                key={link.id}
-                onClick={() => handleNavClick(link.id)}
-                className={`text-left py-2.5 text-base font-medium rounded-xl px-3 transition-colors ${
-                  activeSection === link.id
-                    ? 'bg-lagon-bg text-action font-semibold'
-                    : 'text-ink hover:text-action'
-                }`}
-              >
-                {link.label}
-              </button>
-            ))}
+          <nav className="flex flex-col gap-1.5">
+            {navLinks.map(link => {
+              if (link.isDropdown) {
+                return (
+                  <div key={link.id} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => setMobileDiscoverOpen(prev => !prev)}
+                      className={`w-full flex items-center justify-between text-left py-2.5 text-base font-medium rounded-xl px-3 transition-colors ${
+                        isDiscoverActive
+                          ? 'bg-lagon-bg text-action font-semibold'
+                          : 'text-ink hover:text-action'
+                      }`}
+                    >
+                      <span>{activeDiscoverItem ? `${link.label} (${activeDiscoverItem.label})` : link.label}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          mobileDiscoverOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {mobileDiscoverOpen && (
+                      <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-lagon-border ml-3">
+                        {discoverSubLinks.map(sub => {
+                          const isSubActive = activeSection === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => handleNavClick(sub.id)}
+                              className={`w-full flex items-center gap-2.5 py-2 px-3 rounded-xl text-sm font-medium transition-colors ${
+                                isSubActive
+                                  ? 'bg-lagon-bg text-action font-semibold'
+                                  : 'text-ink-muted hover:text-deep hover:bg-lagon-bg/50'
+                              }`}
+                            >
+                              <span>{sub.icon}</span>
+                              <span>{sub.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className={`text-left py-2.5 text-base font-medium rounded-xl px-3 transition-colors ${
+                    activeSection === link.id
+                      ? 'bg-lagon-bg text-action font-semibold'
+                      : 'text-ink hover:text-action'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
           </nav>
 
           <div className="pt-4 border-t border-lagon-border flex flex-col gap-3">
