@@ -134,7 +134,7 @@ export default function HomePage() {
 
         ) : activeSection === 'community' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">
-            <CommunityView />
+            <CommunityView onNavigate={(tab) => setActiveSection(tab)} />
           </div>
         ) : activeSection === 'blog' ? (
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-28 pb-20">

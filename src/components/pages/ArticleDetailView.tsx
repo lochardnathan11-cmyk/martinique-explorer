@@ -2,19 +2,15 @@
 
 import React, { useState } from 'react';
 import { BlogPost, PlaceItem } from '@/types';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Clock, 
-  User, 
-  Share2, 
-  Check, 
-  MapPin, 
-  Compass, 
-  Bookmark, 
-  MessageSquare, 
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Share2,
+  Check,
+  Compass,
+  MessageSquare,
   ThumbsUp,
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 
@@ -26,6 +22,190 @@ interface ArticleDetailViewProps {
   onNavigateHome: () => void;
 }
 
+interface ArticleExtraContent {
+  takeaways: string[];
+  sections: Array<{
+    heading: string;
+    paragraphs: string[];
+  }>;
+  localTip: string;
+}
+
+const ARTICLE_DETAILS_MAP: Record<string, ArticleExtraContent> = {
+  'blog-1': {
+    takeaways: [
+      'Sud Caraïbe (Salines, Anses-d’Arlet, Sainte-Luce) : eaux calmes, sable blanc et fonds clairs.',
+      'Nord Caraïbe (Carbet, Prêcheur, Anse Céron) : sable noir volcanique et panorama sur la Montagne Pelée.',
+      'Côte Atlantique (Caravelle, Pointe Faula) : lagons protégés par la barrière de corail et fonds blancs.'
+    ],
+    sections: [
+      {
+        heading: '1. Les grandes plages de sable blanc du Sud',
+        paragraphs: [
+          'La Grande Anse des Salines à Sainte-Anne reste l’archétype de la plage caribéenne : plus d’un kilomètre de sable blond bordé de cocotiers penchés et de raisiniers bord-de-mer qui offrent une ombre naturelle précieuse à midi.',
+          'Plus à l’ouest, le secteur de Sainte-Luce propose un chapelet d’anses reliées par un sentier littoral très agréable à parcourir à pied tôt le matin, de l’Anse Gros Raisins jusqu’à l’Anse Mabouya.'
+        ]
+      },
+      {
+        heading: '2. Le charme sauvage des anses volcaniques du Nord',
+        paragraphs: [
+          'Après Saint-Pierre et Le Prêcheur, la route s’arrête à l’Anse Céron et à l’Anse Couleuvre. Ici, le sable gris-noir issu de la Montagne Pelée contraste avec le vert dense de la forêt tropicale et l’îlet la Perle au large.'
+        ]
+      }
+    ],
+    localTip: 'En fin de semaine, privilégiez une arrivée avant 9h30 aux Salines ou à l’Anse Michel pour vous garer à l’ombre sous les arbres.'
+  },
+  'blog-2': {
+    takeaways: [
+      'Meilleur créneau : entre 7h30 et 9h00 pour profiter d’une mer lisse et d’une bonne luminosité sous-marine.',
+      'Distance respectueuse : rester à 3 mètres minimum, sans jamais toucher ni suivre une tortue qui remonte respirer.',
+      'Protection du récif : privilégier un t-shirt anti-UV plutôt que de la crème solaire avant la mise à l’eau.'
+    ],
+    sections: [
+      {
+        heading: '1. Comprendre les herbiers des Anses-d’Arlet',
+        paragraphs: [
+          'Les tortues vertes (Chelonia mydas) fréquentent les fonds sableux d’Anse Dufour, d’Anse Noire et de Grande Anse d’Arlet pour brouter les herbiers marins situés entre 2 et 5 mètres de profondeur.',
+          'Tandis que les tortues vertes restent au centre de la baie sur l’herbier, les tortues imbriquées s’observent plutôt le long des parois rocheuses où elles cherchent des éponges.'
+        ]
+      },
+      {
+        heading: '2. Observer sans perturber l’animal',
+        paragraphs: [
+          'Une tortue marine remonte régulièrement en surface pour reprendre son souffle. Il est essentiel de toujours rester sur le côté, en flottant calmement en surface, sans jamais se placer au-dessus d’elle.'
+        ]
+      }
+    ],
+    localTip: 'Si le petit parking d’Anse Dufour est complet après 9h30, Grande Anse d’Arlet offre beaucoup plus d’espace et ses herbiers abritent tout autant de tortues.'
+  },
+  'blog-3': {
+    takeaways: [
+      'Secteurs les plus recherchés : Sainte-Luce, Le Diamant, Les Trois-Îlets et Le Marin pour les services et la douceur de vivre.',
+      'Santé et infrastructures : réseau médical complet autour de Fort-de-France / Le Lamentin et cliniques de proximité.',
+      'Conseil avant d’acheter : louer d’abord pendant 3 à 6 mois pour tester les temps de trajet quotidiens.'
+    ],
+    sections: [
+      {
+        heading: '1. Choisir sa commune selon son rythme de vie',
+        paragraphs: [
+          'Le Sud Caraïbe (Sainte-Luce, Le Diamant) séduit par son ensoleillement, ses marchés matinaux et ses sentiers côtiers accessibles à pied. Les Trois-Îlets offrent en plus la liaison directe par navette maritime vers le centre de Fort-de-France en 20 minutes.',
+          'Pour les amateurs de voile et de plaisance, le bassin du Marin et de Sainte-Anne constitue le point d’ancrage principal dans les Petites Antilles.'
+        ]
+      },
+      {
+        heading: '2. Vie pratique et budget sur place',
+        paragraphs: [
+          'Privilégier les marchés locaux, les producteurs de fruits et légumes du pays et la pêche côtière permet à la fois de mieux manger et de maîtriser son budget au quotidien.'
+        ]
+      }
+    ],
+    localTip: 'Testez toujours un quartier aux heures de pointe du matin (7h–8h30) avant de vous engager sur une location longue durée.'
+  },
+  'blog-4': {
+    takeaways: [
+      'Patrimoine culturel : la yole ronde de Martinique est inscrite au patrimoine culturel immatériel de l’UNESCO.',
+      'Particularité nautique : embarcation en bois sans quille, sans gouvernail ni lest, équilibrée par les coursiers sur les « bois dressés ».',
+      'Ambiance à terre : arrivée d’étape festive chaque après-midi dans les communes côtières.'
+    ],
+    sections: [
+      {
+        heading: '1. Un équilibre unique au monde sur les bois dressés',
+        paragraphs: [
+          'Inspirée des anciens gommiers de pêche, la yole ronde navigue grâce à l’agilité de son équipage. Pour compenser la poussée du vent dans la grande voile, les yoleurs se suspendent au-dessus de l’eau sur de longues perches en bois (« les bois dressés ») côté vent.',
+          'Chaque étape relie deux communes du littoral, offrant un spectacle coloré aussi bien depuis les falaises et les plages que sur les embarcations suiveuses.'
+        ]
+      },
+      {
+        heading: '2. Les meilleurs points de vue depuis la côte',
+        paragraphs: [
+          'Sur la côte Caraïbe, la descente entre Saint-Pierre, Le Carbet et Fort-de-France ou le passage devant le Rocher du Diamant permettent de suivre les régates à quelques centaines de mètres du rivage.'
+        ]
+      }
+    ],
+    localTip: 'Les jours d’étape, les bourgs d’arrivée ferment souvent leur front de mer aux voitures dès la fin de matinée : prévoyez du covoiturage ou arrivez tôt.'
+  },
+  'blog-5': {
+    takeaways: [
+      'Période de ponte : de mars à juillet pour la tortue luth, suivie des émergences de nouveau-nés jusqu’en septembre.',
+      'Plages concernées : principalement les grandes plages de sable volcanique du Nord et les anses sauvages.',
+      'Précaution essentielle : aucune lumière blanche ni flash photo la nuit sur les plages de ponte.'
+    ],
+    sections: [
+      {
+        heading: '1. Le retour nocturne des géantes des mers',
+        paragraphs: [
+          'La tortue luth (Dermochelys coriacea), qui peut dépasser 1,70 mètre et 400 kg, parcourt des milliers de kilomètres à travers l’Atlantique pour venir pondre sur les plages martiniquaises.',
+          'La femelle monte sur le haut de plage à la nuit tombée, creuse son nid dans le sable profond, puis regagne le large après environ deux heures.'
+        ]
+      },
+      {
+        heading: '2. Pourquoi la lumière artificielle est un danger',
+        paragraphs: [
+          'Les tortues adultes comme les nouveau-nés s’orientent grâce à la clarté naturelle de l’horizon marin. Une lampe torche ou un écran de téléphone suffit à les désorienter vers l’intérieur des terres.'
+        ]
+      }
+    ],
+    localTip: 'Rapprochez-vous des associations locales du Réseau Tortues Marines Martinique pour participer à des suivis encadrés.'
+  },
+  'blog-6': {
+    takeaways: [
+      'Géographie protectrice : les courants et les alizés poussent les bancs d’algues d’est en ouest vers la côte Atlantique.',
+      'Côte Caraïbe préservée : de Saint-Pierre aux Anses-d’Arlet, la mer reste claire la quasi-totalité de l’année.',
+      'Alternative côté Est : les plages protégées par la presqu’île de la Caravelle (Tartane) restent souvent épargnées.'
+    ],
+    sections: [
+      {
+        heading: '1. L’effet bouclier du relief martiniquais',
+        paragraphs: [
+          'Les radeaux de sargasses dérivent depuis l’Atlantique équatorial poussés par les vents d’est (les alizés). Lorsqu’ils approchent de l’île, seules certaines baies orientées plein est sur la façade Atlantique (Le Robert, Le François, Le Vauclin) peuvent être touchées ponctuellement.',
+          'Toute la façade ouest (côte Caraïbe) ainsi que l’extrême sud se trouvent sous le vent de l’île et conservent une eau limpide.'
+        ]
+      },
+      {
+        heading: '2. Adapter son programme de baignade',
+        paragraphs: [
+          'En cas d’arrivage signalé sur un secteur de la côte Atlantique, il suffit généralement de basculer à 25 minutes de route vers la côte Caraïbe (Sainte-Luce, Le Diamant, Anses-d’Arlet) pour retrouver une mer parfaitement propre.'
+        ]
+      }
+    ],
+    localTip: 'Consultez les signalements du matin dans l’onglet Communauté avant de choisir votre plage du jour.'
+  },
+  'blog-7': {
+    takeaways: [
+      'Quatre jours uniques : du Dimanche Gras au Mercredi des Cendres, chaque journée possède son code couleur.',
+      'Participation ouverte : tout le monde est invité à s’habiller selon le thème du jour pour suivre les groupes à pied.',
+      'Respect des traditions : le Mercredi des Cendres clôt la fête en noir et blanc avec l’incinération de Vaval.'
+    ],
+    sections: [
+      {
+        heading: '1. Le calendrier des couleurs jour par jour',
+        paragraphs: [
+          'Le Dimanche Gras ouvre les festivités en couleurs vives avec la présentation de Sa Majesté Vaval. Le Lundi Gras est célèbre pour ses mariages burlesques dès l’aube et ses parades satiriques.',
+          'Le Mardi Gras voit toute l’île se vêtir de rouge et de noir pour le défilé des Diables Rouges, avant le grand final en noir et blanc du Mercredi des Cendres.'
+        ]
+      }
+    ],
+    localTip: 'Pour profiter des vidés à Fort-de-France sans souci de stationnement, prenez la navette maritime depuis les Trois-Îlets.'
+  },
+  'blog-8': {
+    takeaways: [
+      'Seule AOC au monde : le Rhum Agricole de la Martinique est élaboré exclusivement à partir de pur jus de canne frais.',
+      'Saison de récolte : la coupe de la canne et la distillation fument généralement de février à juin.',
+      'Patrimoine et jardins : la plupart des habitations se visitent aussi pour leurs parcs botaniques et leur architecture.'
+    ],
+    sections: [
+      {
+        heading: '1. Du Nord volcanique aux terres du Sud',
+        paragraphs: [
+          'Au pied de la Montagne Pelée à Saint-Pierre, la distillerie Depaz bénéficie d’un terroir volcanique filtrant et d’une eau de source pure. Un peu plus au sud, au Carbet, la distillerie Neisson perpétue un savoir-faire familial reconnu.',
+          'Côté Atlantique, l’Habitation Clément au François allie chais de vieillissement, maison créole classée du XVIIIe siècle et fondation d’art contemporain au cœur d’un grand parc arboré.'
+        ]
+      }
+    ],
+    localTip: 'Les visites de distilleries sont particulièrement vivantes le matin en semaine pendant la période de récolte (février à mai) lorsque les moulins tournent.'
+  }
+};
+
 export default function ArticleDetailView({
   post,
   places,
@@ -35,22 +215,20 @@ export default function ArticleDetailView({
 }: ArticleDetailViewProps) {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(48);
+  const [likeCount, setLikeCount] = useState(34);
   const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState<{ id: string; author: string; date: string; text: string }[]>([
+  const [comments, setComments] = useState<
+    { id: string; author: string; date: string; text: string }[]
+  >([
     {
       id: 'c1',
       author: 'Stéphane B.',
       date: 'Il y a 2 jours',
-      text: 'Nous avons suivi votre recommandation pour Anse Dufour à 7h45 : c\'était magique, nous étions seuls dans l\'eau avec deux tortues vertes à moins de 2 mètres ! Merci pour ce guide précis.'
-    },
-    {
-      id: 'c2',
-      author: 'Chloé & Thomas',
-      date: 'Hier',
-      text: 'Super article très complet et éco-responsable. On apprécie particulièrement le rappel de ne pas toucher les tortues.'
+      text: 'Merci pour ces précisions très concrètes, cela nous a beaucoup aidés à organiser nos déplacements sur place.'
     }
   ]);
+
+  const extra = ARTICLE_DETAILS_MAP[post.id] || ARTICLE_DETAILS_MAP['blog-1'];
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -76,7 +254,7 @@ export default function ArticleDetailView({
     setComments(prev => [
       {
         id: 'c-' + Date.now(),
-        author: 'Vous (Voyageur)',
+        author: 'Voyageur',
         date: 'À l\'instant',
         text: newComment.trim()
       },
@@ -85,39 +263,40 @@ export default function ArticleDetailView({
     setNewComment('');
   };
 
-  // Find places mentioned in this article
-  const relatedPlaces = places.filter(p => {
-    if (post.id === 'blog-2') {
-      return p.id === 'anse-dufour' || p.id === 'anse-noire' || p.category === 'snorkeling';
-    }
-    if (post.id === 'blog-1') {
-      return p.category === 'beach';
-    }
-    return p.featured;
-  }).slice(0, 3);
+  const relatedPlaces = places
+    .filter(p => {
+      if (post.id === 'blog-2') {
+        return p.id === 'anse-dufour' || p.id === 'anse-noire' || p.category === 'snorkeling';
+      }
+      if (post.id === 'blog-1' || post.id === 'blog-6') {
+        return p.category === 'beach';
+      }
+      return p.featured;
+    })
+    .slice(0, 3);
 
   return (
-    <article className="space-y-12 animate-fadeIn pb-16">
-      {/* 1. Breadcrumbs & Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-lagon-border/70 pb-4 text-xs">
-        <nav className="flex items-center gap-2 text-ink-muted flex-wrap">
-          <button 
+    <article className="space-y-10 pb-16 text-left">
+      {/* 1. Fil d'Ariane et bouton retour */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4 text-xs">
+        <nav className="flex items-center gap-2 text-slate-500 flex-wrap">
+          <button
             type="button"
             onClick={onNavigateHome}
-            className="hover:text-action transition-colors cursor-pointer"
+            className="hover:text-teal-700 transition-colors cursor-pointer"
           >
             Accueil
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-lagon-border" />
-          <button 
+          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+          <button
             type="button"
             onClick={onBack}
-            className="hover:text-action transition-colors cursor-pointer"
+            className="hover:text-teal-700 transition-colors cursor-pointer"
           >
-            Guides & Récits
+            Actualités & Carnets
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-lagon-border" />
-          <span className="text-deep font-medium truncate max-w-[200px] sm:max-w-md">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+          <span className="text-slate-900 font-medium truncate max-w-[220px] sm:max-w-md">
             {post.title}
           </span>
         </nav>
@@ -125,42 +304,38 @@ export default function ArticleDetailView({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-lagon-border text-deep hover:text-action hover:border-action transition-all shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 hover:border-slate-300 transition-colors cursor-pointer font-medium"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span className="font-medium">Retour aux récits</span>
+          <span>Tous les articles</span>
         </button>
       </div>
 
-      {/* 2. Editorial Hero Header */}
-      <header className="space-y-6 max-w-4xl mx-auto text-left">
+      {/* 2. En-tête de l'article */}
+      <header className="space-y-5 max-w-4xl">
         <div className="space-y-3">
-          <span className="inline-block px-3.5 py-1 rounded-full bg-lagon-light/60 text-action text-xs font-semibold tracking-wide uppercase">
+          <span className="inline-block px-3 py-1 rounded-md bg-teal-50 text-teal-800 border border-teal-200/60 text-xs font-semibold">
             {post.category}
           </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-deep tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
             {post.title}
           </h1>
-          <p className="text-base sm:text-lg text-ink-muted leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
             {post.summary}
           </p>
         </div>
 
-        {/* Metadata Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-lagon-border/80 text-xs text-ink-muted">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-action/10 text-action flex items-center justify-center font-bold text-xs">
-                {post.author ? post.author.charAt(0) : 'M'}
-              </div>
-              <span className="font-medium text-deep">{post.author}</span>
-            </div>
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 opacity-70" />
+        <div className="flex flex-wrap items-center justify-between gap-4 py-3.5 border-y border-slate-200/80 text-xs text-slate-500">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="font-semibold text-slate-900">Par {post.author}</span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
               {post.date}
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 opacity-70" />
+            <span>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
               {post.readTime}
             </span>
           </div>
@@ -169,179 +344,163 @@ export default function ArticleDetailView({
             <button
               type="button"
               onClick={handleLike}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer ${
                 liked
-                  ? 'bg-coral-soft border-coral text-coral'
-                  : 'bg-white border-lagon-border text-deep hover:bg-lagon-bg'
+                  ? 'bg-teal-50 border-teal-300 text-teal-800'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <ThumbsUp className={`w-3.5 h-3.5 ${liked ? 'fill-coral' : ''}`} />
-              <span>{likeCount}</span>
+              <ThumbsUp className="w-3.5 h-3.5" />
+              <span>Utile ({likeCount})</span>
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-lagon-border text-deep hover:text-action hover:border-action transition-all text-xs font-medium cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors text-xs font-medium cursor-pointer"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-action" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Lien copié !' : 'Partager'}</span>
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-teal-700" />
+              ) : (
+                <Share2 className="w-3.5 h-3.5" />
+              )}
+              <span>{copied ? 'Lien copié' : 'Partager'}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* 3. Hero Visual (Full-width high quality photo) */}
-      <div className="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-card border border-lagon-border aspect-[16/9] bg-lagon-bg relative">
+      {/* 3. Photo principale */}
+      <div className="rounded-2xl overflow-hidden border border-slate-200/80 aspect-[16/9] max-h-[460px] bg-slate-100">
         <img
           src={post.image}
           alt={post.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute bottom-4 right-4 bg-deep/80 backdrop-blur-sm text-white/90 text-[11px] px-3 py-1 rounded-full">
-          Photo Martinique Explorer • Faune & Paysages
-        </div>
       </div>
 
-      {/* 4. Article Core Content & Side Column */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 text-left">
-        {/* Main Editorial Column */}
-        <div className="lg:col-span-8 space-y-8 text-ink text-base leading-relaxed">
-          {/* Executive Summary Card */}
-          <div className="p-6 rounded-3xl bg-sand-light border border-sand-border space-y-3">
-            <h3 className="text-sm font-semibold text-deep uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-coral" />
-              L&apos;essentiel en un coup d&apos;œil
-            </h3>
-            <ul className="space-y-2 text-sm text-ink-muted list-disc list-inside">
-              <li><strong>Meilleur horaire :</strong> Dès 7h30 - 8h30 le matin pour une eau transparente et un calme total.</li>
-              <li><strong>Règles d&apos;or :</strong> Rester à au moins 3 mètres, ne jamais toucher la carapace et ne pas bloquer la respiration.</li>
-              <li><strong>Équipement conseillé :</strong> Masque et tuba simples, palmes courtes, lycra anti-UV (éviter les crèmes chimiques toxiques).</li>
+      {/* 4. Corps de l'article + Colonne latérale */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div className="lg:col-span-8 space-y-8 text-slate-800 text-base leading-relaxed">
+          {/* Encadré Points clés adapté au sujet */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-[#FAF8F5] border border-stone-200/90 space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-800">
+              Points clés à retenir
+            </h2>
+            <ul className="space-y-2 text-sm text-stone-700 list-disc pl-4">
+              {extra.takeaways.map((item, idx) => (
+                <li key={idx} className="leading-relaxed">
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Full rich article prose */}
-          <div className="prose prose-slate max-w-none space-y-6 text-ink/90 leading-relaxed">
-            <p className="text-lg text-deep font-medium leading-relaxed">
+          {/* Contenu éditorial */}
+          <div className="space-y-6">
+            <p className="text-lg text-slate-900 font-medium leading-relaxed">
               {post.content}
             </p>
 
-            <h2 className="text-2xl font-semibold text-deep pt-4">
-              1. Les spots incontournables recommandés par les habitants
-            </h2>
-            <p>
-              La commune des Anses-d&apos;Arlet abrite sans conteste les plus beaux herbiers côtiers de l&apos;île. En longeant la côte caraïbe vers le sud, vous découvrirez des eaux abritées des alizés et de la houle atlantique, créant des conditions de visibilité aquatique remarquables pouvant dépasser 20 mètres certains matins.
-            </p>
-            <p>
-              À <strong>Anse Dufour</strong>, le contraste avec sa voisine Anse Noire (séparées par une simple falaise rocheuse) est frappant : le sable y est blond et doré, tandis qu&apos;Anse Noire arbore un sable noir d&apos;origine volcanique pure. Les tortues fréquentent régulièrement les deux anses pour se nourrir d&apos;algues et de phanérogames marines.
-            </p>
+            {extra.sections.map((sec, idx) => (
+              <div key={idx} className="space-y-3 pt-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                  {sec.heading}
+                </h2>
+                {sec.paragraphs.map((p, pIdx) => (
+                  <p key={pIdx} className="text-slate-700 leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              </div>
+            ))}
 
-            <div className="p-5 rounded-2xl bg-lagon-bg border border-lagon-border space-y-2">
-              <h4 className="text-xs font-semibold text-action uppercase tracking-wide">
-                💡 Conseil d&apos;initié de la communauté
-              </h4>
-              <p className="text-sm text-ink-muted">
-                Venez tôt ! À partir de 10h00, le parking municipal est souvent complet et les bateaux d&apos;excursion commencent à arriver. Entre 7h30 et 9h00, vous partagerez la baie uniquement avec les pêcheurs locaux remontant leurs nasses traditionnelles.
+            <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-200/70 space-y-1.5">
+              <h3 className="text-xs font-bold text-teal-900 uppercase tracking-wider">
+                Le conseil sur place
+              </h3>
+              <p className="text-sm text-teal-950/85 leading-relaxed">
+                {extra.localTip}
               </p>
             </div>
-
-            <h2 className="text-2xl font-semibold text-deep pt-4">
-              2. Charte de respect marin & écologie
-            </h2>
-            <p>
-              La Martinique est un sanctuaire de biodiversité reconnu mondialement par l&apos;UNESCO. Les tortues marines (tortues vertes et tortues imbriquées) sont des espèces protégées. Lors de vos immersions :
-            </p>
-            <ul className="space-y-2 text-sm text-ink-muted pl-4 list-disc">
-              <li>Gardez une distance minimale de 3 à 5 mètres à tout moment.</li>
-              <li>Ne poursuivez jamais un animal qui s&apos;éloigne vers le large.</li>
-              <li>Laissez toujours libre l&apos;accès vertical à la surface lorsqu&apos;une tortue doit remonter respirer.</li>
-              <li>Utilisez des t-shirts anti-UV plutôt que de la crème solaire pour préserver les coraux et les herbiers.</li>
-            </ul>
-
-            <h2 className="text-2xl font-semibold text-deep pt-4">
-              3. Que faire après votre baignade ?
-            </h2>
-            <p>
-              Après votre session matinale, profitez de la douceur du bourg des Anses-d&apos;Arlet pour admirer son église classée alignée sur le ponton en bois, savourer un jus de canne frais pressé au marché local ou déguster des accras de morue croustillants les pieds dans le sable.
-            </p>
           </div>
 
-          {/* Social Reactions & Comment form */}
-          <div className="pt-8 border-t border-lagon-border space-y-6">
-            <h3 className="text-xl font-semibold text-deep flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-action" />
-              Retours & échanges des voyageurs ({comments.length})
+          {/* Commentaires de l'article */}
+          <div className="pt-8 border-t border-slate-200/80 space-y-5">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-teal-700" />
+              Commentaires & retours ({comments.length})
             </h3>
 
-            {/* Comment Form */}
             <form onSubmit={handleAddComment} className="space-y-3">
               <textarea
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
-                placeholder="Vous avez testé ce spot récemment ? Partagez vos conseils, visibilité de l'eau et observations..."
+                placeholder="Une question ou un retour d'expérience sur ce sujet ?"
                 rows={3}
-                className="w-full p-4 rounded-2xl bg-white border border-lagon-border focus:border-action focus:outline-none text-sm text-ink placeholder:text-ink-muted shadow-xs"
+                className="w-full p-3.5 rounded-xl bg-white border border-slate-200 focus:border-teal-700 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400"
               />
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={!newComment.trim()}
-                  className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover disabled:opacity-50 text-white text-xs font-semibold shadow-soft cursor-pointer transition-colors"
+                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-semibold cursor-pointer transition-colors"
                 >
-                  Publier mon avis
+                  Publier
                 </button>
               </div>
             </form>
 
-            {/* Comment list */}
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3">
               {comments.map(c => (
-                <div key={c.id} className="p-4 rounded-2xl bg-white border border-lagon-border space-y-1.5 shadow-xs">
+                <div
+                  key={c.id}
+                  className="p-4 rounded-xl bg-white border border-slate-200/80 space-y-1"
+                >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-deep">{c.author}</span>
-                    <span className="text-ink-muted">{c.date}</span>
+                    <span className="font-semibold text-slate-900">{c.author}</span>
+                    <span className="text-slate-400">{c.date}</span>
                   </div>
-                  <p className="text-sm text-ink-muted leading-relaxed">{c.text}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed">{c.text}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Side Column (Places mentionnés + Actions) */}
-        <aside className="lg:col-span-4 space-y-6">
-          {/* Places mentionnés */}
-          <div className="p-6 rounded-3xl bg-white border border-lagon-border shadow-soft space-y-5">
-            <div className="space-y-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-action">
-                Spots clés du récit
+        {/* Colonne de droite */}
+        <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-28">
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/90 space-y-4">
+            <div>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700">
+                À découvrir sur place
               </span>
-              <h4 className="font-semibold text-deep text-base">
-                Lieux mentionnés dans le guide
+              <h4 className="font-bold text-slate-900 text-base mt-0.5">
+                Lieux liés à cet article
               </h4>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {relatedPlaces.map(place => (
                 <div
                   key={place.id}
                   onClick={() => onOpenPlace(place)}
-                  className="group p-3 rounded-2xl border border-lagon-border hover:border-action bg-lagon-bg/40 hover:bg-white transition-all flex items-center gap-3 cursor-pointer shadow-xs"
+                  className="group p-2.5 rounded-xl border border-slate-200/80 hover:border-teal-700/50 bg-slate-50/50 hover:bg-white transition-all flex items-center gap-3 cursor-pointer"
                 >
                   <img
                     src={place.photos[0]}
                     alt={place.name}
-                    className="w-14 h-14 rounded-xl object-cover shrink-0"
+                    className="w-14 h-14 rounded-lg object-cover shrink-0"
                   />
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <h5 className="text-xs font-semibold text-deep group-hover:text-action truncate transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <h5 className="text-xs font-semibold text-slate-900 group-hover:text-teal-700 truncate">
                       {place.name}
                     </h5>
-                    <p className="text-[11px] text-ink-muted truncate">
+                    <p className="text-[11px] text-slate-500 truncate">
                       {place.commune}
                     </p>
-                    <span className="inline-block text-[10px] text-action font-medium">
-                      Voir la fiche complète →
+                    <span className="inline-block text-[11px] text-teal-700 font-medium mt-0.5">
+                      Voir la fiche →
                     </span>
                   </div>
                 </div>
@@ -349,21 +508,19 @@ export default function ArticleDetailView({
             </div>
           </div>
 
-          {/* Interactive Trip Planner Call to Action */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-deep via-[#0a4e63] to-action text-white space-y-4 shadow-card">
-            <Compass className="w-8 h-8 text-lagon-light" />
-            <div className="space-y-1">
-              <h4 className="font-semibold text-lg">Carte interactive de Madinina</h4>
-              <p className="text-xs text-white/80 leading-relaxed">
-                Retrouvez les anses et trésors de cet article sur notre carte interactive et tracez votre itinéraire.
-              </p>
-            </div>
+          <div className="p-5 rounded-2xl bg-[#F3EFEA] border border-stone-200/90 space-y-3">
+            <h4 className="font-bold text-slate-900 text-sm">
+              Repérer ces lieux sur la carte
+            </h4>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              Visualisez les plages, les accès routiers et la météo côtière en temps réel sur la carte de l&apos;île.
+            </p>
             <a
               href="/carte"
-              className="w-full py-2.5 rounded-xl bg-white text-deep hover:bg-sand-light font-semibold text-xs transition-colors shadow-soft flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
             >
-              <Compass className="w-4 h-4 text-action" />
-              <span>Ouvrir la carte interactive</span>
+              <Compass className="w-3.5 h-3.5" />
+              <span>Ouvrir la carte</span>
             </a>
           </div>
         </aside>

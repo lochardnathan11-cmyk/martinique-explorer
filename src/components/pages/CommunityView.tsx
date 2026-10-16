@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 interface CommunityViewProps {
-  onNavigate: (tab: string) => void;
+  onNavigate?: (tab: string) => void;
 }
 
 const COMMUNES_LIST = [
@@ -56,7 +56,7 @@ const QUICK_PHOTOS = [
   }
 ];
 
-export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate }) => {
+export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate = () => {} }) => {
   const {
     posts,
     addPost,
@@ -1085,3 +1085,5 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate }) => {
     </div>
   );
 };
+
+export default CommunityView;
