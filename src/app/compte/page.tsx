@@ -26,19 +26,26 @@ import {
   BookOpen,
   Waves,
   Lock,
-  Mail
+  Mail,
+  Sun,
+  Printer,
+  CheckSquare,
+  ChevronUp,
+  ChevronDown,
+  Send
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import LogoIcon from '@/components/ui/LogoIcon';
 import { MARTINIQUE_COMMUNES as COMMUNES_LIST } from '@/data/communes';
 
-type AccountTab = 'favorites' | 'itinerary' | 'activity' | 'settings';
+type AccountTab = 'favorites' | 'itinerary' | 'checklist' | 'activity' | 'settings';
 
 interface UserPreferences {
   travelerType: 'Voyageur en séjour' | 'Habitant de Martinique' | 'Futur résident / Retraite';
   baseCommune: string;
   stayDuration: string;
   bio: string;
+  avatarEmoji: string;
   notifications: {
     beachWeather: boolean;
     sargassumAlerts: boolean;
@@ -47,11 +54,20 @@ interface UserPreferences {
   };
 }
 
+interface ChecklistItem {
+  id: string;
+  category: 'Snorkeling & Plage' | 'Randonnée & Nord' | 'Vie pratique';
+  label: string;
+  tip: string;
+  checked: boolean;
+}
+
 const DEFAULT_PREFS: UserPreferences = {
   travelerType: 'Voyageur en séjour',
   baseCommune: 'Sainte-Luce',
   stayDuration: '10 à 15 jours',
   bio: 'Passionné par les plages du Sud-Caraïbe, le snorkeling avec les tortues et la randonnée.',
+  avatarEmoji: '🐢',
   notifications: {
     beachWeather: true,
     sargassumAlerts: true,
@@ -59,6 +75,88 @@ const DEFAULT_PREFS: UserPreferences = {
     localEvents: false
   }
 };
+
+const DEFAULT_CHECKLIST: ChecklistItem[] = [
+  {
+    id: 'chk-1',
+    category: 'Snorkeling & Plage',
+    label: 'Masque et tuba personnels',
+    tip: 'Indispensables dès le bord à Anse Dufour, Anse Noire et Anse Figuier.',
+    checked: true
+  },
+  {
+    id: 'chk-2',
+    category: 'Snorkeling & Plage',
+    label: 'T-shirt anti-UV à manches longues (Lyca)',
+    tip: 'Protège du soleil intense aux Fonds Blancs sans polluer les récifs avec de la crème.',
+    checked: true
+  },
+  {
+    id: 'chk-3',
+    category: 'Snorkeling & Plage',
+    label: 'Pochette étanche pour téléphone / clés',
+    tip: 'Très utile pour les sorties kayak au Robert ou bateau au François.',
+    checked: false
+  },
+  {
+    id: 'chk-4',
+    category: 'Snorkeling & Plage',
+    label: 'Chaussures d’eau légères',
+    tip: 'Pratiques pour les galets volcaniques du Nord ou les fonds rocheux.',
+    checked: false
+  },
+  {
+    id: 'chk-5',
+    category: 'Randonnée & Nord',
+    label: 'Coupe-vent imperméable léger',
+    tip: 'Au sommet de la Montagne Pelée (1 397 m), il fait souvent 15–16°C avec du vent.',
+    checked: false
+  },
+  {
+    id: 'chk-6',
+    category: 'Randonnée & Nord',
+    label: 'Chaussures de marche crantées',
+    tip: 'Les sentiers de la Trace des Jésuites et de la Pelée peuvent être humides et glissants.',
+    checked: true
+  },
+  {
+    id: 'chk-7',
+    category: 'Randonnée & Nord',
+    label: 'Gourde isotherme (1,5 L minimum par personne)',
+    tip: 'Indispensable sur la presqu’île de la Caravelle et la Trace des Caps.',
+    checked: true
+  },
+  {
+    id: 'chk-8',
+    category: 'Randonnée & Nord',
+    label: 'Répulsif moustiques zones tropicales',
+    tip: 'Surtout utile en fin d’après-midi dès 17h30 et après les averses.',
+    checked: false
+  },
+  {
+    id: 'chk-9',
+    category: 'Vie pratique',
+    label: 'Permis de conduire original',
+    tip: 'Obligatoire pour récupérer votre voiture de location à l’aéroport Aimé Césaire.',
+    checked: true
+  },
+  {
+    id: 'chk-10',
+    category: 'Vie pratique',
+    label: 'Un peu d’espèces (euros)',
+    tip: 'Pratique pour les marchands de fruits, l’eau de coco au bord de la route et les petits lolos.',
+    checked: false
+  },
+  {
+    id: 'chk-11',
+    category: 'Vie pratique',
+    label: 'Sac isotherme souple',
+    tip: 'Pour garder vos boissons fraîches et fruits du marché lors des journées plage.',
+    checked: false
+  }
+];
+
+const AVATAR_OPTIONS = ['🐢', '🌴', '⛵', '🌺', '🤿', '🦜', '☀️', '🧭'];
 
 const CATEGORY_LABELS: Record<string, string> = {
   beach: 'Plage',
@@ -74,6 +172,36 @@ const CATEGORY_LABELS: Record<string, string> = {
   viewpoint: 'Belvédère',
   hidden_gem: 'Crique secrète'
 };
+
+function getWeatherForCommune(commune: string) {
+  const atlantic = ['Le François', 'Le Robert', 'Le Vauclin', 'La Trinité', 'Sainte-Marie', 'Macouba', 'Basse-Pointe', 'Le Lorrain', 'Marigot'];
+  const north = ['Saint-Pierre', 'Le Carbet', 'Le Prêcheur', 'Le Morne-Rouge', "L'Ajoupa-Bouillon", 'Fonds-Saint-Denis', "Grand'Rivière", 'Bellefontaine'];
+  if (atlantic.includes(commune)) {
+    return {
+      sector: 'Façade Atlantique',
+      tempAir: '29°C',
+      tempWater: '28°C',
+      sea: 'Lagon abrité · Alizé 15 nds',
+      advice: 'Idéal pour les Fonds Blancs, le kitesurf ou la Caravelle'
+    };
+  }
+  if (north.includes(commune)) {
+    return {
+      sector: 'Nord Caraïbe & Pelée',
+      tempAir: '28°C',
+      tempWater: '27°C',
+      sea: 'Mer très claire · Sommet dégagé tôt',
+      advice: 'Parfait pour randonner à 7h puis se baigner à Anse Céron'
+    };
+  }
+  return {
+    sector: 'Côte Sud-Caraïbe',
+    tempAir: '30°C',
+    tempWater: '28°C',
+    sea: 'Mer calme · Zéro sargasse',
+    advice: 'Excellente visibilité ce matin pour la baignade et les tortues'
+  };
+}
 
 export default function UserAccountPage() {
   const router = useRouter();
@@ -91,6 +219,8 @@ export default function UserAccountPage() {
     addToItinerary,
     removeFromItinerary,
     posts,
+    addPost,
+    deletePost,
     alerts,
     forumTopics,
     userPoints,
@@ -116,8 +246,9 @@ export default function UserAccountPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Itinerary custom state (extra days & custom notes)
+  // Itinerary custom state (extra days, custom titles, custom notes)
   const [extraDaysCount, setExtraDaysCount] = useState(0);
+  const [dayTitles, setDayTitles] = useState<Record<number, string>>({});
   const [dayNotes, setDayNotes] = useState<Record<number, string>>({
     1: 'Arriver avant 9h30 aux Salines pour profiter de l’ombre sous les cocotiers.',
     2: 'Mise à l’eau dès 8h00 à Anse Dufour pour observer les tortues vertes au calme.',
@@ -125,6 +256,16 @@ export default function UserAccountPage() {
   });
   const [selectedDayForAdd, setSelectedDayForAdd] = useState<number>(1);
   const [selectedPlaceToAdd, setSelectedPlaceToAdd] = useState<string>('');
+
+  // Checklist & Visited Places (Passport)
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(DEFAULT_CHECKLIST);
+  const [newChecklistLabel, setNewChecklistLabel] = useState('');
+  const [newChecklistCategory, setNewChecklistCategory] = useState<ChecklistItem['category']>('Snorkeling & Plage');
+  const [visitedIds, setVisitedIds] = useState<string[]>(['salines', 'anse-dufour', 'spot-ponton-anses-arlet']);
+
+  // Quick Post from Account
+  const [quickPostText, setQuickPostText] = useState('');
+  const [quickPostLocation, setQuickPostLocation] = useState('Les Anses-d\'Arlet');
 
   useEffect(() => {
     if (currentUser) {
@@ -138,6 +279,18 @@ export default function UserAccountPage() {
       const savedNotes = localStorage.getItem('mq_itinerary_notes');
       if (savedNotes) {
         setDayNotes(prev => ({ ...prev, ...JSON.parse(savedNotes) }));
+      }
+      const savedTitles = localStorage.getItem('mq_itinerary_titles');
+      if (savedTitles) {
+        setDayTitles(JSON.parse(savedTitles));
+      }
+      const savedChecklist = localStorage.getItem('mq_user_checklist');
+      if (savedChecklist) {
+        setChecklist(JSON.parse(savedChecklist));
+      }
+      const savedVisited = localStorage.getItem('mq_visited_places');
+      if (savedVisited) {
+        setVisitedIds(JSON.parse(savedVisited));
       }
     } catch {
       // Ignore SSR/localStorage errors
@@ -226,11 +379,129 @@ export default function UserAccountPage() {
     }
   };
 
+  const handleTitleChange = (dayNum: number, val: string) => {
+    const updated = { ...dayTitles, [dayNum]: val };
+    setDayTitles(updated);
+    try {
+      localStorage.setItem('mq_itinerary_titles', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
   const handleAddPlaceToDay = (dayNum: number, placeId: string) => {
     const found = places.find(p => p.id === placeId);
     if (!found) return;
     addToItinerary(dayNum, found);
     showSuccess(`« ${found.name} » a été ajouté au Jour ${dayNum}.`);
+  };
+
+  const handleApplyTemplate = (templateType: 'south' | 'complete' | 'family') => {
+    const clearDay = (dayNum: number) => {
+      const d = itinerary.find(item => item.dayNumber === dayNum);
+      if (d) {
+        d.places.forEach(p => removeFromItinerary(dayNum, p.id));
+      }
+    };
+    [1, 2, 3].forEach(clearDay);
+
+    if (templateType === 'south') {
+      handleAddPlaceToDay(1, 'salines');
+      handleAddPlaceToDay(1, 'pointe-marin');
+      handleAddPlaceToDay(2, 'anse-dufour');
+      handleAddPlaceToDay(2, 'anse-noire');
+      handleAddPlaceToDay(2, 'ti-sable');
+      handleAddPlaceToDay(3, 'diamant');
+      handleAddPlaceToDay(3, 'spot-memorial-cap110');
+      handleTitleChange(1, 'Jour 1 : Sainte-Anne & Grande Anse des Salines');
+      handleTitleChange(2, 'Jour 2 : Tortues aux Anses-d’Arlet & Grande Anse');
+      handleTitleChange(3, 'Jour 3 : Baie du Diamant & Cap 110');
+      showSuccess('Modèle « Trésors du Sud-Caraïbe » appliqué à votre carnet.');
+    } else if (templateType === 'complete') {
+      handleAddPlaceToDay(1, 'salines');
+      handleAddPlaceToDay(1, 'belvedere-morne-gommier');
+      handleAddPlaceToDay(2, 'anse-dufour');
+      handleAddPlaceToDay(2, 'spot-ponton-anses-arlet');
+      handleAddPlaceToDay(3, 'montagne-pelee');
+      handleAddPlaceToDay(3, 'anse-couleuvre');
+      handleTitleChange(1, 'Jour 1 : Plages du Sud & Panorama Morne Gommier');
+      handleTitleChange(2, 'Jour 2 : Snorkeling Tortues & Village des Anses-d’Arlet');
+      handleTitleChange(3, 'Jour 3 : Montagne Pelée & Sable Noir au Prêcheur');
+      showSuccess('Modèle « Grand Tour Sud & Nord Volcanique » appliqué.');
+    } else {
+      handleAddPlaceToDay(1, 'pointe-marin');
+      handleAddPlaceToDay(1, 'anse-figuier');
+      handleAddPlaceToDay(2, 'grande-anse-arlet');
+      handleAddPlaceToDay(2, 'excursion-kayak-mangrove');
+      handleAddPlaceToDay(3, 'baignoire-josephine');
+      handleTitleChange(1, 'Jour 1 : Lagons sans vagues (Pointe Marin & Anse Figuier)');
+      handleTitleChange(2, 'Jour 2 : Tortues à Grande Anse & Kayak en Mangrove');
+      handleTitleChange(3, 'Jour 3 : Baignade aux Fonds Blancs du François');
+      showSuccess('Modèle « Séjour Famille & Eaux Calmes » appliqué.');
+    }
+  };
+
+  const toggleChecklistItem = (id: string) => {
+    const updated = checklist.map(item =>
+      item.id === id ? { ...item, checked: !item.checked } : item
+    );
+    setChecklist(updated);
+    try {
+      localStorage.setItem('mq_user_checklist', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAddChecklistItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChecklistLabel.trim()) return;
+    const newItem: ChecklistItem = {
+      id: 'chk-' + Date.now(),
+      category: newChecklistCategory,
+      label: newChecklistLabel.trim(),
+      tip: 'Ajouté à votre liste personnelle',
+      checked: false
+    };
+    const updated = [...checklist, newItem];
+    setChecklist(updated);
+    setNewChecklistLabel('');
+    try {
+      localStorage.setItem('mq_user_checklist', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    showSuccess('Élément ajouté à votre checklist de voyage.');
+  };
+
+  const handleDeleteChecklistItem = (id: string) => {
+    const updated = checklist.filter(item => item.id !== id);
+    setChecklist(updated);
+    try {
+      localStorage.setItem('mq_user_checklist', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleVisitedPlace = (placeId: string) => {
+    const updated = visitedIds.includes(placeId)
+      ? visitedIds.filter(id => id !== placeId)
+      : [...visitedIds, placeId];
+    setVisitedIds(updated);
+    try {
+      localStorage.setItem('mq_visited_places', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleQuickPostSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickPostText.trim()) return;
+    addPost(quickPostText.trim(), quickPostLocation, '/images/spots/anse-dufour.jpg', '#DirectPlage');
+    setQuickPostText('');
+    showSuccess('Votre observation a été publiée dans la Communauté (+20 XP).');
   };
 
   // Données calculées
@@ -250,13 +521,17 @@ export default function UserAccountPage() {
 
   const totalItineraryPlaces = itinerary.reduce((sum, day) => sum + day.places.length, 0);
   const unlockedBadges = badges.filter(b => b.unlocked || userPoints >= b.requiredPoints);
+  const checkedCount = checklist.filter(i => i.checked).length;
+  const checklistPct = checklist.length > 0 ? Math.round((checkedCount / checklist.length) * 100) : 0;
+
+  const communeWeather = getWeatherForCommune(prefs.baseCommune);
 
   // Contributions de l'utilisateur ou récentes
   const userPosts = posts.slice(0, 3);
   const userAlerts = alerts.slice(0, 3);
   const userQuestions = forumTopics.slice(0, 2);
 
-  // Liste des journées (combinée avec extraDaysCount)
+  // Liste des journées
   const maxExistingDay = itinerary.reduce((m, d) => Math.max(m, d.dayNumber), 3);
   const totalDaysCount = maxExistingDay + extraDaysCount;
   const allDays = Array.from({ length: totalDaysCount }, (_, idx) => {
@@ -288,7 +563,7 @@ export default function UserAccountPage() {
       )}
 
       {/* Barre de navigation supérieure sobre et cohérente */}
-      <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 print:hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-5">
             <button
@@ -354,7 +629,7 @@ export default function UserAccountPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8 text-left">
-        {/* CAS 1 : UTILISATEUR NON CONNECTÉ -> Écran de connexion / création simple et direct */}
+        {/* CAS 1 : UTILISATEUR NON CONNECTÉ */}
         {!currentUser ? (
           <div className="max-w-md mx-auto bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 space-y-6 shadow-xs my-8">
             <div className="space-y-2 text-center">
@@ -365,7 +640,7 @@ export default function UserAccountPage() {
                 Votre espace Martinique Explorer
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Connectez-vous pour retrouver vos plages favorites, organiser votre carnet de séjour jour par jour et partager vos observations.
+                Connectez-vous pour retrouver vos plages favorites, organiser votre carnet de séjour, préparer votre valise et suivre la météo de votre commune.
               </p>
             </div>
 
@@ -462,12 +737,14 @@ export default function UserAccountPage() {
         ) : (
           /* CAS 2 : UTILISATEUR CONNECTÉ -> ESPACE COMPTE COMPLET & SIMPLE */
           <>
-            {/* 1. EN-TÊTE DU PROFIL ET CHIFFRES CLÉS */}
+            {/* 1. EN-TÊTE DU PROFIL, MÉTÉO DE SA COMMUNE ET CHIFFRES CLÉS */}
             <section className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 space-y-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="flex items-start sm:items-center gap-4 sm:gap-5">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-teal-800 text-white flex items-center justify-center text-2xl sm:text-3xl font-bold shrink-0">
-                    {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'M'}
+                  <div className="relative">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-teal-800 text-white flex items-center justify-center text-2xl sm:text-3xl font-bold shrink-0">
+                      {prefs.avatarEmoji || (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'M')}
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -485,127 +762,164 @@ export default function UserAccountPage() {
                           {prefs.travelerType}
                         </span>
                       )}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700">
+                        <MapPin className="w-3 h-3 text-teal-700" />
+                        {prefs.baseCommune}
+                      </span>
                     </div>
 
                     <p className="text-xs sm:text-sm text-slate-500">
-                      {currentUser.email} · Secteur préféré :{' '}
-                      <span className="font-medium text-slate-800">{prefs.baseCommune}</span>
+                      {currentUser.email} · Rythme : {prefs.stayDuration}
                     </p>
 
                     {prefs.bio && (
-                      <p className="text-xs sm:text-sm text-slate-600 max-w-2xl pt-0.5">
+                      <p className="text-xs sm:text-sm text-slate-600 max-w-xl pt-0.5">
                         {prefs.bio}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('settings')}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <Settings className="w-3.5 h-3.5" />
-                    <span>Modifier mon profil</span>
-                  </button>
+                {/* Encadré Météo en direct de sa commune de base */}
+                <div className="p-4 rounded-xl bg-[#FAF8F5] border border-stone-200/90 lg:max-w-xs w-full space-y-1.5 shrink-0">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-teal-800 inline-flex items-center gap-1.5">
+                      <Sun className="w-3.5 h-3.5 text-amber-500" />
+                      Météo à {prefs.baseCommune}
+                    </span>
+                    <span className="text-[11px] font-medium text-stone-500">
+                      {communeWeather.sector}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-bold text-slate-900">
+                    <span>Air {communeWeather.tempAir}</span>
+                    <span>·</span>
+                    <span>Mer {communeWeather.tempWater}</span>
+                    <span>·</span>
+                    <span className="text-teal-800">{communeWeather.sea}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-snug">
+                    {communeWeather.advice}
+                  </p>
                 </div>
               </div>
 
-              {/* 4 cartes de synthèse cliquables */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
+              {/* 5 cartes de synthèse cliquables */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-4 border-t border-slate-100 print:hidden">
                 <button
                   type="button"
                   onClick={() => setActiveTab('favorites')}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     activeTab === 'favorites'
-                      ? 'bg-teal-50/60 border-teal-600/50'
+                      ? 'bg-teal-50/70 border-teal-700/50'
                       : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span>Lieux favoris</span>
-                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                    <span>Favoris</span>
+                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
                   </div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {favoritePlaces.length}
+                  <div className="text-xl font-bold text-slate-900">
+                    {favoritePlaces.length} lieux
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Plages & adresses enregistrées
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                    Plages & adresses
                   </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('itinerary')}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     activeTab === 'itinerary'
-                      ? 'bg-teal-50/60 border-teal-600/50'
+                      ? 'bg-teal-50/70 border-teal-700/50'
                       : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span>Carnet de séjour</span>
-                    <Calendar className="w-4 h-4 text-teal-700" />
+                    <span>Programme</span>
+                    <Calendar className="w-3.5 h-3.5 text-teal-700" />
                   </div>
-                  <div className="text-2xl font-bold text-slate-900">
+                  <div className="text-xl font-bold text-slate-900">
                     {allDays.length} jours
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {totalItineraryPlaces} étapes programmées
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                    {totalItineraryPlaces} étapes prévues
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('checklist')}
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    activeTab === 'checklist'
+                      ? 'bg-teal-50/70 border-teal-700/50'
+                      : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span>Valise & Lieux</span>
+                    <CheckSquare className="w-3.5 h-3.5 text-teal-700" />
+                  </div>
+                  <div className="text-xl font-bold text-slate-900">
+                    {checklistPct}% prêt
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                    {visitedIds.length} lieux déjà visités
                   </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('activity')}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     activeTab === 'activity'
-                      ? 'bg-teal-50/60 border-teal-600/50'
+                      ? 'bg-teal-50/70 border-teal-700/50'
                       : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span>Badges & Points</span>
-                    <Award className="w-4 h-4 text-amber-600" />
+                    <span>Badges</span>
+                    <Award className="w-3.5 h-3.5 text-amber-600" />
                   </div>
-                  <div className="text-2xl font-bold text-slate-900">
+                  <div className="text-xl font-bold text-slate-900">
                     {unlockedBadges.length} / {badges.length}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {userPoints} points d&apos;exploration
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                    {userPoints} points XP
                   </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('settings')}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer col-span-2 sm:col-span-1 ${
                     activeTab === 'settings'
-                      ? 'bg-teal-50/60 border-teal-600/50'
+                      ? 'bg-teal-50/70 border-teal-700/50'
                       : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span>Alertes littoral</span>
-                    <Bell className="w-4 h-4 text-teal-700" />
+                    <span>Préférences</span>
+                    <Bell className="w-3.5 h-3.5 text-teal-700" />
                   </div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {Object.values(prefs.notifications).filter(Boolean).length} actives
+                  <div className="text-xl font-bold text-slate-900">
+                    {Object.values(prefs.notifications).filter(Boolean).length} alertes
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Secteur {prefs.baseCommune}
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                    Profil & commune
                   </p>
                 </button>
               </div>
             </section>
 
             {/* 2. BARRE D'ONGLETS CLAIRE */}
-            <div className="flex items-center gap-2 border-b border-slate-200/90 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 border-b border-slate-200/90 overflow-x-auto no-scrollbar print:hidden">
               {[
                 { id: 'favorites', label: `Mes Favoris (${favoritePlaces.length})`, icon: Heart },
-                { id: 'itinerary', label: `Mon Carnet de Séjour (${allDays.length} j)`, icon: Calendar },
-                { id: 'activity', label: 'Mes Contributions & Badges', icon: MessageSquare },
+                { id: 'itinerary', label: `Carnet de Séjour (${allDays.length} j)`, icon: Calendar },
+                { id: 'checklist', label: `Checklist & Lieux visités`, icon: CheckSquare },
+                { id: 'activity', label: 'Contributions & Badges', icon: MessageSquare },
                 { id: 'settings', label: 'Profil & Préférences', icon: Settings }
               ].map(tab => {
                 const Icon = tab.icon;
@@ -691,91 +1005,107 @@ export default function UserAccountPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredFavorites.map(place => (
-                      <div
-                        key={place.id}
-                        className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
-                      >
-                        <div>
-                          <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
-                            <img
-                              src={place.photos[0] || '/images/spots/salines.jpg'}
-                              alt={place.name}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                              <span className="px-2.5 py-1 rounded-md bg-white/95 text-slate-800 text-[11px] font-semibold">
-                                {CATEGORY_LABELS[place.category] || place.category}
-                              </span>
-                              {place.rating && (
-                                <span className="px-2 py-1 rounded-md bg-slate-900/80 text-white text-[11px] font-semibold inline-flex items-center gap-1">
-                                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                  {place.rating}
+                    {filteredFavorites.map(place => {
+                      const isVisited = visitedIds.includes(place.id);
+                      return (
+                        <div
+                          key={place.id}
+                          className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
+                        >
+                          <div>
+                            <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
+                              <img
+                                src={place.photos[0] || '/images/spots/salines.jpg'}
+                                alt={place.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                                <span className="px-2.5 py-1 rounded-md bg-white/95 text-slate-800 text-[11px] font-semibold">
+                                  {CATEGORY_LABELS[place.category] || place.category}
                                 </span>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => toggleFavorite(place.id)}
-                              title="Retirer des favoris"
-                              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-rose-500 flex items-center justify-center shadow-xs cursor-pointer"
-                            >
-                              <Heart className="w-4 h-4 fill-rose-500" />
-                            </button>
-                          </div>
-
-                          <div className="p-5 space-y-2">
-                            <div className="flex items-center gap-1 text-xs text-teal-700 font-medium">
-                              <MapPin className="w-3.5 h-3.5 shrink-0" />
-                              <span>{place.commune}</span>
-                            </div>
-                            <h3 className="font-bold text-slate-900 text-base leading-snug">
-                              {place.name}
-                            </h3>
-                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                              {place.description}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="p-5 pt-0 space-y-2.5">
-                          {/* Ajout rapide au carnet de séjour */}
-                          <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100">
-                            <span className="text-[11px] text-slate-500 mr-auto">
-                              Ajouter au séjour :
-                            </span>
-                            {[1, 2, 3].map(dayNum => (
+                                {place.rating && (
+                                  <span className="px-2 py-1 rounded-md bg-slate-900/80 text-white text-[11px] font-semibold inline-flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                    {place.rating}
+                                  </span>
+                                )}
+                              </div>
                               <button
-                                key={dayNum}
                                 type="button"
-                                onClick={() => handleAddPlaceToDay(dayNum, place.id)}
-                                className="px-2 py-1 rounded-md bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
+                                onClick={() => toggleFavorite(place.id)}
+                                title="Retirer des favoris"
+                                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-rose-500 flex items-center justify-center shadow-xs cursor-pointer"
                               >
-                                + J{dayNum}
+                                <Heart className="w-4 h-4 fill-rose-500" />
                               </button>
-                            ))}
+                            </div>
+
+                            <div className="p-5 space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1 text-xs text-teal-700 font-medium">
+                                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                  {place.commune}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleVisitedPlace(place.id)}
+                                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-colors cursor-pointer ${
+                                    isVisited
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  {isVisited ? '✓ Déjà visité' : 'Marquer visité'}
+                                </button>
+                              </div>
+                              <h3 className="font-bold text-slate-900 text-base leading-snug">
+                                {place.name}
+                              </h3>
+                              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                {place.description}
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
-                            <Link
-                              href={`/?page=lieu&id=${place.id}`}
-                              className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold text-center inline-flex items-center justify-center gap-1.5 transition-colors"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              <span>Voir la fiche</span>
-                            </Link>
-                            <button
-                              type="button"
-                              onClick={() => toggleFavorite(place.id)}
-                              className="py-2 px-3 rounded-xl bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Retirer</span>
-                            </button>
+                          <div className="p-5 pt-0 space-y-2.5">
+                            {/* Ajout rapide au carnet de séjour */}
+                            <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100">
+                              <span className="text-[11px] text-slate-500 mr-auto">
+                                Programmer :
+                              </span>
+                              {[1, 2, 3].map(dayNum => (
+                                <button
+                                  key={dayNum}
+                                  type="button"
+                                  onClick={() => handleAddPlaceToDay(dayNum, place.id)}
+                                  className="px-2 py-1 rounded-md bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
+                                >
+                                  + Jour {dayNum}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <Link
+                                href={`/?page=lieu&id=${place.id}`}
+                                className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold text-center inline-flex items-center justify-center gap-1.5 transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>Voir la fiche</span>
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => toggleFavorite(place.id)}
+                                className="py-2 px-3 rounded-xl bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Retirer</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -839,30 +1169,89 @@ export default function UserAccountPage() {
                 ========================================================= */}
             {activeTab === 'itinerary' && (
               <section className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6">
                   <div className="space-y-1">
                     <h2 className="text-xl font-bold text-slate-900">
                       Mon carnet de séjour jour par jour
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-600">
-                      Organisez vos étapes par secteur géographique (Sud Caraïbe, Anses-d&apos;Arlet, Nord Volcanique, Fonds Blancs) pour limiter les temps de route.
+                      Regroupez vos visites par secteur (Sud Caraïbe, Anses-d&apos;Arlet, Nord Volcanique, Fonds Blancs) pour éviter les allers-retours.
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setExtraDaysCount(prev => prev + 1)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shrink-0 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Ajouter une journée (Jour {allDays.length + 1})</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2 print:hidden">
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Imprimer / PDF</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExtraDaysCount(prev => prev + 1)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Ajouter Jour {allDays.length + 1}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Modèles d'itinéraires prêts à l'emploi en 1 clic */}
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-5 space-y-3 print:hidden">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Inspirez-vous d&apos;un itinéraire type (remplit les Jours 1 à 3)
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleApplyTemplate('south')}
+                      className="p-3.5 rounded-xl border border-slate-200/90 hover:border-teal-700/60 bg-slate-50/60 hover:bg-teal-50/30 text-left transition-all cursor-pointer space-y-1"
+                    >
+                      <span className="text-xs font-bold text-slate-900 block">
+                        🏖️ Trésors du Sud-Caraïbe
+                      </span>
+                      <span className="text-[11px] text-slate-500 block">
+                        Salines, Pointe Marin, Tortues à Anse Dufour & Baie du Diamant
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleApplyTemplate('complete')}
+                      className="p-3.5 rounded-xl border border-slate-200/90 hover:border-teal-700/60 bg-slate-50/60 hover:bg-teal-50/30 text-left transition-all cursor-pointer space-y-1"
+                    >
+                      <span className="text-xs font-bold text-slate-900 block">
+                        🌋 Grand Tour Sud & Nord Volcanique
+                      </span>
+                      <span className="text-[11px] text-slate-500 block">
+                        Salines, Anses-d&apos;Arlet, Montagne Pelée & Anse Couleuvre
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleApplyTemplate('family')}
+                      className="p-3.5 rounded-xl border border-slate-200/90 hover:border-teal-700/60 bg-slate-50/60 hover:bg-teal-50/30 text-left transition-all cursor-pointer space-y-1"
+                    >
+                      <span className="text-xs font-bold text-slate-900 block">
+                        👨‍👩‍👧‍👦 Séjour Famille & Lagons Calmes
+                      </span>
+                      <span className="text-[11px] text-slate-500 block">
+                        Pointe Marin, Anse Figuier, Kayak Mangrove & Fonds Blancs
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Barre d'ajout rapide d'un lieu à une journée */}
-                <div className="bg-[#F3EFEA] rounded-2xl border border-stone-200/90 p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="bg-[#F3EFEA] rounded-2xl border border-stone-200/90 p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 print:hidden">
                   <span className="text-xs font-semibold text-stone-800 shrink-0">
-                    Ajouter une étape au programme :
+                    Ajouter un lieu au programme :
                   </span>
                   <select
                     value={selectedDayForAdd}
@@ -904,95 +1293,321 @@ export default function UserAccountPage() {
 
                 {/* Liste des journées */}
                 <div className="space-y-5">
-                  {allDays.map(day => (
-                    <div
-                      key={day.dayNumber}
-                      className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 space-y-4"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                        <div className="flex items-center gap-3">
-                          <span className="px-3 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200/60 text-xs font-bold">
-                            Jour {day.dayNumber}
+                  {allDays.map(day => {
+                    const customTitle = dayTitles[day.dayNumber] ?? day.title;
+                    return (
+                      <div
+                        key={day.dayNumber}
+                        className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 space-y-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+                            <span className="px-3 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200/60 text-xs font-bold shrink-0">
+                              Jour {day.dayNumber}
+                            </span>
+                            <input
+                              type="text"
+                              value={customTitle}
+                              onChange={e => handleTitleChange(day.dayNumber, e.target.value)}
+                              className="font-bold text-slate-900 text-base bg-transparent border-b border-transparent hover:border-slate-200 focus:border-teal-700 focus:outline-none w-full py-0.5"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500">
+                            {day.places.length} {day.places.length > 1 ? 'étapes prévues' : 'étape prévue'}
                           </span>
-                          <h3 className="font-bold text-slate-900 text-base">
-                            {day.title}
-                          </h3>
                         </div>
-                        <span className="text-xs text-slate-500">
-                          {day.places.length} {day.places.length > 1 ? 'étapes prévues' : 'étape prévue'}
-                        </span>
-                      </div>
 
-                      {day.places.length === 0 ? (
-                        <p className="text-xs text-slate-500 italic py-2">
-                          Aucune étape enregistrée pour ce jour. Utilisez le sélecteur ci-dessus ou vos favoris pour en ajouter.
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                          {day.places.map((place, idx) => (
-                            <div
-                              key={place.id}
-                              className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 flex items-center gap-3 justify-between"
-                            >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-                                  {idx + 1}
-                                </span>
-                                <img
-                                  src={place.photos[0] || '/images/spots/salines.jpg'}
-                                  alt={place.name}
-                                  className="w-12 h-12 rounded-lg object-cover shrink-0"
-                                />
-                                <div className="min-w-0">
-                                  <Link
-                                    href={`/?page=lieu&id=${place.id}`}
-                                    className="text-xs font-bold text-slate-900 hover:text-teal-700 truncate block"
-                                  >
-                                    {place.name}
-                                  </Link>
-                                  <p className="text-[11px] text-slate-500 truncate">
-                                    {place.commune}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => removeFromItinerary(day.dayNumber, place.id)}
-                                title="Retirer de cette journée"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                        {day.places.length === 0 ? (
+                          <p className="text-xs text-slate-500 italic py-2">
+                            Aucune étape enregistrée pour ce jour. Utilisez le sélecteur ci-dessus ou un modèle d&apos;itinéraire.
+                          </p>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                            {day.places.map((place, idx) => (
+                              <div
+                                key={place.id}
+                                className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 flex items-center gap-3 justify-between"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                  <img
+                                    src={place.photos[0] || '/images/spots/salines.jpg'}
+                                    alt={place.name}
+                                    className="w-12 h-12 rounded-lg object-cover shrink-0"
+                                  />
+                                  <div className="min-w-0">
+                                    <Link
+                                      href={`/?page=lieu&id=${place.id}`}
+                                      className="text-xs font-bold text-slate-900 hover:text-teal-700 truncate block"
+                                    >
+                                      {place.name}
+                                    </Link>
+                                    <p className="text-[11px] text-slate-500 truncate">
+                                      {place.commune}
+                                    </p>
+                                  </div>
+                                </div>
 
-                      {/* Notes personnelles pour la journée */}
-                      <div className="pt-2">
-                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                          Notes & repères horaires du Jour {day.dayNumber}
-                        </label>
-                        <input
-                          type="text"
-                          value={dayNotes[day.dayNumber] ?? day.notes ?? ''}
-                          onChange={e => handleNoteChange(day.dayNumber, e.target.value)}
-                          placeholder="Ex: Arriver à 8h00 pour le stationnement, réserver le restaurant de plage..."
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-800 focus:bg-white focus:border-teal-700 focus:outline-none"
-                        />
+                                <button
+                                  type="button"
+                                  onClick={() => removeFromItinerary(day.dayNumber, place.id)}
+                                  title="Retirer de cette journée"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0 print:hidden"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Notes personnelles pour la journée */}
+                        <div className="pt-2">
+                          <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                            Notes & repères horaires du Jour {day.dayNumber}
+                          </label>
+                          <input
+                            type="text"
+                            value={dayNotes[day.dayNumber] ?? day.notes ?? ''}
+                            onChange={e => handleNoteChange(day.dayNumber, e.target.value)}
+                            placeholder="Ex: Arriver à 8h00 pour le stationnement, réserver le restaurant de plage..."
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-800 focus:bg-white focus:border-teal-700 focus:outline-none"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
 
             {/* =========================================================
-                ONGLET 3 : MES CONTRIBUTIONS & BADGES
+                ONGLET 3 : MA VALISE & LIEUX VISITÉS (PASSEPORT MARTINIQUE)
+                ========================================================= */}
+            {activeTab === 'checklist' && (
+              <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Colonne gauche : Checklist Valise & Sac de plage */}
+                <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900">
+                        Ma checklist Martinique
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Les indispensables pour les plages, les Fonds Blancs et la forêt tropicale
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200/60 px-3 py-1 rounded-lg">
+                        {checkedCount} / {checklist.length} prêts ({checklistPct}%)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Barre de progression globale */}
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-teal-700 rounded-full transition-all duration-300"
+                      style={{ width: `${checklistPct}%` }}
+                    />
+                  </div>
+
+                  {/* Ajout d'un élément personnalisé */}
+                  <form onSubmit={handleAddChecklistItem} className="flex flex-col sm:flex-row gap-2">
+                    <select
+                      value={newChecklistCategory}
+                      onChange={e =>
+                        setNewChecklistCategory(e.target.value as ChecklistItem['category'])
+                      }
+                      className="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 focus:outline-none"
+                    >
+                      <option value="Snorkeling & Plage">Snorkeling & Plage</option>
+                      <option value="Randonnée & Nord">Randonnée & Nord</option>
+                      <option value="Vie pratique">Vie pratique</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={newChecklistLabel}
+                      onChange={e => setNewChecklistLabel(e.target.value)}
+                      placeholder="Ajouter un objet à ne pas oublier..."
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-teal-700"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newChecklistLabel.trim()}
+                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-semibold cursor-pointer shrink-0"
+                    >
+                      + Ajouter
+                    </button>
+                  </form>
+
+                  {/* Groupes de checklist */}
+                  <div className="space-y-5">
+                    {(['Snorkeling & Plage', 'Randonnée & Nord', 'Vie pratique'] as const).map(
+                      group => {
+                        const items = checklist.filter(i => i.category === group);
+                        return (
+                          <div key={group} className="space-y-2.5">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800">
+                              {group}
+                            </h3>
+                            <div className="space-y-2">
+                              {items.map(item => (
+                                <div
+                                  key={item.id}
+                                  className={`p-3 rounded-xl border flex items-start justify-between gap-3 transition-colors ${
+                                    item.checked
+                                      ? 'bg-slate-50/70 border-slate-200/70'
+                                      : 'bg-white border-slate-200'
+                                  }`}
+                                >
+                                  <label className="flex items-start gap-3 cursor-pointer flex-1">
+                                    <input
+                                      type="checkbox"
+                                      checked={item.checked}
+                                      onChange={() => toggleChecklistItem(item.id)}
+                                      className="mt-0.5 accent-teal-700 w-4 h-4 rounded"
+                                    />
+                                    <div className="text-xs">
+                                      <span
+                                        className={`font-semibold block ${
+                                          item.checked
+                                            ? 'line-through text-slate-400'
+                                            : 'text-slate-900'
+                                        }`}
+                                      >
+                                        {item.label}
+                                      </span>
+                                      <span className="text-[11px] text-slate-500">
+                                        {item.tip}
+                                      </span>
+                                    </div>
+                                  </label>
+                                  {item.id.startsWith('chk-17') && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteChecklistItem(item.id)}
+                                      className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+
+                {/* Colonne droite : Mon Passeport de lieux visités en Martinique */}
+                <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-6 space-y-5">
+                  <div className="border-b border-slate-100 pb-4">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700">
+                      Carnet d&apos;exploration
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                      Lieux déjà visités ({visitedIds.length}/{places.length})
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Cochez les plages, sommets et îlets que vous avez déjà découverts en Martinique.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                    {places.slice(0, 16).map(place => {
+                      const visited = visitedIds.includes(place.id);
+                      return (
+                        <div
+                          key={place.id}
+                          onClick={() => toggleVisitedPlace(place.id)}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                            visited
+                              ? 'bg-emerald-50/50 border-emerald-200/90'
+                              : 'bg-slate-50/50 border-slate-200/70 hover:bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={place.photos[0] || '/images/spots/salines.jpg'}
+                              alt={place.name}
+                              className="w-10 h-10 rounded-lg object-cover shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-slate-900 truncate">
+                                {place.name}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 truncate">
+                                {place.commune}
+                              </p>
+                            </div>
+                          </div>
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 ${
+                              visited
+                                ? 'bg-emerald-700 text-white'
+                                : 'bg-white border border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {visited ? '✓ Visité' : 'À voir'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* =========================================================
+                ONGLET 4 : MES CONTRIBUTIONS & BADGES
                 ========================================================= */}
             {activeTab === 'activity' && (
               <section className="space-y-8">
+                {/* Formulaire rapide pour partager une observation depuis son compte */}
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Partager une observation rapide du jour
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Informez les autres membres de l&apos;état d&apos;une plage, du stationnement ou d&apos;une bonne adresse (+20 XP).
+                    </p>
+                  </div>
+                  <form onSubmit={handleQuickPostSubmit} className="flex flex-col sm:flex-row gap-3">
+                    <select
+                      value={quickPostLocation}
+                      onChange={e => setQuickPostLocation(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800 focus:outline-none"
+                    >
+                      {COMMUNES_LIST.map(c => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={quickPostText}
+                      onChange={e => setQuickPostText(e.target.value)}
+                      placeholder="Ex: Mer très calme ce matin à Grande Anse, parking encore fluide..."
+                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-teal-700"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!quickPostText.trim()}
+                      className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Publier</span>
+                    </button>
+                  </form>
+                </div>
+
                 {/* 1. Mes partages & observations */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4">
@@ -1002,14 +1617,14 @@ export default function UserAccountPage() {
                           Derniers retours & photos partagés
                         </h3>
                         <p className="text-xs text-slate-500">
-                          Vos observations publiées sur le fil de la communauté
+                          Publications récentes sur le fil de la communauté
                         </p>
                       </div>
                       <Link
                         href="/?page=community"
-                        className="px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 text-xs font-semibold hover:bg-teal-100 transition-colors"
+                        className="text-xs font-semibold text-teal-700 hover:text-teal-800"
                       >
-                        + Publier un retour
+                        Ouvrir la communauté →
                       </Link>
                     </div>
 
@@ -1017,26 +1632,39 @@ export default function UserAccountPage() {
                       {userPosts.map(post => (
                         <div
                           key={post.id}
-                          className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 flex items-start gap-3"
+                          className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 flex items-start justify-between gap-3"
                         >
-                          {post.photos && post.photos[0] && (
-                            <img
-                              src={post.photos[0]}
-                              alt={post.location || 'Martinique'}
-                              className="w-16 h-16 rounded-lg object-cover shrink-0"
-                            />
-                          )}
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center justify-between text-[11px] text-slate-500">
-                              <span className="font-semibold text-teal-800">
-                                {post.location}
-                              </span>
-                              <span>{post.timestamp}</span>
+                          <div className="flex items-start gap-3 min-w-0">
+                            {post.photos && post.photos[0] && (
+                              <img
+                                src={post.photos[0]}
+                                alt={post.location || 'Martinique'}
+                                className="w-16 h-16 rounded-lg object-cover shrink-0"
+                              />
+                            )}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                                <span className="font-semibold text-teal-800">
+                                  {post.location}
+                                </span>
+                                <span>·</span>
+                                <span>{post.timestamp}</span>
+                              </div>
+                              <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                                {post.content}
+                              </p>
                             </div>
-                            <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
-                              {post.content}
-                            </p>
                           </div>
+                          {post.id.startsWith('post-17') && (
+                            <button
+                              type="button"
+                              onClick={() => deletePost(post.id)}
+                              title="Supprimer cette publication"
+                              className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer shrink-0"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1173,7 +1801,7 @@ export default function UserAccountPage() {
             )}
 
             {/* =========================================================
-                ONGLET 4 : PROFIL & PRÉFÉRENCES
+                ONGLET 5 : PROFIL & PRÉFÉRENCES
                 ========================================================= */}
             {activeTab === 'settings' && (
               <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1188,6 +1816,29 @@ export default function UserAccountPage() {
                     <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                       Personnalisez votre profil pour adapter les recommandations de plages et la météo côtière.
                     </p>
+                  </div>
+
+                  {/* Choix de l'emblème / avatar */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-700 block">
+                      Choisir votre emblème de profil
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {AVATAR_OPTIONS.map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => setPrefs(prev => ({ ...prev, avatarEmoji: emoji }))}
+                          className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border transition-all cursor-pointer ${
+                            prefs.avatarEmoji === emoji
+                              ? 'bg-teal-50 border-teal-700 ring-2 ring-teal-700/20'
+                              : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1407,7 +2058,7 @@ export default function UserAccountPage() {
                       Session & Sécurité
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      Vos lieux favoris et votre carnet de séjour sont sauvegardés sur cet appareil.
+                      Vos lieux favoris, votre checklist et votre carnet de séjour sont sauvegardés sur votre appareil.
                     </p>
                     <button
                       type="button"
