@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown } from 'lucide-react';
+import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown, Compass, Heart } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
 import LanguageSelector from '@/components/layout/LanguageSelector';
 import { TRANSLATIONS } from '@/data/translations';
@@ -15,7 +15,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ activeSection, setActiveSection }: NavbarProps) {
-  const { language, openModal, setSelectedCategory, currentUser, logout } = useApp();
+  const { language, openModal, setSelectedCategory, currentUser, logout, favorites } = useApp();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -267,84 +267,112 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border text-xs font-medium transition-all ${
+                  className={`h-9 flex items-center gap-2 pl-2 pr-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     scrolled || activeSection !== 'home'
-                      ? 'bg-lagon-bg border-lagon-border text-deep hover:border-action'
-                      : 'bg-white/15 border-white/20 text-white hover:bg-white/25'
+                      ? userDropdownOpen
+                        ? 'bg-white border-teal-700 text-deep ring-2 ring-teal-700/15'
+                        : 'bg-white border-stone-200/90 text-deep hover:border-stone-300 shadow-2xs'
+                      : 'bg-white/15 border-white/25 text-white hover:bg-white/25'
                   }`}
                 >
-                  <div className="w-5 h-5 rounded-full bg-action text-white flex items-center justify-center text-[10px] font-bold">
+                  <div className="w-6 h-6 rounded-lg bg-teal-800 text-white flex items-center justify-center text-[11px] font-bold shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="max-w-[100px] truncate">{currentUser.name}</span>
+                  <span className="max-w-[110px] truncate">{currentUser.name}</span>
                   {currentUser.role === 'admin' && (
                     <span className="w-2 h-2 rounded-full bg-coral shrink-0" title="Administrateur" />
                   )}
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 opacity-70 transition-transform duration-200 ${
+                      userDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
 
                 {/* Logged in User Menu */}
                 {userDropdownOpen && (
-                  <>
-                    
-                    <div className="absolute right-0 top-full mt-2.5 w-60 bg-white rounded-2xl shadow-modal border border-lagon-border p-2.5 z-50 text-left animate-fadeIn">
-                      <div className="px-3 py-2 border-b border-lagon-border/70">
-                        <p className="text-xs font-semibold text-deep truncate">{currentUser.name}</p>
-                        <p className="text-[11px] text-ink-muted truncate">{currentUser.email}</p>
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/90 overflow-hidden z-50 text-left animate-fadeIn">
+                    {/* En-tête utilisateur soigné */}
+                    <div className="px-4 py-3.5 bg-[#FAF8F5] border-b border-stone-200/80 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-teal-800 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                        {currentUser.name.charAt(0).toUpperCase()}
                       </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-slate-900 truncate leading-tight">
+                          {currentUser.name}
+                        </p>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">
+                          {currentUser.email}
+                        </p>
+                      </div>
+                    </div>
 
+                    {/* Liens de navigation alignés avec icônes */}
+                    <div className="p-1.5 space-y-0.5">
                       <Link
                         href="/compte"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="w-full text-left px-3 py-2 text-xs font-semibold text-deep hover:bg-lagon-bg rounded-xl transition-colors flex items-center gap-2 my-1"
+                        className="w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:text-teal-900 hover:bg-stone-100/80 rounded-xl transition-colors flex items-center justify-between gap-2.5"
                       >
-                        <User className="w-3.5 h-3.5 text-action shrink-0" />
-                        <span>Mon Profil & Favoris</span>
+                        <span className="flex items-center gap-2.5">
+                          <User className="w-4 h-4 text-teal-800 shrink-0" />
+                          <span>Mon profil & favoris</span>
+                        </span>
+                        {favorites.length > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold">
+                            {favorites.length}
+                          </span>
+                        )}
                       </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleNavClick('map')}
+                        className="w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:text-teal-900 hover:bg-stone-100/80 rounded-xl transition-colors flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <Compass className="w-4 h-4 text-teal-800 shrink-0" />
+                        <span>Carte interactive de l&apos;île</span>
+                      </button>
 
                       {currentUser.role === 'admin' && (
                         <Link
                           href="/admin"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="w-full text-left px-3 py-2 text-xs font-semibold text-deep hover:bg-sand-light rounded-xl transition-colors flex items-center gap-2 my-1"
+                          className="w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:text-teal-900 hover:bg-stone-100/80 rounded-xl transition-colors flex items-center gap-2.5"
                         >
-                          <Shield className="w-3.5 h-3.5 text-coral shrink-0" />
-                          <span>Page Administration (Admin)</span>
+                          <Shield className="w-4 h-4 text-coral shrink-0" />
+                          <span>Administration</span>
                         </Link>
                       )}
+                    </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleNavClick('map')}
-                        className="w-full text-left px-3 py-2 text-xs text-ink hover:bg-lagon-bg rounded-xl transition-colors"
-                      >
-                        Carte Interactive de l&apos;Île
-                      </button>
-
+                    {/* Pied de menu séparé par un trait droit net (sans bordure courbe parasite) */}
+                    <div className="p-1.5 border-t border-stone-200/80 bg-[#FAF8F5]/50">
                       <button
                         type="button"
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="w-full text-left px-3 py-2 text-xs text-coral hover:bg-coral-soft rounded-xl transition-colors flex items-center gap-2 mt-1 border-t border-lagon-border/70 disabled:opacity-50"
+                        className="w-full text-left px-3 py-2 text-xs font-semibold text-[#C84B31] hover:bg-red-50/80 rounded-xl transition-colors flex items-center gap-2.5 cursor-pointer disabled:opacity-50"
                       >
                         {isLoggingOut ? (
-                          <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" />
+                          <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
                         ) : (
-                          <LogOut className="w-3.5 h-3.5 shrink-0" />
+                          <LogOut className="w-4 h-4 shrink-0" />
                         )}
                         <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => openModal('auth')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                   scrolled || activeSection !== 'home'
-                    ? 'border-lagon-border text-ink hover:text-action hover:border-action bg-white'
-                    : 'border-white/20 text-white hover:bg-white/20 bg-white/10'
+                    ? 'border-stone-200/90 text-slate-800 hover:text-teal-900 hover:border-stone-300 bg-white shadow-2xs'
+                    : 'border-white/25 text-white hover:bg-white/20 bg-white/10'
                 }`}
                 aria-label="Se connecter ou créer un compte"
               >
