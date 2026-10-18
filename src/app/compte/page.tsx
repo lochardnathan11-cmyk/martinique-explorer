@@ -521,10 +521,13 @@ export default function UserAccountPage() {
       const savedPrefs = localStorage.getItem('mq_account_prefs_v2');
       if (savedPrefs) {
         const parsed = JSON.parse(savedPrefs);
+        const validInterests = Array.isArray(parsed.interests)
+          ? parsed.interests.filter((i: string) => INTEREST_OPTIONS.includes(i))
+          : DEFAULT_PREFS.interests;
         setPrefs({
           ...DEFAULT_PREFS,
           ...parsed,
-          interests: Array.isArray(parsed.interests) ? parsed.interests : DEFAULT_PREFS.interests
+          interests: validInterests
         });
       }
     } catch {
@@ -655,11 +658,18 @@ export default function UserAccountPage() {
 
   const toggleInterest = (interest: string) => {
     setPrefs(prev => {
-      const exists = prev.interests.includes(interest);
+      const cleanCurrent = prev.interests.filter(i => INTEREST_OPTIONS.includes(i));
+      const exists = cleanCurrent.includes(interest);
       const next = exists
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest];
-      return { ...prev, interests: next };
+        ? cleanCurrent.filter(i => i !== interest)
+        : [...cleanCurrent, interest];
+      const updated = { ...prev, interests: next };
+      try {
+        localStorage.setItem('mq_account_prefs_v2', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
     });
   };
 
@@ -1516,14 +1526,29 @@ export default function UserAccountPage() {
 
                       {/* 8 activités alignées proprement en grille de 4 colonnes x 2 lignes */}
                       <div className="space-y-3 pt-1">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-semibold text-slate-800">
-                            Vos activités favorites sur l&apos;île
-                          </label>
-                          <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full">
-                            {prefs.interests.length} sélectionnée{prefs.interests.length > 1 ? 's' : ''}
-                          </span>
-                        </div>
+                        {(() => {
+                          const selectedCount = INTEREST_OPTIONS.filter(item =>
+                            prefs.interests.includes(item)
+                          ).length;
+                          return (
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-semibold text-slate-800">
+                                Vos activités favorites sur l&apos;île
+                              </label>
+                              <span
+                                className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                                  selectedCount > 0
+                                    ? 'text-teal-800 bg-teal-50'
+                                    : 'text-slate-500 bg-stone-100'
+                                }`}
+                              >
+                                {selectedCount === 0
+                                  ? 'Aucune sélectionnée'
+                                  : `${selectedCount} sélectionnée${selectedCount > 1 ? 's' : ''}`}
+                              </span>
+                            </div>
+                          );
+                        })()}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           {INTEREST_OPTIONS.map(item => {
