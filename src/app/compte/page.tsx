@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -23,14 +23,16 @@ import {
   Globe,
   Camera,
   Sparkles,
-  Check
+  Check,
+  X,
+  RotateCcw,
+  ChevronRight
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
-import { ChevronRight } from 'lucide-react';
 
 type AccountTab = 'favorites' | 'settings';
 
@@ -506,60 +508,159 @@ export default function UserAccountPage() {
   const [authPassword, setAuthPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Profile preferences
+  // Profile preferences: saved state vs draft state (settings form)
+  const [savedName, setSavedName] = useState('');
   const [nameInput, setNameInput] = useState('');
+  const [savedPrefs, setSavedPrefs] = useState<UserPreferences>(DEFAULT_PREFS);
   const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT_PREFS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Unsaved changes confirmation modal
+  const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
+  const pendingActionRef = useRef<(() => void) | null>(null);
+
+  // Fluid Toast Notification state
+  const [toast, setToast] = useState<{
+    id: number;
+    title: string;
+    subtitle?: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastCleanupRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const dismissToast = () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    if (toastCleanupRef.current) clearTimeout(toastCleanupRef.current);
+    setToastVisible(false);
+    toastCleanupRef.current = setTimeout(() => {
+      setToast(null);
+    }, 300);
+  };
+
+  const showToast = (
+    title: string,
+    type: 'success' | 'error' | 'info' = 'success',
+    subtitle?: string
+  ) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    if (toastCleanupRef.current) clearTimeout(toastCleanupRef.current);
+
+    const id = Date.now();
+    setToast({ id, title, subtitle, type });
+    setToastVisible(false);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setToastVisible(true);
+      });
+    });
+
+    toastTimerRef.current = setTimeout(() => {
+      setToastVisible(false);
+      toastCleanupRef.current = setTimeout(() => {
+        setToast(null);
+      }, 300);
+    }, 3800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      if (toastCleanupRef.current) clearTimeout(toastCleanupRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
-      setNameInput(currentUser.name || '');
+      const initialName = currentUser.name || '';
+      setSavedName(initialName);
+      setNameInput(initialName);
     }
     try {
-      const savedPrefs = localStorage.getItem('mq_account_prefs_v2');
-      if (savedPrefs) {
-        const parsed = JSON.parse(savedPrefs);
+      const stored = localStorage.getItem('mq_account_prefs_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
         const validInterests = Array.isArray(parsed.interests)
           ? parsed.interests.filter((i: string) => INTEREST_OPTIONS.includes(i))
           : DEFAULT_PREFS.interests;
-        setPrefs({
+        const loaded: UserPreferences = {
           ...DEFAULT_PREFS,
           ...parsed,
           interests: validInterests
-        });
+        };
+        setSavedPrefs(loaded);
+        setPrefs(loaded);
       }
     } catch {
       // Ignore in SSR
     }
   }, [currentUser]);
 
-  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
+  // Liste des champs modifiés mais non sauvegardés
+  const changedFields = useMemo(() => {
+    if (!currentUser) return [];
+    const fields: string[] = [];
+    if (nameInput.trim() !== savedName.trim()) fields.push('Prénom & Nom');
+    if (prefs.avatarPhoto !== savedPrefs.avatarPhoto) fields.push('Photo de profil');
+    if (prefs.bio.trim() !== savedPrefs.bio.trim()) fields.push('Présentation');
+    if (prefs.travelerType !== savedPrefs.travelerType) fields.push('Votre profil');
+    if (prefs.baseCommune !== savedPrefs.baseCommune) fields.push("Commune d'attache");
+    if (prefs.favoriteSector !== savedPrefs.favoriteSector) fields.push('Secteur côtier');
+
+    const cleanDraftInterests = prefs.interests.filter(i => INTEREST_OPTIONS.includes(i));
+    const cleanSavedInterests = savedPrefs.interests.filter(i => INTEREST_OPTIONS.includes(i));
+    const sameInterests =
+      cleanDraftInterests.length === cleanSavedInterests.length &&
+      cleanDraftInterests.every(i => cleanSavedInterests.includes(i));
+    if (!sameInterests) fields.push('Activités favorites');
+
+    return fields;
+  }, [currentUser, nameInput, savedName, prefs, savedPrefs]);
+
+  const hasUnsavedChanges = changedFields.length > 0;
+
+  // Avertissement navigateur si l'utilisateur ferme l'onglet avec des modifications non enregistrées
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Intercepte toute navigation si des modifications sont en attente dans les paramètres
+  const guardNavigation = (action: () => void) => {
+    if (hasUnsavedChanges) {
+      pendingActionRef.current = action;
+      setUnsavedModalOpen(true);
+    } else {
+      action();
+    }
   };
 
+  // Sélection d'une commune dans le formulaire (brouillon uniquement, ne sauvegarde pas tant qu'on n'a pas cliqué sur Enregistrer)
   const handleSelectCommune = (communeName: string) => {
     const data = COMMUNE_MAP_DATA[communeName];
-    setPrefs(prev => {
-      const next: UserPreferences = {
-        ...prev,
-        baseCommune: communeName,
-        favoriteSector: data ? data.sector : prev.favoriteSector
-      };
-      try {
-        localStorage.setItem('mq_account_prefs_v2', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    setPrefs(prev => ({
+      ...prev,
+      baseCommune: communeName,
+      favoriteSector: data ? data.sector : prev.favoriteSector
+    }));
   };
 
   const handleLocateMe = () => {
     if (typeof window === 'undefined' || !('geolocation' in navigator)) {
-      showToast('La géolocalisation n’est pas disponible sur ce navigateur.', 'error');
+      showToast(
+        'Géolocalisation indisponible',
+        'error',
+        'Votre navigateur ne permet pas la détection automatique.'
+      );
       return;
     }
     setIsLocating(true);
@@ -567,7 +668,6 @@ export default function UserAccountPage() {
       pos => {
         setIsLocating(false);
         const { latitude, longitude } = pos.coords;
-        // Vérifier si l'utilisateur se trouve en Martinique (ou proche)
         const inMartinique =
           latitude >= 14.32 && latitude <= 14.95 && longitude >= -61.3 && longitude <= -60.75;
 
@@ -582,31 +682,56 @@ export default function UserAccountPage() {
             }
           }
           handleSelectCommune(closestCommune);
-          showToast(`Position détectée : ${closestCommune}`);
+          showToast(
+            `Position détectée : ${closestCommune}`,
+            'info',
+            activeTab === 'settings'
+              ? 'Pensez à enregistrer vos modifications en bas de page.'
+              : 'Cliquez sur « Mes informations » pour enregistrer cette commune par défaut.'
+          );
         } else {
           showToast(
-            'Vous êtes hors de Martinique — cliquez directement sur une ville de la carte pour déplacer le point.'
+            'Hors de Martinique',
+            'info',
+            'Cliquez directement sur une ville de la carte pour déplacer le point.'
           );
         }
       },
       () => {
         setIsLocating(false);
-        showToast('Cliquez directement sur une ville de la carte pour déplacer votre point.');
+        showToast(
+          'Localisation non activée',
+          'info',
+          'Cliquez directement sur une ville de la carte pour déplacer votre point.'
+        );
       },
       { timeout: 6000 }
     );
   };
 
   const handleNavSection = (sec: string) => {
-    if (sec === 'home') router.push('/');
-    else router.push(`/?page=${encodeURIComponent(sec)}`);
+    guardNavigation(() => {
+      if (sec === 'home') router.push('/');
+      else router.push(`/?page=${encodeURIComponent(sec)}`);
+    });
   };
 
   const handleBack = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
+    guardNavigation(() => {
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/');
+      }
+    });
+  };
+
+  const handleTabChange = (nextTab: AccountTab) => {
+    if (nextTab === activeTab) return;
+    if (activeTab === 'settings' && hasUnsavedChanges) {
+      guardNavigation(() => setActiveTab(nextTab));
     } else {
-      router.push('/');
+      setActiveTab(nextTab);
     }
   };
 
@@ -618,16 +743,24 @@ export default function UserAccountPage() {
       if (authMode === 'login') {
         const res = await login(authEmail, authPassword || undefined);
         if (res.success) {
-          showToast('Connexion réussie.');
+          showToast(
+            'Bon retour parmi nous !',
+            'success',
+            'Vous êtes maintenant connecté à votre espace Martinique Explorer.'
+          );
         } else {
-          showToast(res.error || 'Identifiants incorrects.', 'error');
+          showToast('Connexion impossible', 'error', res.error || 'Identifiants incorrects.');
         }
       } else {
         const res = await signup(authName || 'Voyageur', authEmail, authPassword || undefined);
         if (res.success) {
-          showToast('Compte créé avec succès.');
+          showToast(
+            'Bienvenue sur Martinique Explorer !',
+            'success',
+            'Votre compte a été créé avec succès.'
+          );
         } else {
-          showToast(res.error || 'Erreur lors de la création.', 'error');
+          showToast('Création impossible', 'error', res.error || 'Erreur lors de la création.');
         }
       }
     } finally {
@@ -635,27 +768,78 @@ export default function UserAccountPage() {
     }
   };
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nameInput.trim()) return;
+  const performSaveProfile = async (): Promise<boolean> => {
+    const cleanName = nameInput.trim() || savedName || 'Voyageur';
     setIsSaving(true);
     try {
-      const res = await updateUserProfile(nameInput.trim());
+      const cleanPrefs: UserPreferences = {
+        ...prefs,
+        interests: prefs.interests.filter(i => INTEREST_OPTIONS.includes(i))
+      };
+      const res = await updateUserProfile(cleanName);
       try {
-        localStorage.setItem('mq_account_prefs_v2', JSON.stringify(prefs));
+        localStorage.setItem('mq_account_prefs_v2', JSON.stringify(cleanPrefs));
       } catch {
         // ignore
       }
       if (res.success) {
-        showToast('Vos informations et préférences ont bien été enregistrées.');
+        setSavedName(cleanName);
+        setNameInput(cleanName);
+        setSavedPrefs(cleanPrefs);
+        setPrefs(cleanPrefs);
+        showToast(
+          'Modifications enregistrées',
+          'success',
+          `Profil mis à jour · Ville d'attache : ${cleanPrefs.baseCommune}`
+        );
+        return true;
       } else {
-        showToast(res.error || 'Erreur lors de la sauvegarde.', 'error');
+        showToast('Erreur de sauvegarde', 'error', res.error || 'Veuillez réessayer.');
+        return false;
       }
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await performSaveProfile();
+  };
+
+  const handleDiscardChanges = () => {
+    setNameInput(savedName);
+    setPrefs(savedPrefs);
+    showToast(
+      'Modifications annulées',
+      'info',
+      'Vos dernières valeurs enregistrées ont été rétablies.'
+    );
+  };
+
+  const handleConfirmSaveAndLeave = async () => {
+    const ok = await performSaveProfile();
+    setUnsavedModalOpen(false);
+    if (ok && pendingActionRef.current) {
+      const act = pendingActionRef.current;
+      pendingActionRef.current = null;
+      act();
+    }
+  };
+
+  const handleConfirmDiscardAndLeave = () => {
+    setNameInput(savedName);
+    setPrefs(savedPrefs);
+    setUnsavedModalOpen(false);
+    showToast('Modifications ignorées', 'info', 'Vos changements non sauvegardés ont été annulés.');
+    if (pendingActionRef.current) {
+      const act = pendingActionRef.current;
+      pendingActionRef.current = null;
+      act();
+    }
+  };
+
+  // Modifie uniquement le brouillon (ne sauvegarde PAS tant que l'utilisateur ne clique pas sur Enregistrer)
   const toggleInterest = (interest: string) => {
     setPrefs(prev => {
       const cleanCurrent = prev.interests.filter(i => INTEREST_OPTIONS.includes(i));
@@ -663,19 +847,15 @@ export default function UserAccountPage() {
       const next = exists
         ? cleanCurrent.filter(i => i !== interest)
         : [...cleanCurrent, interest];
-      const updated = { ...prev, interests: next };
-      try {
-        localStorage.setItem('mq_account_prefs_v2', JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
-      return updated;
+      return { ...prev, interests: next };
     });
   };
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/');
+    guardNavigation(async () => {
+      await logout();
+      router.push('/');
+    });
   };
 
   // Lieux favoris filtrés
@@ -693,19 +873,146 @@ export default function UserAccountPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-slate-900">
-      {/* Toast de notification */}
-      {toastMessage && (
+      {/* Notification fluide et chaleureuse */}
+      {toast && (
         <div
-          className={`fixed top-20 right-5 z-[1100] px-4 py-3 rounded-xl shadow-lg text-white text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all ${
-            toastMessage.type === 'error' ? 'bg-rose-700' : 'bg-teal-800'
+          role="status"
+          aria-live="polite"
+          className={`fixed top-20 right-4 sm:right-6 z-[1200] max-w-sm w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200/90 shadow-xl overflow-hidden transition-all duration-300 ease-out ${
+            toastVisible
+              ? 'translate-y-0 opacity-100 scale-100'
+              : '-translate-y-3 opacity-0 scale-95 pointer-events-none'
           }`}
         >
-          {toastMessage.type === 'error' ? (
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-200" />
-          ) : (
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-teal-200" />
-          )}
-          <span>{toastMessage.text}</span>
+          <div className="p-4 flex items-start gap-3.5">
+            <div
+              className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                toast.type === 'error'
+                  ? 'bg-rose-50 border-rose-200/80 text-rose-700'
+                  : toast.type === 'info'
+                  ? 'bg-amber-50 border-amber-200/80 text-amber-800'
+                  : 'bg-teal-50 border-teal-200/80 text-teal-800'
+              }`}
+            >
+              {toast.type === 'error' ? (
+                <AlertCircle className="w-5 h-5" />
+              ) : toast.type === 'info' ? (
+                <Compass className="w-5 h-5" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5" />
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1 pt-0.5">
+              <p className="text-sm font-bold text-slate-900 leading-snug">{toast.title}</p>
+              {toast.subtitle && (
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{toast.subtitle}</p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={dismissToast}
+              aria-label="Fermer la notification"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Barre de progression fluide */}
+          <div className="h-1 w-full bg-stone-100 overflow-hidden">
+            <div
+              key={toast.id}
+              className={`h-full transition-all duration-[3800ms] ease-linear ${
+                toastVisible ? 'w-0' : 'w-full'
+              } ${
+                toast.type === 'error'
+                  ? 'bg-rose-500'
+                  : toast.type === 'info'
+                  ? 'bg-amber-500'
+                  : 'bg-teal-700'
+              }`}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modale de confirmation en cas de départ avec des modifications non sauvegardées */}
+      {unsavedModalOpen && (
+        <div className="fixed inset-0 z-[1300] bg-slate-900/45 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl border border-stone-200/90 shadow-2xl max-w-md w-full overflow-hidden text-left">
+            <div className="px-6 py-5 bg-[#FAF8F5] border-b border-stone-200/80 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-800 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Modifications non enregistrées
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Souhaitez-vous sauvegarder avant de quitter ?
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUnsavedModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-200/50 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Vous avez modifié vos paramètres sans cliquer sur <strong>Enregistrer</strong>. Si vous quittez maintenant sans sauvegarder, ces changements seront perdus :
+              </p>
+
+              {changedFields.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {changedFields.map(field => (
+                    <span
+                      key={field}
+                      className="px-2.5 py-1 rounded-lg bg-[#FAF8F5] border border-stone-200/90 text-xs font-semibold text-slate-800"
+                    >
+                      {field}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleConfirmSaveAndLeave}
+                  disabled={isSaving}
+                  className="w-full py-3 px-4 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-sm font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-2 shadow-2xs"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSaving ? 'Enregistrement...' : 'Enregistrer et continuer'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmDiscardAndLeave}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-rose-50/70 text-rose-700 border border-stone-200 hover:border-rose-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Quitter sans enregistrer</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setUnsavedModalOpen(false)}
+                  className="w-full py-2 px-4 rounded-xl text-slate-500 hover:text-slate-800 text-xs font-medium transition-colors cursor-pointer text-center"
+                >
+                  Continuer mes modifications
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -716,9 +1023,13 @@ export default function UserAccountPage() {
         {/* Fil d'Ariane + Actions rapides (Retour & Déconnexion) */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-200/80 text-xs">
           <nav className="flex items-center gap-2 text-slate-500">
-            <Link href="/" className="hover:text-teal-700 transition-colors font-medium">
+            <button
+              type="button"
+              onClick={() => handleNavSection('home')}
+              className="hover:text-teal-700 transition-colors font-medium cursor-pointer"
+            >
               Accueil
-            </Link>
+            </button>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <span className="text-slate-900 font-semibold">Mon Compte</span>
           </nav>
@@ -894,13 +1205,14 @@ export default function UserAccountPage() {
                             <span>{isLocating ? 'Localisation...' : 'Ma position'}</span>
                           </button>
 
-                          <Link
-                            href="/carte"
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 hover:text-teal-950 transition-colors"
+                          <button
+                            type="button"
+                            onClick={() => guardNavigation(() => router.push('/carte'))}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 hover:text-teal-950 transition-colors cursor-pointer"
                           >
                             <span>Ouvrir la carte</span>
                             <ChevronRight className="w-3.5 h-3.5" />
-                          </Link>
+                          </button>
                         </div>
                       </div>
 
@@ -1053,9 +1365,9 @@ export default function UserAccountPage() {
               <div className="p-5 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 relative z-10">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-teal-800 text-white border-2 border-stone-200 shadow-xs flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
-                    {prefs.avatarPhoto ? (
+                    {savedPrefs.avatarPhoto ? (
                       <img
-                        src={prefs.avatarPhoto}
+                        src={savedPrefs.avatarPhoto}
                         alt={currentUser.name}
                         className="w-full h-full object-cover"
                       />
@@ -1070,16 +1382,16 @@ export default function UserAccountPage() {
                         {currentUser.name}
                       </h1>
                       <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/70">
-                        {userRole === 'admin' ? 'Administrateur' : prefs.travelerType}
+                        {userRole === 'admin' ? 'Administrateur' : savedPrefs.travelerType}
                       </span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-500">
                       {currentUser.email} · Camp de base :{' '}
-                      <span className="font-semibold text-slate-800">{prefs.baseCommune}</span>
+                      <span className="font-semibold text-slate-800">{savedPrefs.baseCommune}</span>
                     </p>
-                    {prefs.bio && (
+                    {savedPrefs.bio && (
                       <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-                        {prefs.bio}
+                        {savedPrefs.bio}
                       </p>
                     )}
                   </div>
@@ -1089,7 +1401,7 @@ export default function UserAccountPage() {
                 <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-stone-200/80 pt-4 md:pt-0 md:pl-8 shrink-0 relative z-10">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('favorites')}
+                    onClick={() => handleTabChange('favorites')}
                     className="text-left cursor-pointer group"
                   >
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -1107,7 +1419,7 @@ export default function UserAccountPage() {
 
                   <button
                     type="button"
-                    onClick={() => setActiveTab('settings')}
+                    onClick={() => handleTabChange('settings')}
                     className="text-left cursor-pointer group"
                   >
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -1138,7 +1450,7 @@ export default function UserAccountPage() {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id as AccountTab)}
+                    onClick={() => handleTabChange(tab.id as AccountTab)}
                     className={`inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-colors cursor-pointer -mb-px ${
                       active
                         ? 'border-teal-700 text-teal-800'
@@ -1147,6 +1459,12 @@ export default function UserAccountPage() {
                   >
                     <Icon className="w-4 h-4" />
                     <span>{tab.label}</span>
+                    {tab.id === 'settings' && hasUnsavedChanges && (
+                      <span
+                        className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                        title="Modifications non enregistrées"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -1643,18 +1961,46 @@ export default function UserAccountPage() {
 
                   {/* Barre de validation en bas */}
                   <div className="px-6 sm:px-10 py-5 bg-[#FAF8F5] border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <span className="text-xs sm:text-sm text-slate-600">
-                      Vos modifications mettent immédiatement à jour la carte et la photo de votre ville en haut de page.
-                    </span>
+                    <div className="flex items-center gap-2.5 text-xs sm:text-sm">
+                      {hasUnsavedChanges ? (
+                        <>
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+                          <span className="font-semibold text-amber-900">
+                            {changedFields.length} modification{changedFields.length > 1 ? 's' : ''} en attente — cliquez sur Enregistrer pour sauvegarder.
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
+                          <span className="text-slate-600">
+                            Toutes vos informations et préférences sont enregistrées.
+                          </span>
+                        </>
+                      )}
+                    </div>
 
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="px-7 py-3.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-xs"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isSaving ? 'Enregistrement...' : 'Enregistrer mes modifications'}</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {hasUnsavedChanges && (
+                        <button
+                          type="button"
+                          onClick={handleDiscardChanges}
+                          disabled={isSaving}
+                          className="px-4 py-3 rounded-xl bg-white hover:bg-stone-100 text-slate-700 border border-stone-200/90 text-xs sm:text-sm font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Annuler</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="px-7 py-3.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-xs"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>{isSaving ? 'Enregistrement...' : 'Enregistrer mes modifications'}</span>
+                      </button>
+                    </div>
                   </div>
                 </form>
               </section>
