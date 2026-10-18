@@ -1273,364 +1273,299 @@ export default function UserAccountPage() {
             )}
 
             {/* =======================================================
-                ONGLET 2 : MES INFORMATIONS & PRÉFÉRENCES (PLEINE LARGEUR)
+                ONGLET 2 : MES INFORMATIONS & PRÉFÉRENCES (TOUT RASSEMBLÉ EN UN SEUL BLOC SIMPLE ET COMPLET)
                 ======================================================= */}
             {activeTab === 'settings' && (
-              <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                {/* Colonne principale (8 colonnes sur 12) */}
+              <section>
                 <form
                   onSubmit={handleSaveProfile}
-                  className="lg:col-span-8 space-y-6"
+                  className="bg-white rounded-2xl border border-stone-200/90 shadow-2xs overflow-hidden"
                 >
-                  {/* Bloc 1 : Identité & Photo de profil */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 space-y-6">
-                    <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-slate-900">
-                          Mes informations personnelles
-                        </h2>
-                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                          Personnalisez votre identité publique et l&apos;image associée à votre profil.
-                        </p>
-                      </div>
-                      <User className="w-5 h-5 text-teal-700 shrink-0" />
+                  {/* En-tête unique */}
+                  <div className="px-6 sm:px-8 py-5 border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                        Mon profil & mes préférences
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                        Votre identité, votre ville d&apos;attache en Martinique et vos activités favorites au même endroit.
+                      </p>
                     </div>
 
-                    {/* Choix d'une vignette photo de Martinique comme avatar */}
-                    <div className="space-y-2.5">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                        <Camera className="w-3.5 h-3.5 text-teal-700" />
-                        Photo d&apos;illustration du profil
-                      </label>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-                        {AVATAR_PRESETS.map(preset => {
-                          const isSelected = prefs.avatarPhoto === preset.url;
-                          return (
-                            <button
-                              key={preset.id}
-                              type="button"
-                              onClick={() => setPrefs(prev => ({ ...prev, avatarPhoto: preset.url }))}
-                              className={`p-1.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
-                                isSelected
-                                  ? 'border-teal-700 bg-teal-50/50 ring-2 ring-teal-700/20'
-                                  : 'border-stone-200 hover:border-stone-300 bg-white'
-                              }`}
-                            >
-                              <div className="w-full aspect-square rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-base">
-                                {preset.url ? (
-                                  <img
-                                    src={preset.url}
-                                    alt={preset.label}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <span>{nameInput ? nameInput.charAt(0).toUpperCase() : 'M'}</span>
-                                )}
+                    <span className="text-xs font-medium text-slate-500 bg-[#FAF8F5] border border-stone-200/80 px-3 py-1.5 rounded-lg">
+                      Camp de base : <strong className="text-slate-800">{prefs.baseCommune}</strong>
+                    </span>
+                  </div>
+
+                  {/* Contenu rassemblé en 2 colonnes équilibrées */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-stone-100">
+                    {/* COLONNE GAUCHE (5/12) : Identité, Photo & Présentation */}
+                    <div className="lg:col-span-5 p-6 sm:p-8 space-y-5">
+                      {/* Sélecteur de photo de profil compact */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-slate-700 block">
+                          Photo du profil
+                        </label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {AVATAR_PRESETS.map(preset => {
+                            const isSelected = prefs.avatarPhoto === preset.url;
+                            return (
+                              <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => setPrefs(prev => ({ ...prev, avatarPhoto: preset.url }))}
+                                title={preset.label}
+                                className={`group relative p-1 rounded-xl border transition-all cursor-pointer flex flex-col items-center gap-1 w-[68px] ${
+                                  isSelected
+                                    ? 'border-teal-700 bg-teal-50/50 ring-2 ring-teal-700/20'
+                                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                                }`}
+                              >
+                                <div className="w-11 h-11 rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-sm">
+                                  {preset.url ? (
+                                    <img
+                                      src={preset.url}
+                                      alt={preset.label}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <span>{nameInput ? nameInput.charAt(0).toUpperCase() : 'M'}</span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] font-medium text-slate-600 truncate w-full text-center">
+                                  {preset.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Nom & Email */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Prénom & Nom (ou pseudo)
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={nameInput}
+                            onChange={e => setNameInput(e.target.value)}
+                            placeholder="Votre nom ou pseudo"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Adresse email
+                          </label>
+                          <input
+                            type="email"
+                            disabled
+                            value={currentUser.email}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-slate-100 text-sm text-slate-500 cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Courte présentation */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Courte présentation
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={prefs.bio}
+                          onChange={e => setPrefs(prev => ({ ...prev, bio: e.target.value }))}
+                          placeholder="Ce que vous aimez découvrir en Martinique (plages, randonnées, plongée...)"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* COLONNE DROITE (7/12) : Ancrage en Martinique, Activités & Repères */}
+                    <div className="lg:col-span-7 p-6 sm:p-8 space-y-6">
+                      {/* 3 menus déroulants : Profil, Commune, Secteur */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Votre profil
+                          </label>
+                          <CustomSelect
+                            value={prefs.travelerType}
+                            onChange={val =>
+                              setPrefs(prev => ({
+                                ...prev,
+                                travelerType: val as UserPreferences['travelerType']
+                              }))
+                            }
+                            options={[
+                              {
+                                value: 'Voyageur en séjour',
+                                label: 'Voyageur en séjour',
+                                sublabel: 'Vacances & découverte de l’île'
+                              },
+                              {
+                                value: 'Habitant de Martinique',
+                                label: 'Habitant de Martinique',
+                                sublabel: 'Résident sur l’île'
+                              },
+                              {
+                                value: 'Saisonnier / Expatrié',
+                                label: 'Saisonnier / Expatrié',
+                                sublabel: 'Séjour longue durée ou mission'
+                              },
+                              {
+                                value: 'Futur résident / Retraite',
+                                label: 'Futur résident / Retraite',
+                                sublabel: 'Projet d’installation en Martinique'
+                              }
+                            ]}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Commune d&apos;attache
+                          </label>
+                          <CustomSelect
+                            value={prefs.baseCommune}
+                            onChange={val => handleSelectCommune(val)}
+                            searchable
+                            searchPlaceholder="Rechercher une commune..."
+                            options={MARTINIQUE_COMMUNES.map(c => ({
+                              value: c,
+                              label: c,
+                              sublabel: COMMUNE_MAP_DATA[c]?.sector
+                            }))}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Secteur côtier préféré
+                          </label>
+                          <CustomSelect
+                            value={prefs.favoriteSector}
+                            onChange={val =>
+                              setPrefs(prev => ({
+                                ...prev,
+                                favoriteSector: val as UserPreferences['favoriteSector']
+                              }))
+                            }
+                            options={[
+                              {
+                                value: 'Sud Caraïbe',
+                                label: 'Sud Caraïbe',
+                                sublabel: 'Anses-d’Arlet, Diamant, Trois-Îlets'
+                              },
+                              {
+                                value: 'Extrême Sud',
+                                label: 'Extrême Sud',
+                                sublabel: 'Sainte-Anne, Les Salines, Sainte-Luce'
+                              },
+                              {
+                                value: 'Nord Volcanique',
+                                label: 'Nord Volcanique',
+                                sublabel: 'Le Carbet, Saint-Pierre, Le Prêcheur'
+                              },
+                              {
+                                value: 'Côte Atlantique',
+                                label: 'Côte Atlantique',
+                                sublabel: 'Presqu’île de la Caravelle, Le François'
+                              }
+                            ]}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Activités favorites */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-slate-700">
+                            Vos activités favorites sur l&apos;île
+                          </label>
+                          <span className="text-[11px] text-slate-400">
+                            {prefs.interests.length} sélectionnée{prefs.interests.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {INTEREST_OPTIONS.map(item => {
+                            const active = prefs.interests.includes(item);
+                            return (
+                              <button
+                                key={item}
+                                type="button"
+                                onClick={() => toggleInterest(item)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                                  active
+                                    ? 'bg-teal-800 text-white border-teal-800'
+                                    : 'bg-slate-50 text-slate-700 border-stone-200 hover:bg-slate-100'
+                                }`}
+                              >
+                                <span>{item}</span>
+                                {active && <Check className="w-3.5 h-3.5 text-teal-200" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Repères d'exploration intégrés sobrement */}
+                      <div className="pt-4 border-t border-stone-100 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-700">
+                            Repères d&apos;exploration ({unlockedBadges.length}/{badges.length})
+                          </span>
+                          <span className="text-[11px] text-slate-400">
+                            {userPoints} pts d&apos;exploration
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {badges.map(badge => {
+                            const isUnlocked = badge.unlocked || userPoints >= badge.requiredPoints;
+                            return (
+                              <div
+                                key={badge.id}
+                                className={`px-3 py-2 rounded-xl border flex items-center gap-2 ${
+                                  isUnlocked
+                                    ? 'bg-teal-50/40 border-teal-200/80 text-slate-900'
+                                    : 'bg-slate-50/60 border-stone-200/60 text-slate-500 opacity-70'
+                                }`}
+                              >
+                                <span className="text-base shrink-0">{badge.icon}</span>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-bold truncate">{badge.name}</p>
+                                  <p className="text-[10px] text-slate-500 truncate">
+                                    {isUnlocked ? 'Acquis' : 'À découvrir'}
+                                  </p>
+                                </div>
                               </div>
-                              <span className="text-[11px] font-medium text-slate-700 truncate w-full">
-                                {preset.label}
-                              </span>
-                            </button>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Nom & Email sur 2 colonnes */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
-                          Prénom & Nom (ou pseudo)
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={nameInput}
-                          onChange={e => setNameInput(e.target.value)}
-                          placeholder="Votre nom ou pseudo"
-                          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
-                          Adresse email
-                        </label>
-                        <input
-                          type="email"
-                          disabled
-                          value={currentUser.email}
-                          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-slate-100 text-sm text-slate-500 cursor-not-allowed"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Bio courte */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">
-                        Courte présentation
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={prefs.bio}
-                        onChange={e => setPrefs(prev => ({ ...prev, bio: e.target.value }))}
-                        placeholder="Ce que vous aimez découvrir en Martinique (plages, randonnées, plongée...)"
-                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700"
-                      />
                     </div>
                   </div>
 
-                  {/* Bloc 2 : Ancrage en Martinique & Centres d'intérêt */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 space-y-6">
-                    <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900">
-                          Mon profil en Martinique & centres d&apos;intérêt
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                          Ces repères adaptent les suggestions de spots et les bulletins côtiers.
-                        </p>
-                      </div>
-                      <Compass className="w-5 h-5 text-teal-700 shrink-0" />
-                    </div>
+                  {/* Barre d'action unique en bas */}
+                  <div className="px-6 sm:px-8 py-4 bg-[#FAF8F5] border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <span className="text-xs text-slate-500">
+                      Vos modifications mettent à jour votre carte et votre photo de ville en haut de page.
+                    </span>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
-                          Votre profil
-                        </label>
-                        <CustomSelect
-                          value={prefs.travelerType}
-                          onChange={val =>
-                            setPrefs(prev => ({
-                              ...prev,
-                              travelerType: val as UserPreferences['travelerType']
-                            }))
-                          }
-                          options={[
-                            {
-                              value: 'Voyageur en séjour',
-                              label: 'Voyageur en séjour',
-                              sublabel: 'Vacances & découverte de l’île'
-                            },
-                            {
-                              value: 'Habitant de Martinique',
-                              label: 'Habitant de Martinique',
-                              sublabel: 'Résident sur l’île'
-                            },
-                            {
-                              value: 'Saisonnier / Expatrié',
-                              label: 'Saisonnier / Expatrié',
-                              sublabel: 'Séjour longue durée ou mission'
-                            },
-                            {
-                              value: 'Futur résident / Retraite',
-                              label: 'Futur résident / Retraite',
-                              sublabel: 'Projet d’installation en Martinique'
-                            }
-                          ]}
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
-                          Commune d&apos;attache
-                        </label>
-                        <CustomSelect
-                          value={prefs.baseCommune}
-                          onChange={val => handleSelectCommune(val)}
-                          searchable
-                          searchPlaceholder="Rechercher une commune..."
-                          options={MARTINIQUE_COMMUNES.map(c => ({
-                            value: c,
-                            label: c,
-                            sublabel: COMMUNE_MAP_DATA[c]?.sector
-                          }))}
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
-                          Secteur côtier préféré
-                        </label>
-                        <CustomSelect
-                          value={prefs.favoriteSector}
-                          onChange={val =>
-                            setPrefs(prev => ({
-                              ...prev,
-                              favoriteSector: val as UserPreferences['favoriteSector']
-                            }))
-                          }
-                          options={[
-                            {
-                              value: 'Sud Caraïbe',
-                              label: 'Sud Caraïbe',
-                              sublabel: 'Anses-d’Arlet, Diamant, Trois-Îlets'
-                            },
-                            {
-                              value: 'Extrême Sud',
-                              label: 'Extrême Sud',
-                              sublabel: 'Sainte-Anne, Les Salines, Sainte-Luce'
-                            },
-                            {
-                              value: 'Nord Volcanique',
-                              label: 'Nord Volcanique',
-                              sublabel: 'Le Carbet, Saint-Pierre, Le Prêcheur'
-                            },
-                            {
-                              value: 'Côte Atlantique',
-                              label: 'Côte Atlantique',
-                              sublabel: 'Presqu’île de la Caravelle, Le François'
-                            }
-                          ]}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Puces des centres d'intérêt */}
-                    <div className="space-y-2.5">
-                      <label className="text-xs font-semibold text-slate-700 block">
-                        Vos activités favorites sur l&apos;île
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {INTEREST_OPTIONS.map(item => {
-                          const active = prefs.interests.includes(item);
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => toggleInterest(item)}
-                              className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
-                                active
-                                  ? 'bg-teal-800 text-white border-teal-800'
-                                  : 'bg-slate-50 text-slate-700 border-stone-200 hover:bg-slate-100'
-                              }`}
-                            >
-                              <span>{item}</span>
-                              {active && <Check className="w-3.5 h-3.5 text-teal-200" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <span className="text-xs text-slate-500">
-                        Vos informations sont sauvegardées instantanément sur votre compte.
-                      </span>
-                      <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="px-6 py-3 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>{isSaving ? 'Enregistrement...' : 'Enregistrer mes modifications'}</span>
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-2xs"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{isSaving ? 'Enregistrement...' : 'Enregistrer mes modifications'}</span>
+                    </button>
                   </div>
                 </form>
-
-                {/* Colonne latérale droite (4 colonnes sur 12) : Aperçu carte membre, Badges & Session */}
-                <aside className="lg:col-span-4 space-y-6">
-                  {/* 1. Aperçu en direct de la carte membre */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">
-                        Aperçu de votre profil public
-                      </span>
-                      <span className="text-[11px] text-slate-400">Communauté</span>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-[#FAF8F5] border border-stone-200/80 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-teal-800 text-white font-bold text-lg flex items-center justify-center overflow-hidden shrink-0">
-                          {prefs.avatarPhoto ? (
-                            <img
-                              src={prefs.avatarPhoto}
-                              alt={nameInput}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span>{nameInput ? nameInput.charAt(0).toUpperCase() : 'M'}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-slate-900 text-sm truncate">
-                            {nameInput || currentUser.name}
-                          </h4>
-                          <p className="text-[11px] text-teal-800 font-semibold">
-                            {prefs.travelerType} · {prefs.baseCommune}
-                          </p>
-                        </div>
-                      </div>
-
-                      {prefs.bio && (
-                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
-                          « {prefs.bio} »
-                        </p>
-                      )}
-
-                      {prefs.interests.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {prefs.interests.slice(0, 4).map(tag => (
-                            <span
-                              key={tag}
-                              className="px-2 py-0.5 rounded-md bg-white border border-stone-200 text-[10px] font-medium text-slate-700"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 2. Badges de membre */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">
-                          Repères d&apos;exploration ({unlockedBadges.length}/{badges.length})
-                        </h3>
-                        <p className="text-[11px] text-slate-500">
-                          Débloqués au fil de vos visites et partages
-                        </p>
-                      </div>
-                      <Award className="w-4 h-4 text-teal-700" />
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {badges.map(badge => {
-                        const isUnlocked = badge.unlocked || userPoints >= badge.requiredPoints;
-                        return (
-                          <div
-                            key={badge.id}
-                            className={`p-3 rounded-xl border flex items-center gap-3 ${
-                              isUnlocked
-                                ? 'bg-teal-50/40 border-teal-200'
-                                : 'bg-slate-50/60 border-stone-200/70 opacity-75'
-                            }`}
-                          >
-                            <span className="text-lg shrink-0">{badge.icon}</span>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <h4 className="text-xs font-bold text-slate-900 truncate">
-                                  {badge.name}
-                                </h4>
-                                <span className="text-[10px] font-medium text-slate-500 shrink-0">
-                                  {isUnlocked ? 'Acquis' : 'À découvrir'}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-500 truncate">
-                                {badge.description}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </aside>
               </section>
             )}
           </>
