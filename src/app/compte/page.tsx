@@ -66,7 +66,7 @@ const INTEREST_OPTIONS = [
 const DEFAULT_PREFS: UserPreferences = {
   travelerType: 'Voyageur en séjour',
   baseCommune: 'Sainte-Luce',
-  favoriteSector: 'Sud Caraïbe',
+  favoriteSector: 'Extrême Sud',
   bio: 'Amateur de belles anses calmes, de snorkeling matinal aux Anses-d’Arlet et de cuisine créole.',
   avatarPhoto: '',
   interests: ['Plages de sable blanc', 'Snorkeling & tortues', 'Tables de bord de mer']
@@ -86,44 +86,377 @@ const CATEGORY_NAMES: Record<string, string> = {
 
 const COMMUNE_MAP_DATA: Record<
   string,
-  { x: number; y: number; lat: number; lon: number; sector: UserPreferences['favoriteSector'] }
+  {
+    x: number;
+    y: number;
+    lat: number;
+    lon: number;
+    sector: UserPreferences['favoriteSector'];
+    image: string;
+    headline: string;
+    weatherNote: string;
+  }
 > = {
-  "Grand'Rivière": { x: 71, y: 20, lat: 14.873, lon: -61.181, sector: 'Nord Volcanique' },
-  'Macouba': { x: 83, y: 22, lat: 14.868, lon: -61.142, sector: 'Nord Volcanique' },
-  'Basse-Pointe': { x: 93, y: 26, lat: 14.862, lon: -61.115, sector: 'Nord Volcanique' },
-  'Le Prêcheur': { x: 57, y: 36, lat: 14.801, lon: -61.224, sector: 'Nord Volcanique' },
-  "L'Ajoupa-Bouillon": { x: 89, y: 38, lat: 14.825, lon: -61.114, sector: 'Nord Volcanique' },
-  'Le Lorrain': { x: 109, y: 38, lat: 14.833, lon: -61.056, sector: 'Côte Atlantique' },
-  'Le Morne-Rouge': { x: 81, y: 48, lat: 14.776, lon: -61.135, sector: 'Nord Volcanique' },
-  'Saint-Pierre': { x: 67, y: 56, lat: 14.743, lon: -61.175, sector: 'Nord Volcanique' },
-  'Marigot': { x: 123, y: 48, lat: 14.821, lon: -61.028, sector: 'Côte Atlantique' },
-  'Le Marigot': { x: 123, y: 48, lat: 14.821, lon: -61.028, sector: 'Côte Atlantique' },
-  'Fonds-Saint-Denis': { x: 83, y: 64, lat: 14.738, lon: -61.131, sector: 'Nord Volcanique' },
-  'Sainte-Marie': { x: 137, y: 58, lat: 14.783, lon: -60.992, sector: 'Côte Atlantique' },
-  'Le Carbet': { x: 67, y: 74, lat: 14.712, lon: -61.182, sector: 'Nord Volcanique' },
-  'Le Morne-Vert': { x: 77, y: 76, lat: 14.706, lon: -61.144, sector: 'Nord Volcanique' },
-  'Gros-Morne': { x: 121, y: 74, lat: 14.708, lon: -61.007, sector: 'Côte Atlantique' },
-  'La Trinité': { x: 153, y: 68, lat: 14.738, lon: -60.963, sector: 'Côte Atlantique' },
-  'Bellefontaine': { x: 73, y: 86, lat: 14.674, lon: -61.164, sector: 'Nord Volcanique' },
-  'Case-Pilote': { x: 81, y: 96, lat: 14.643, lon: -61.138, sector: 'Nord Volcanique' },
-  'Saint-Joseph': { x: 111, y: 94, lat: 14.671, lon: -61.038, sector: 'Sud Caraïbe' },
-  'Le Robert': { x: 159, y: 92, lat: 14.678, lon: -60.938, sector: 'Côte Atlantique' },
-  'Schœlcher': { x: 93, y: 108, lat: 14.616, lon: -61.100, sector: 'Sud Caraïbe' },
-  'Fort-de-France': { x: 107, y: 116, lat: 14.604, lon: -61.073, sector: 'Sud Caraïbe' },
-  'Le Lamentin': { x: 129, y: 116, lat: 14.616, lon: -61.002, sector: 'Sud Caraïbe' },
-  'Le François': { x: 171, y: 114, lat: 14.615, lon: -60.903, sector: 'Côte Atlantique' },
-  'Ducos': { x: 139, y: 132, lat: 14.575, lon: -60.975, sector: 'Sud Caraïbe' },
-  'Saint-Esprit': { x: 157, y: 136, lat: 14.562, lon: -60.933, sector: 'Côte Atlantique' },
-  'Le Saint-Esprit': { x: 157, y: 136, lat: 14.562, lon: -60.933, sector: 'Côte Atlantique' },
-  'Rivière-Salée': { x: 137, y: 148, lat: 14.528, lon: -60.978, sector: 'Sud Caraïbe' },
-  'Les Trois-Îlets': { x: 113, y: 144, lat: 14.539, lon: -61.033, sector: 'Sud Caraïbe' },
-  'Le Vauclin': { x: 189, y: 144, lat: 14.545, lon: -60.838, sector: 'Côte Atlantique' },
-  "Les Anses-d'Arlet": { x: 101, y: 160, lat: 14.491, lon: -61.080, sector: 'Sud Caraïbe' },
-  'Le Diamant': { x: 123, y: 170, lat: 14.478, lon: -61.025, sector: 'Sud Caraïbe' },
-  'Rivière-Pilote': { x: 159, y: 160, lat: 14.487, lon: -60.903, sector: 'Extrême Sud' },
-  'Sainte-Luce': { x: 153, y: 174, lat: 14.468, lon: -60.921, sector: 'Extrême Sud' },
-  'Le Marin': { x: 179, y: 172, lat: 14.471, lon: -60.870, sector: 'Extrême Sud' },
-  'Sainte-Anne': { x: 183, y: 192, lat: 14.435, lon: -60.885, sector: 'Extrême Sud' }
+  "Grand'Rivière": {
+    x: 71,
+    y: 20,
+    lat: 14.873,
+    lon: -61.181,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/anse-couleuvre.jpg',
+    headline: "Grand'Rivière — Falaises sauvages & bout du monde",
+    weatherNote: 'Eau 27°C · Brise du Nord'
+  },
+  'Macouba': {
+    x: 83,
+    y: 22,
+    lat: 14.868,
+    lon: -61.142,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/habitation-clement.jpg',
+    headline: 'Macouba — Falaises du Nord & plantations de canne',
+    weatherNote: 'Air 26°C · Alizé frais'
+  },
+  'Basse-Pointe': {
+    x: 93,
+    y: 26,
+    lat: 14.862,
+    lon: -61.115,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/cascades-didier.jpg',
+    headline: 'Basse-Pointe — Côte Nord-Atlantique & vallées verdoyantes',
+    weatherNote: 'Eau 27°C · Houle atlantique'
+  },
+  'Le Prêcheur': {
+    x: 57,
+    y: 36,
+    lat: 14.801,
+    lon: -61.224,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/anse-ceron.jpg',
+    headline: 'Le Prêcheur — Anse Céron, sable noir & Îlet la Perle',
+    weatherNote: 'Eau 27°C · Côte volcanique'
+  },
+  "L'Ajoupa-Bouillon": {
+    x: 89,
+    y: 38,
+    lat: 14.825,
+    lon: -61.114,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/gorges-falaise.jpg',
+    headline: "L'Ajoupa-Bouillon — Gorges de la Falaise & forêt tropicale",
+    weatherNote: 'Air 25°C · Fraîcheur des mornes'
+  },
+  'Le Lorrain': {
+    x: 109,
+    y: 38,
+    lat: 14.833,
+    lon: -61.056,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/sentier-caravelle.jpg',
+    headline: 'Le Lorrain — Grandes anses atlantiques & reliefs du Nord',
+    weatherNote: 'Eau 27°C · Alizé régulier'
+  },
+  'Le Morne-Rouge': {
+    x: 81,
+    y: 48,
+    lat: 14.776,
+    lon: -61.135,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/montagne-pelee.jpg',
+    headline: 'Le Morne-Rouge — Versants de la Montagne Pelée',
+    weatherNote: 'Air 24°C · Climat d’altitude'
+  },
+  'Saint-Pierre': {
+    x: 67,
+    y: 56,
+    lat: 14.743,
+    lon: -61.175,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/montagne-pelee-vue.jpg',
+    headline: 'Saint-Pierre — Baie historique au pied de la Montagne Pelée',
+    weatherNote: 'Eau 28°C · Rade abritée'
+  },
+  'Marigot': {
+    x: 123,
+    y: 48,
+    lat: 14.821,
+    lon: -61.028,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/sentier-caravelle-falaises.jpg',
+    headline: 'Le Marigot — Pointe de Marigot & falaises atlantiques',
+    weatherNote: 'Eau 27°C · Brise marine'
+  },
+  'Le Marigot': {
+    x: 123,
+    y: 48,
+    lat: 14.821,
+    lon: -61.028,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/sentier-caravelle-falaises.jpg',
+    headline: 'Le Marigot — Pointe de Marigot & falaises atlantiques',
+    weatherNote: 'Eau 27°C · Brise marine'
+  },
+  'Fonds-Saint-Denis': {
+    x: 83,
+    y: 64,
+    lat: 14.738,
+    lon: -61.131,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/canal-esclaves-vue.jpg',
+    headline: 'Fonds-Saint-Denis — Canal de Beauregard & Pitons du Carbet',
+    weatherNote: 'Air 25°C · Vallée tropicale'
+  },
+  'Sainte-Marie': {
+    x: 137,
+    y: 58,
+    lat: 14.783,
+    lon: -60.992,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/sentier-caravelle.jpg',
+    headline: 'Sainte-Marie — Tombolo, îlet & littoral atlantique',
+    weatherNote: 'Eau 27°C · Alizé atlantique'
+  },
+  'Le Carbet': {
+    x: 67,
+    y: 74,
+    lat: 14.712,
+    lon: -61.182,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/petibonum.jpg',
+    headline: 'Le Carbet — Grande plage volcanique & couchers de soleil',
+    weatherNote: 'Eau 28°C · Mer des Caraïbes'
+  },
+  'Le Morne-Vert': {
+    x: 77,
+    y: 76,
+    lat: 14.706,
+    lon: -61.144,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/jardin-balata-allée.jpg',
+    headline: 'Le Morne-Vert — Village niché au pied des Pitons du Carbet',
+    weatherNote: 'Air 25°C · Fraîcheur verdoyante'
+  },
+  'Gros-Morne': {
+    x: 121,
+    y: 74,
+    lat: 14.708,
+    lon: -61.007,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/habitation-clement-jardin.jpg',
+    headline: 'Gros-Morne — Cœur verdoyant, vergers & rivières',
+    weatherNote: 'Air 27°C · Brise des terres'
+  },
+  'La Trinité': {
+    x: 153,
+    y: 68,
+    lat: 14.738,
+    lon: -60.963,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/tartane.jpg',
+    headline: 'La Trinité — Village de Tartane & Presqu’île de la Caravelle',
+    weatherNote: 'Eau 28°C · Baie de Tartane'
+  },
+  'Bellefontaine': {
+    x: 73,
+    y: 86,
+    lat: 14.674,
+    lon: -61.164,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/grande-anse-sunset.jpg',
+    headline: 'Bellefontaine — Côte Caraïbe & horizon au couchant',
+    weatherNote: 'Eau 28°C · Mer calme'
+  },
+  'Case-Pilote': {
+    x: 81,
+    y: 96,
+    lat: 14.643,
+    lon: -61.138,
+    sector: 'Nord Volcanique',
+    image: '/images/spots/excursion-dauphins-nage.jpg',
+    headline: 'Case-Pilote — Bourg marin & eaux bleues du Nord-Caraïbe',
+    weatherNote: 'Eau 28°C · Mer paisible'
+  },
+  'Saint-Joseph': {
+    x: 111,
+    y: 94,
+    lat: 14.671,
+    lon: -61.038,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/jardin-balata.jpg',
+    headline: 'Saint-Joseph — Cœur de l’île, Rivière Blanche & forêt',
+    weatherNote: 'Air 26°C · Verdure tropicale'
+  },
+  'Le Robert': {
+    x: 159,
+    y: 92,
+    lat: 14.678,
+    lon: -60.938,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/baignoire-josephine-baignade.jpg',
+    headline: 'Le Robert — Baie aux dix îlets, Îlet Chancel & Îlet Madame',
+    weatherNote: 'Eau 28°C · Fonds blancs'
+  },
+  'Schœlcher': {
+    x: 93,
+    y: 108,
+    lat: 14.616,
+    lon: -61.100,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/excursion-dauphins.jpg',
+    headline: 'Schœlcher — Anse Madame, Anse Collat & côte Caraïbe',
+    weatherNote: 'Eau 28°C · Mer calme'
+  },
+  'Fort-de-France': {
+    x: 107,
+    y: 116,
+    lat: 14.604,
+    lon: -61.073,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/hotel-bakoua.jpg',
+    headline: 'Fort-de-France — Grande baie, front de mer & jardins de Balata',
+    weatherNote: 'Eau 28°C · Baie abritée'
+  },
+  'Le Lamentin': {
+    x: 129,
+    y: 116,
+    lat: 14.616,
+    lon: -61.002,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/mangrove-trois-ilets-racines.jpg',
+    headline: 'Le Lamentin — Baie de Génipa & grande mangrove centrale',
+    weatherNote: 'Air 28°C · Baie intérieure'
+  },
+  'Le François': {
+    x: 171,
+    y: 114,
+    lat: 14.615,
+    lon: -60.903,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/baignoire-josephine.jpg',
+    headline: 'Le François — Fonds Blancs & Baignoire de Joséphine',
+    weatherNote: 'Eau 28°C · Lagon turquoise'
+  },
+  'Ducos': {
+    x: 139,
+    y: 132,
+    lat: 14.575,
+    lon: -60.975,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/mangrove-trois-ilets.jpg',
+    headline: 'Ducos — Baie de Génipa & plaine du Sud',
+    weatherNote: 'Air 28°C · Climat doux'
+  },
+  'Saint-Esprit': {
+    x: 157,
+    y: 136,
+    lat: 14.562,
+    lon: -60.933,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/morne-larcher-vue.jpg',
+    headline: 'Saint-Esprit — Vallées et mornes verdoyants du Sud',
+    weatherNote: 'Air 27°C · Alizé doux'
+  },
+  'Le Saint-Esprit': {
+    x: 157,
+    y: 136,
+    lat: 14.562,
+    lon: -60.933,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/morne-larcher-vue.jpg',
+    headline: 'Saint-Esprit — Vallées et mornes verdoyants du Sud',
+    weatherNote: 'Air 27°C · Alizé doux'
+  },
+  'Rivière-Salée': {
+    x: 137,
+    y: 148,
+    lat: 14.528,
+    lon: -60.978,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/anse-noire-ponton.jpg',
+    headline: 'Rivière-Salée — Carrefour des plages du Sud Caraïbe',
+    weatherNote: 'Eau 28°C · Côte Sud'
+  },
+  'Les Trois-Îlets': {
+    x: 113,
+    y: 144,
+    lat: 14.539,
+    lon: -61.033,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/spot-plage-de-l-anse-a-l-ane-1791538929676.jpg',
+    headline: 'Les Trois-Îlets — Anse à l’Âne, Anse Mitan & Pointe du Bout',
+    weatherNote: 'Eau 28°C · Baie calme'
+  },
+  'Le Vauclin': {
+    x: 189,
+    y: 144,
+    lat: 14.545,
+    lon: -60.838,
+    sector: 'Côte Atlantique',
+    image: '/images/spots/pointe-faula.jpg',
+    headline: 'Le Vauclin — Lagon de la Pointe Faula & barrière de corail',
+    weatherNote: 'Eau 28°C · Fonds peu profonds'
+  },
+  "Les Anses-d'Arlet": {
+    x: 101,
+    y: 160,
+    lat: 14.491,
+    lon: -61.080,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/ponton-anses-arlet.jpg',
+    headline: 'Les Anses-d’Arlet — Ponton du bourg, Anse Dufour & Grande Anse',
+    weatherNote: 'Eau 28°C · Eaux cristallines'
+  },
+  'Le Diamant': {
+    x: 123,
+    y: 170,
+    lat: 14.478,
+    lon: -61.025,
+    sector: 'Sud Caraïbe',
+    image: '/images/spots/diamant.jpg',
+    headline: 'Le Diamant — Grande plage face au Rocher du Diamant',
+    weatherNote: 'Eau 28°C · Vue sur le Rocher'
+  },
+  'Rivière-Pilote': {
+    x: 159,
+    y: 160,
+    lat: 14.487,
+    lon: -60.903,
+    sector: 'Extrême Sud',
+    image: '/images/spots/anse-figuier-snorkeling.jpg',
+    headline: 'Rivière-Pilote — Plage de l’Anse Figuier & lagon du Sud',
+    weatherNote: 'Eau 28°C · Lagon limpide'
+  },
+  'Sainte-Luce': {
+    x: 153,
+    y: 174,
+    lat: 14.468,
+    lon: -60.921,
+    sector: 'Extrême Sud',
+    image: '/images/spots/anse-figuier.jpg',
+    headline: 'Sainte-Luce — Plages de Gros Raisin, Corps de Garde & Anse Mabouya',
+    weatherNote: 'Eau 28°C · Mer calme'
+  },
+  'Le Marin': {
+    x: 179,
+    y: 172,
+    lat: 14.471,
+    lon: -60.870,
+    sector: 'Extrême Sud',
+    image: '/images/spots/morne-gommier.jpg',
+    headline: 'Le Marin — Panorama sur la baie, marina & plages du Cap Macré',
+    weatherNote: 'Eau 28°C · Baie abritée'
+  },
+  'Sainte-Anne': {
+    x: 183,
+    y: 192,
+    lat: 14.435,
+    lon: -60.885,
+    sector: 'Extrême Sud',
+    image: '/images/spots/salines.jpg',
+    headline: 'Sainte-Anne — Grande Anse des Salines & Pointe Marin',
+    weatherNote: 'Eau 28°C · Lagon turquoise'
+  }
 };
 
 // Villes affichées sur la carte avec leur étiquette (cliquables)
@@ -520,39 +853,6 @@ export default function UserAccountPage() {
                 const pin = COMMUNE_MAP_DATA[prefs.baseCommune] || COMMUNE_MAP_DATA['Sainte-Luce'];
                 const isFeaturedTown = MAP_FEATURED_TOWNS.some(t => t.commune === prefs.baseCommune);
 
-                const sectorShowcases: Record<
-                  UserPreferences['favoriteSector'],
-                  {
-                    image: string;
-                    headline: string;
-                    weatherNote: string;
-                  }
-                > = {
-                  'Sud Caraïbe': {
-                    image: '/images/spots/anse-dufour.jpg',
-                    headline: 'Anse Dufour & Les Anses-d’Arlet',
-                    weatherNote: 'Eau 28°C · Mer calme'
-                  },
-                  'Extrême Sud': {
-                    image: '/images/spots/salines.jpg',
-                    headline: 'Grande Anse des Salines & Sainte-Anne',
-                    weatherNote: 'Eau 28°C · Lagon paisible'
-                  },
-                  'Nord Volcanique': {
-                    image: '/images/spots/montagne-pelee-vue.jpg',
-                    headline: 'Montagne Pelée & Baie de Saint-Pierre',
-                    weatherNote: 'Eau 27°C · Côte volcanique'
-                  },
-                  'Côte Atlantique': {
-                    image: '/images/spots/baignoire-josephine.jpg',
-                    headline: 'Fonds Blancs du François & La Caravelle',
-                    weatherNote: 'Eau 28°C · Alizé régulier'
-                  }
-                };
-
-                const currentShowcase =
-                  sectorShowcases[prefs.favoriteSector] || sectorShowcases['Sud Caraïbe'];
-
                 return (
                   <div className="grid grid-cols-1 lg:grid-cols-3 h-auto lg:h-52 border-b border-stone-200/80">
                     {/* PREMIER TIERS À GAUCHE (1/3) : Carte interactive de la Martinique avec villes */}
@@ -566,7 +866,7 @@ export default function UserAccountPage() {
                             {prefs.baseCommune}
                           </p>
                           <span className="text-xs text-teal-800 font-medium block">
-                            {prefs.favoriteSector}
+                            {pin.sector}
                           </span>
                           <p className="text-[10px] text-slate-500 mt-1">
                             Cliquez sur une ville pour déplacer le point
@@ -710,28 +1010,29 @@ export default function UserAccountPage() {
                       </div>
                     </div>
 
-                    {/* DEUX TIERS À DROITE (2/3) : Vraie photo lumineuse sans surcharge */}
+                    {/* DEUX TIERS À DROITE (2/3) : Jolie photo de la ville saisie / sélectionnée */}
                     <div className="lg:col-span-2 relative h-44 lg:h-full bg-stone-200 overflow-hidden">
                       <img
-                        src={currentShowcase.image}
-                        alt={currentShowcase.headline}
-                        className="w-full h-full object-cover"
+                        key={pin.image}
+                        src={pin.image}
+                        alt={pin.headline}
+                        className="w-full h-full object-cover transition-opacity duration-300"
                       />
                       {/* Léger dégradé uniquement en bas pour lire la légende */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
 
                       <div className="absolute bottom-3.5 inset-x-5 flex flex-wrap items-end justify-between gap-3">
                         <div>
                           <span className="text-[11px] font-medium text-white/85 block">
-                            {prefs.favoriteSector}
+                            {prefs.baseCommune} · {pin.sector}
                           </span>
                           <h2 className="text-base sm:text-lg font-bold text-white leading-tight">
-                            {currentShowcase.headline}
+                            {pin.headline}
                           </h2>
                         </div>
 
                         <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-xs text-white text-xs font-medium">
-                          {currentShowcase.weatherNote}
+                          {pin.weatherNote}
                         </span>
                       </div>
                     </div>
