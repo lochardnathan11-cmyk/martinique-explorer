@@ -28,6 +28,7 @@ import {
 import { useApp } from '@/context/AppContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
 import { ChevronRight } from 'lucide-react';
 
@@ -768,61 +769,92 @@ export default function UserAccountPage() {
                         <label className="text-xs font-semibold text-slate-700">
                           Votre profil
                         </label>
-                        <select
+                        <CustomSelect
                           value={prefs.travelerType}
-                          onChange={e =>
+                          onChange={val =>
                             setPrefs(prev => ({
                               ...prev,
-                              travelerType: e.target.value as UserPreferences['travelerType']
+                              travelerType: val as UserPreferences['travelerType']
                             }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm font-medium bg-white text-slate-900 focus:outline-none focus:border-teal-700"
-                        >
-                          <option value="Voyageur en séjour">Voyageur en séjour</option>
-                          <option value="Habitant de Martinique">Habitant de Martinique</option>
-                          <option value="Saisonnier / Expatrié">Saisonnier / Expatrié</option>
-                          <option value="Futur résident / Retraite">Futur résident / Retraite</option>
-                        </select>
+                          options={[
+                            {
+                              value: 'Voyageur en séjour',
+                              label: 'Voyageur en séjour',
+                              sublabel: 'Vacances & découverte de l’île'
+                            },
+                            {
+                              value: 'Habitant de Martinique',
+                              label: 'Habitant de Martinique',
+                              sublabel: 'Résident sur l’île'
+                            },
+                            {
+                              value: 'Saisonnier / Expatrié',
+                              label: 'Saisonnier / Expatrié',
+                              sublabel: 'Séjour longue durée ou mission'
+                            },
+                            {
+                              value: 'Futur résident / Retraite',
+                              label: 'Futur résident / Retraite',
+                              sublabel: 'Projet d’installation en Martinique'
+                            }
+                          ]}
+                        />
                       </div>
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700">
                           Commune d&apos;attache
                         </label>
-                        <select
+                        <CustomSelect
                           value={prefs.baseCommune}
-                          onChange={e =>
-                            setPrefs(prev => ({ ...prev, baseCommune: e.target.value }))
+                          onChange={val =>
+                            setPrefs(prev => ({ ...prev, baseCommune: val }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm font-medium bg-white text-slate-900 focus:outline-none focus:border-teal-700"
-                        >
-                          {MARTINIQUE_COMMUNES.map(c => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
+                          searchable
+                          searchPlaceholder="Rechercher une commune..."
+                          options={MARTINIQUE_COMMUNES.map(c => ({
+                            value: c,
+                            label: c
+                          }))}
+                        />
                       </div>
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700">
                           Secteur côtier préféré
                         </label>
-                        <select
+                        <CustomSelect
                           value={prefs.favoriteSector}
-                          onChange={e =>
+                          onChange={val =>
                             setPrefs(prev => ({
                               ...prev,
-                              favoriteSector: e.target.value as UserPreferences['favoriteSector']
+                              favoriteSector: val as UserPreferences['favoriteSector']
                             }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm font-medium bg-white text-slate-900 focus:outline-none focus:border-teal-700"
-                        >
-                          <option value="Sud Caraïbe">Sud Caraïbe (Anses-d’Arlet, Diamant)</option>
-                          <option value="Extrême Sud">Extrême Sud (Sainte-Anne, Salines)</option>
-                          <option value="Nord Volcanique">Nord Volcanique (Carbet, Prêcheur)</option>
-                          <option value="Côte Atlantique">Côte Atlantique (Caravelle, François)</option>
-                        </select>
+                          options={[
+                            {
+                              value: 'Sud Caraïbe',
+                              label: 'Sud Caraïbe',
+                              sublabel: 'Anses-d’Arlet, Diamant, Trois-Îlets'
+                            },
+                            {
+                              value: 'Extrême Sud',
+                              label: 'Extrême Sud',
+                              sublabel: 'Sainte-Anne, Les Salines, Sainte-Luce'
+                            },
+                            {
+                              value: 'Nord Volcanique',
+                              label: 'Nord Volcanique',
+                              sublabel: 'Le Carbet, Saint-Pierre, Le Prêcheur'
+                            },
+                            {
+                              value: 'Côte Atlantique',
+                              label: 'Côte Atlantique',
+                              sublabel: 'Presqu’île de la Caravelle, Le François'
+                            }
+                          ]}
+                        />
                       </div>
                     </div>
 

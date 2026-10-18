@@ -24,6 +24,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { PlaceCategory, PlaceItem, SargassumLevel } from '@/types';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 export default function AdminDashboard() {
   const { places, addPlace, updatePlace, deletePlace, alerts, deleteAlert, verifyAlert, posts, deletePost } = useApp();
@@ -347,19 +348,20 @@ export default function AdminDashboard() {
               />
             </div>
 
-            <select
+            <CustomSelect
               value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
-              className="text-xs px-4 py-2.5 rounded-2xl bg-lagon-bg border border-lagon-border text-ink focus:border-action focus:outline-none"
-            >
-              <option value="all">Toutes les catégories</option>
-              <option value="beach">Plages</option>
-              <option value="snorkeling">Snorkeling</option>
-              <option value="activity">Activités & Rando</option>
-              <option value="restaurant">Restaurants</option>
-              <option value="accommodation">Hébergements</option>
-              <option value="event">Événements</option>
-            </select>
+              onChange={val => setCategoryFilter(val)}
+              className="sm:w-56"
+              options={[
+                { value: 'all', label: 'Toutes les catégories' },
+                { value: 'beach', label: 'Plages' },
+                { value: 'snorkeling', label: 'Snorkeling' },
+                { value: 'activity', label: 'Activités & Rando' },
+                { value: 'restaurant', label: 'Restaurants' },
+                { value: 'accommodation', label: 'Hébergements' },
+                { value: 'event', label: 'Événements' }
+              ]}
+            />
           </div>
 
           {/* Table / Cards of places */}
@@ -473,16 +475,16 @@ export default function AdminDashboard() {
               <label className="block text-xs font-semibold text-deep mb-1">
                 État général de la mer
               </label>
-              <select
+              <CustomSelect
                 value={globalSeaState}
-                onChange={e => setGlobalSeaState(e.target.value as any)}
-                className="w-full text-sm p-3 rounded-2xl bg-white border border-lagon-border text-ink focus:border-action focus:outline-none"
-              >
-                <option value="Calme">Calme (Mer d&apos;huile)</option>
-                <option value="Peu agitée">Peu agitée (Baignade idéale)</option>
-                <option value="Agitée">Agitée (Attention aux rouleaux)</option>
-                <option value="Forte houle">Forte houle (Prudence recommandée)</option>
-              </select>
+                onChange={val => setGlobalSeaState(val as any)}
+                options={[
+                  { value: 'Calme', label: "Calme (Mer d'huile)" },
+                  { value: 'Peu agitée', label: 'Peu agitée (Baignade idéale)' },
+                  { value: 'Agitée', label: 'Agitée (Attention aux rouleaux)' },
+                  { value: 'Forte houle', label: 'Forte houle (Prudence recommandée)' }
+                ]}
+              />
             </div>
 
             <div>
@@ -811,39 +813,39 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-deep mb-1">Catégorie</label>
-                  <select
+                  <CustomSelect
                     value={newCategory}
-                    onChange={e => setNewCategory(e.target.value as any)}
-                    className="w-full text-sm p-3 rounded-2xl bg-lagon-bg border border-lagon-border text-ink focus:border-action focus:outline-none"
-                  >
-                    <option value="beach">Plage</option>
-                    <option value="snorkeling">Snorkeling</option>
-                    <option value="restaurant">Restaurant</option>
-                    <option value="activity">Activité / Randonnée</option>
-                    <option value="accommodation">Hébergement</option>
-                    <option value="event">Événement</option>
-                  </select>
+                    onChange={val => setNewCategory(val as any)}
+                    options={[
+                      { value: 'beach', label: 'Plage' },
+                      { value: 'snorkeling', label: 'Snorkeling' },
+                      { value: 'restaurant', label: 'Restaurant' },
+                      { value: 'activity', label: 'Activité / Randonnée' },
+                      { value: 'accommodation', label: 'Hébergement' },
+                      { value: 'event', label: 'Événement' }
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block font-semibold text-deep mb-1">Commune</label>
-                  <select
+                  <CustomSelect
                     value={newCommune}
-                    onChange={e => setNewCommune(e.target.value)}
-                    className="w-full text-sm p-3 rounded-2xl bg-lagon-bg border border-lagon-border text-ink focus:border-action focus:outline-none"
-                  >
-                    <option value="Sainte-Anne">Sainte-Anne</option>
-                    <option value="Les Anses-d'Arlet">Les Anses-d&apos;Arlet</option>
-                    <option value="Le Diamant">Le Diamant</option>
-                    <option value="Les Trois-Îlets">Les Trois-Îlets</option>
-                    <option value="Le François">Le François</option>
-                    <option value="Saint-Pierre">Saint-Pierre</option>
-                    <option value="Fort-de-France">Fort-de-France</option>
-                    <option value="Le Prêcheur">Le Prêcheur</option>
-                    <option value="Sainte-Luce">Sainte-Luce</option>
-                    <option value="Le Vauclin">Le Vauclin</option>
-                    <option value="Tartane">Tartane / La Caravelle</option>
-                  </select>
+                    onChange={val => setNewCommune(val)}
+                    options={[
+                      { value: 'Sainte-Anne', label: 'Sainte-Anne' },
+                      { value: "Les Anses-d'Arlet", label: "Les Anses-d'Arlet" },
+                      { value: 'Le Diamant', label: 'Le Diamant' },
+                      { value: 'Les Trois-Îlets', label: 'Les Trois-Îlets' },
+                      { value: 'Le François', label: 'Le François' },
+                      { value: 'Saint-Pierre', label: 'Saint-Pierre' },
+                      { value: 'Fort-de-France', label: 'Fort-de-France' },
+                      { value: 'Le Prêcheur', label: 'Le Prêcheur' },
+                      { value: 'Sainte-Luce', label: 'Sainte-Luce' },
+                      { value: 'Le Vauclin', label: 'Le Vauclin' },
+                      { value: 'Tartane', label: 'Tartane / La Caravelle' }
+                    ]}
+                  />
                 </div>
               </div>
 

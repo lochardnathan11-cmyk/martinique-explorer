@@ -22,6 +22,7 @@ import {
   Wind,
   Thermometer
 } from 'lucide-react';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface CommunityViewProps {
   onNavigate?: (tab: string) => void;
@@ -603,32 +604,28 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate = () =>
                         <label className="block text-xs font-medium text-slate-600 mb-1">
                           Secteur ou plage
                         </label>
-                        <select
+                        <CustomSelect
                           value={postLocation}
-                          onChange={e => setPostLocation(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-teal-600"
-                        >
-                          {COMMUNES_LIST.map(c => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={val => setPostLocation(val)}
+                          options={COMMUNES_LIST.map(c => ({ value: c, label: c }))}
+                          buttonClassName="py-2 bg-slate-50"
+                        />
                       </div>
 
                       <div>
                         <label className="block text-xs font-medium text-slate-600 mb-1">
                           Sujet
                         </label>
-                        <select
+                        <CustomSelect
                           value={postCategory}
-                          onChange={e => setPostCategory(e.target.value as any)}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-teal-600"
-                        >
-                          <option value="plage">État de la plage & météo</option>
-                          <option value="snorkeling">Tortues & fonds marins</option>
-                          <option value="adresse">Bonne table / Conseil</option>
-                        </select>
+                          onChange={val => setPostCategory(val as any)}
+                          options={[
+                            { value: 'plage', label: 'État de la plage & météo' },
+                            { value: 'snorkeling', label: 'Tortues & fonds marins' },
+                            { value: 'adresse', label: 'Bonne table / Conseil' }
+                          ]}
+                          buttonClassName="py-2 bg-slate-50"
+                        />
                       </div>
                     </div>
 
@@ -951,16 +948,17 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate = () =>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
                         Thème
                       </label>
-                      <select
+                      <CustomSelect
                         value={questionCategory}
-                        onChange={e => setQuestionCategory(e.target.value as any)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:border-teal-600"
-                      >
-                        <option value="Tourisme">Séjour & Logement</option>
-                        <option value="Plages">Plages & Snorkeling</option>
-                        <option value="Restaurants">Tables & Spécialités</option>
-                        <option value="Retraite">Vivre sur place</option>
-                      </select>
+                        onChange={val => setQuestionCategory(val as any)}
+                        options={[
+                          { value: 'Tourisme', label: 'Séjour & Logement' },
+                          { value: 'Plages', label: 'Plages & Snorkeling' },
+                          { value: 'Restaurants', label: 'Tables & Spécialités' },
+                          { value: 'Retraite', label: 'Vivre sur place' }
+                        ]}
+                        buttonClassName="py-2 bg-slate-50"
+                      />
                     </div>
                   </div>
 
