@@ -27,8 +27,10 @@ import {
   Check
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import LogoIcon from '@/components/ui/LogoIcon';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
+import { ChevronRight } from 'lucide-react';
 
 type AccountTab = 'favorites' | 'settings';
 
@@ -153,6 +155,11 @@ export default function UserAccountPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  const handleNavSection = (sec: string) => {
+    if (sec === 'home') router.push('/');
+    else router.push(`/?page=${encodeURIComponent(sec)}`);
+  };
+
   const handleBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back();
@@ -246,11 +253,11 @@ export default function UserAccountPage() {
   const unlockedBadges = badges.filter(b => b.unlocked || userPoints >= b.requiredPoints);
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-slate-900 pb-24">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-slate-900">
       {/* Toast de notification */}
       {toastMessage && (
         <div
-          className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-xl shadow-lg text-white text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all ${
+          className={`fixed top-20 right-5 z-[1100] px-4 py-3 rounded-xl shadow-lg text-white text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all ${
             toastMessage.type === 'error' ? 'bg-rose-700' : 'bg-teal-800'
           }`}
         >
@@ -263,72 +270,52 @@ export default function UserAccountPage() {
         </div>
       )}
 
-      {/* Barre supérieure large et harmonieuse */}
-      <header className="bg-white border-b border-stone-200/90 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-5">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs sm:text-sm font-medium transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Retour</span>
-            </button>
-            <Link href="/" className="flex items-center gap-2.5">
-              <LogoIcon className="w-8 h-8 rounded-lg" />
-              <span className="font-bold text-slate-900 text-base hidden sm:inline">
-                Martinique <span className="font-normal text-teal-700">Explorer</span>
-              </span>
-            </Link>
-          </div>
+      {/* Vraie barre de navigation principale du site */}
+      <Navbar activeSection="compte" setActiveSection={handleNavSection} />
 
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <Link href="/" className="hover:text-teal-700 transition-colors">
-              Explorer
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 w-full space-y-6 text-left">
+        {/* Fil d'Ariane + Actions rapides (Retour & Déconnexion) */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-200/80 text-xs">
+          <nav className="flex items-center gap-2 text-slate-500">
+            <Link href="/" className="hover:text-teal-700 transition-colors font-medium">
+              Accueil
             </Link>
-            <Link href="/?page=beaches" className="hover:text-teal-700 transition-colors">
-              Plages
-            </Link>
-            <Link href="/?page=snorkeling" className="hover:text-teal-700 transition-colors">
-              Snorkeling
-            </Link>
-            <Link href="/?page=map" className="hover:text-teal-700 transition-colors">
-              Carte
-            </Link>
-            <Link href="/?page=blog" className="hover:text-teal-700 transition-colors">
-              Actualités
-            </Link>
-            <Link href="/?page=community" className="hover:text-teal-700 transition-colors">
-              Communauté
-            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <span className="text-slate-900 font-semibold">Mon Compte</span>
           </nav>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 text-slate-700 font-medium transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Page précédente</span>
+            </button>
+
             {userRole === 'admin' && (
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-semibold hover:bg-amber-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 font-semibold hover:bg-amber-100 transition-colors"
               >
                 <Shield className="w-3.5 h-3.5 text-amber-700" />
-                <span className="hidden sm:inline">Administration</span>
+                <span>Administration</span>
               </Link>
             )}
+
             {currentUser && (
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 text-xs font-medium transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 font-medium transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Déconnexion</span>
+                <span>Déconnexion</span>
               </button>
             )}
           </div>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8 text-left">
         {/* NON CONNECTÉ : Formulaire direct et simple */}
         {!currentUser ? (
           <div className="max-w-md mx-auto bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 space-y-6 shadow-xs my-8">
@@ -1137,6 +1124,8 @@ export default function UserAccountPage() {
           </>
         )}
       </main>
+
+      <Footer onNavigate={handleNavSection} />
     </div>
   );
 }
