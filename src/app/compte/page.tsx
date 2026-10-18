@@ -20,7 +20,6 @@ import {
   Mail,
   Lock,
   Award,
-  Bell,
   Globe,
   Camera,
   Sparkles,
@@ -41,12 +40,6 @@ interface UserPreferences {
   bio: string;
   avatarPhoto: string;
   interests: string[];
-  notifications: {
-    beachWeather: boolean;
-    sargassum: boolean;
-    turtles: boolean;
-    localEvents: boolean;
-  };
 }
 
 const AVATAR_PRESETS = [
@@ -75,13 +68,7 @@ const DEFAULT_PREFS: UserPreferences = {
   favoriteSector: 'Sud Caraïbe',
   bio: 'Amateur de belles anses calmes, de snorkeling matinal aux Anses-d’Arlet et de cuisine créole.',
   avatarPhoto: '',
-  interests: ['🏖️ Plages de sable blanc', '🐢 Snorkeling & Tortues', '🍽️ Restaurants de plage'],
-  notifications: {
-    beachWeather: true,
-    sargassum: true,
-    turtles: true,
-    localEvents: false
-  }
+  interests: ['🏖️ Plages de sable blanc', '🐢 Snorkeling & Tortues', '🍽️ Restaurants de plage']
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
@@ -141,7 +128,6 @@ export default function UserAccountPage() {
         setPrefs({
           ...DEFAULT_PREFS,
           ...parsed,
-          notifications: { ...DEFAULT_PREFS.notifications, ...(parsed.notifications || {}) },
           interests: Array.isArray(parsed.interests) ? parsed.interests : DEFAULT_PREFS.interests
         });
       }
@@ -222,16 +208,6 @@ export default function UserAccountPage() {
         : [...prev.interests, interest];
       return { ...prev, interests: next };
     });
-  };
-
-  const toggleNotification = (key: keyof UserPreferences['notifications']) => {
-    setPrefs(prev => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [key]: !prev.notifications[key]
-      }
-    }));
   };
 
   const handleLogout = async () => {
@@ -876,83 +852,10 @@ export default function UserAccountPage() {
                         })}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Bloc 3 : Préférences d'alertes littoral + Enregistrement */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 space-y-6">
-                    <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900">
-                          Notifications & bulletins du littoral
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                          Choisissez les informations prioritaires affichées lors de vos visites.
-                        </p>
-                      </div>
-                      <Bell className="w-5 h-5 text-teal-700 shrink-0" />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {[
-                        {
-                          key: 'beachWeather' as const,
-                          title: 'Météo des plages & état de la mer',
-                          desc: 'Houle, vent et transparence de l’eau le matin'
-                        },
-                        {
-                          key: 'sargassum' as const,
-                          title: 'Vigilance sargasses par côte',
-                          desc: 'Signalements citoyens sur les plages de l’Est et du Sud'
-                        },
-                        {
-                          key: 'turtles' as const,
-                          title: 'Faune marine & herbiers',
-                          desc: 'Observations aux Anses-d’Arlet et saison des pontes'
-                        },
-                        {
-                          key: 'localEvents' as const,
-                          title: 'Vie locale & événements',
-                          desc: 'Carnaval, Tour des Yoles Rondes et marchés'
-                        }
-                      ].map(item => {
-                        const enabled = prefs.notifications[item.key];
-                        return (
-                          <div
-                            key={item.key}
-                            onClick={() => toggleNotification(item.key)}
-                            className={`p-4 rounded-xl border flex items-start justify-between gap-3 cursor-pointer transition-colors ${
-                              enabled
-                                ? 'bg-teal-50/40 border-teal-700/40'
-                                : 'bg-slate-50/60 border-stone-200/80 hover:bg-slate-100/60'
-                            }`}
-                          >
-                            <div className="space-y-0.5">
-                              <span className="text-xs font-bold text-slate-900 block">
-                                {item.title}
-                              </span>
-                              <span className="text-[11px] text-slate-500 block leading-snug">
-                                {item.desc}
-                              </span>
-                            </div>
-                            <div
-                              className={`w-9 h-5 rounded-full p-0.5 transition-colors shrink-0 mt-0.5 ${
-                                enabled ? 'bg-teal-700' : 'bg-slate-300'
-                              }`}
-                            >
-                              <div
-                                className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                                  enabled ? 'translate-x-4' : 'translate-x-0'
-                                }`}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
 
                     <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <span className="text-xs text-slate-500">
-                        Vos préférences sont sauvegardées instantanément sur votre compte.
+                        Vos informations sont sauvegardées instantanément sur votre compte.
                       </span>
                       <button
                         type="submit"
