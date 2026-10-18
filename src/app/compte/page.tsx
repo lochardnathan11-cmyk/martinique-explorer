@@ -6,13 +6,11 @@ import { useRouter } from 'next/navigation';
 import {
   User,
   Heart,
-  Calendar,
   Settings,
   MapPin,
   Star,
   ExternalLink,
   Trash2,
-  Plus,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
@@ -26,18 +24,16 @@ import { useApp } from '@/context/AppContext';
 import LogoIcon from '@/components/ui/LogoIcon';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
 
-type AccountTab = 'favorites' | 'itinerary' | 'settings';
+type AccountTab = 'favorites' | 'settings';
 
 interface UserPreferences {
   travelerType: 'Voyageur en séjour' | 'Habitant de Martinique' | 'Futur résident';
   baseCommune: string;
-  notes: string;
 }
 
 const DEFAULT_PREFS: UserPreferences = {
   travelerType: 'Voyageur en séjour',
-  baseCommune: 'Sainte-Luce',
-  notes: ''
+  baseCommune: 'Sainte-Luce'
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
@@ -64,9 +60,6 @@ export default function UserAccountPage() {
     favorites,
     toggleFavorite,
     places,
-    itinerary,
-    addToItinerary,
-    removeFromItinerary,
     language,
     setLanguage
   } = useApp();
@@ -87,15 +80,6 @@ export default function UserAccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Itinerary planner states
-  const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string>('');
-  const [dayNotes, setDayNotes] = useState<Record<number, string>>({
-    1: 'Arriver tôt aux Salines pour stationner à l’ombre sous les raisiniers.',
-    2: 'Snorkeling matinal à Anse Dufour (8h-9h30) pour observer les tortues au calme.',
-    3: 'Baignade sur les Fonds Blancs du François et retour par la côte Atlantique.'
-  });
-
   useEffect(() => {
     if (currentUser) {
       setNameInput(currentUser.name || '');
@@ -103,8 +87,6 @@ export default function UserAccountPage() {
     try {
       const savedPrefs = localStorage.getItem('mq_account_prefs');
       if (savedPrefs) setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(savedPrefs) });
-      const savedNotes = localStorage.getItem('mq_account_day_notes');
-      if (savedNotes) setDayNotes(prev => ({ ...prev, ...JSON.parse(savedNotes) }));
     } catch {
       // Ignore in SSR
     }
@@ -174,23 +156,6 @@ export default function UserAccountPage() {
     router.push('/');
   };
 
-  const handleAddPlaceToItinerary = (dayNum: number, placeId: string) => {
-    const found = places.find(p => p.id === placeId);
-    if (!found) return;
-    addToItinerary(dayNum, found);
-    showToast(`« ${found.name} » ajouté au Jour ${dayNum}.`);
-  };
-
-  const handleNoteChange = (dayNum: number, val: string) => {
-    const updated = { ...dayNotes, [dayNum]: val };
-    setDayNotes(updated);
-    try {
-      localStorage.setItem('mq_account_day_notes', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
-  };
-
   // Lieux favoris filtrés
   const favoritePlaces = places.filter(p => favorites.includes(p.id));
   const filteredFavorites = favoritePlaces.filter(p => {
@@ -201,8 +166,6 @@ export default function UserAccountPage() {
     if (categoryFilter === 'food') return p.category === 'restaurant' || p.category === 'bar' || p.category === 'accommodation';
     return true;
   });
-
-  const totalSteps = itinerary.reduce((acc, d) => acc + d.places.length, 0);
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-900 pb-20">
@@ -275,10 +238,10 @@ export default function UserAccountPage() {
                 <User className="w-6 h-6" />
               </div>
               <h1 className="text-xl font-bold text-slate-900">
-                Mon Espace Voyageur
+                Mon Espace Membre
               </h1>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Connectez-vous pour retrouver vos plages et adresses favorites, ou planifier votre séjour.
+                Connectez-vous pour retrouver vos plages et adresses favorites en Martinique.
               </p>
             </div>
 
@@ -367,7 +330,7 @@ export default function UserAccountPage() {
             </div>
           </div>
         ) : (
-          /* CONNECTÉ : Interface soignée, claire et complète */
+          /* CONNECTÉ : Interface soignée, claire et simple */
           <>
             {/* 1. Carte de profil principale */}
             <section className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
@@ -391,7 +354,7 @@ export default function UserAccountPage() {
                 </div>
               </div>
 
-              {/* Compteurs clés */}
+              {/* Compteur Favoris */}
               <div className="flex items-center gap-4 border-t sm:border-t-0 sm:border-l border-stone-100 pt-3 sm:pt-0 sm:pl-6 shrink-0">
                 <button
                   type="button"
@@ -399,33 +362,19 @@ export default function UserAccountPage() {
                   className="text-left cursor-pointer group"
                 >
                   <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">
-                    Favoris
+                    Lieux favoris
                   </span>
                   <span className="text-xl font-bold text-slate-900 group-hover:text-teal-700">
                     {favoritePlaces.length}
                   </span>
                 </button>
-                <div className="w-px h-8 bg-stone-200" />
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('itinerary')}
-                  className="text-left cursor-pointer group"
-                >
-                  <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">
-                    Étapes séjour
-                  </span>
-                  <span className="text-xl font-bold text-slate-900 group-hover:text-teal-700">
-                    {totalSteps}
-                  </span>
-                </button>
               </div>
             </section>
 
-            {/* 2. Navigation par onglets (3 onglets essentiels) */}
+            {/* 2. Navigation par onglets (2 onglets clairs : Favoris & Profil) */}
             <div className="flex items-center gap-2 border-b border-stone-200/90 overflow-x-auto no-scrollbar">
               {[
                 { id: 'favorites', label: `Mes Favoris (${favoritePlaces.length})`, icon: Heart },
-                { id: 'itinerary', label: `Mon Séjour (${totalSteps} étapes)`, icon: Calendar },
                 { id: 'settings', label: 'Profil & Préférences', icon: Settings }
               ].map(tab => {
                 const Icon = tab.icon;
@@ -456,10 +405,10 @@ export default function UserAccountPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">
-                      Lieux enregistrés pour mon séjour
+                      Mes lieux favoris
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Vos plages, spots de snorkeling et adresses favorites en Martinique.
+                      Vos plages, spots de snorkeling et adresses enregistrées en Martinique.
                     </p>
                   </div>
 
@@ -554,40 +503,22 @@ export default function UserAccountPage() {
                           </div>
                         </div>
 
-                        <div className="p-4 pt-0 space-y-2">
-                          <div className="flex items-center gap-1 pt-2 border-t border-stone-100">
-                            <span className="text-[10px] font-semibold text-slate-400 mr-auto">
-                              Ajouter au séjour :
-                            </span>
-                            {[1, 2, 3].map(d => (
-                              <button
-                                key={d}
-                                type="button"
-                                onClick={() => handleAddPlaceToItinerary(d, place.id)}
-                                className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
-                              >
-                                + J{d}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <Link
-                              href={`/?page=lieu&id=${place.id}`}
-                              className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold text-center inline-flex items-center justify-center gap-1 transition-colors"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Fiche</span>
-                            </Link>
-                            <button
-                              type="button"
-                              onClick={() => toggleFavorite(place.id)}
-                              className="py-1.5 px-3 rounded-lg border border-stone-200 text-slate-600 hover:text-rose-700 hover:border-rose-200 text-xs font-medium inline-flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Retirer</span>
-                            </button>
-                          </div>
+                        <div className="p-4 pt-2 border-t border-stone-100 grid grid-cols-2 gap-2">
+                          <Link
+                            href={`/?page=lieu&id=${place.id}`}
+                            className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold text-center inline-flex items-center justify-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Voir la fiche</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => toggleFavorite(place.id)}
+                            className="py-1.5 px-3 rounded-lg border border-stone-200 text-slate-600 hover:text-rose-700 hover:border-rose-200 text-xs font-medium inline-flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Retirer</span>
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -597,149 +528,7 @@ export default function UserAccountPage() {
             )}
 
             {/* =======================================================
-                ONGLET 2 : MON SÉJOUR (JOUR PAR JOUR)
-                ======================================================= */}
-            {activeTab === 'itinerary' && (
-              <section className="space-y-6">
-                <div className="bg-white rounded-2xl border border-stone-200/90 p-5 space-y-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">
-                      Organisation de mon séjour jour par jour
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Préparez vos journées pour éviter les temps de route inutiles entre le Sud et le Nord.
-                    </p>
-                  </div>
-
-                  {/* Sélecteur simple d’ajout */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-stone-100">
-                    <span className="text-xs font-semibold text-slate-700 shrink-0">
-                      Ajouter une étape :
-                    </span>
-                    <select
-                      value={selectedDay}
-                      onChange={e => setSelectedDay(Number(e.target.value))}
-                      className="px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold bg-white"
-                    >
-                      <option value={1}>Jour 1</option>
-                      <option value={2}>Jour 2</option>
-                      <option value={3}>Jour 3</option>
-                    </select>
-                    <select
-                      value={selectedPlaceId}
-                      onChange={e => setSelectedPlaceId(e.target.value)}
-                      className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white text-slate-800"
-                    >
-                      <option value="">Sélectionner une plage, rando ou activité...</option>
-                      {places.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.commune})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      disabled={!selectedPlaceId}
-                      onClick={() => {
-                        if (selectedPlaceId) {
-                          handleAddPlaceToItinerary(selectedDay, selectedPlaceId);
-                          setSelectedPlaceId('');
-                        }
-                      }}
-                      className="px-4 py-1.5 rounded-lg bg-teal-800 hover:bg-teal-900 disabled:opacity-40 text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
-                    >
-                      + Ajouter
-                    </button>
-                  </div>
-                </div>
-
-                {/* 3 journées de base */}
-                <div className="space-y-4">
-                  {[1, 2, 3].map(dayNum => {
-                    const dayData = itinerary.find(d => d.dayNumber === dayNum) || {
-                      dayNumber: dayNum,
-                      title: `Jour ${dayNum}`,
-                      places: []
-                    };
-                    return (
-                      <div
-                        key={dayNum}
-                        className="bg-white rounded-2xl border border-stone-200/90 p-5 space-y-3"
-                      >
-                        <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
-                          <div className="flex items-center gap-2.5">
-                            <span className="px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-800 font-bold text-xs">
-                              Jour {dayNum}
-                            </span>
-                            <h3 className="font-bold text-slate-900 text-sm">
-                              {dayData.title}
-                            </h3>
-                          </div>
-                          <span className="text-xs text-slate-400">
-                            {dayData.places.length} lieu{dayData.places.length > 1 ? 'x' : ''}
-                          </span>
-                        </div>
-
-                        {dayData.places.length === 0 ? (
-                          <p className="text-xs text-slate-400 italic py-1">
-                            Aucun lieu programmé pour ce jour.
-                          </p>
-                        ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {dayData.places.map((place, idx) => (
-                              <div
-                                key={place.id}
-                                className="p-2.5 rounded-xl border border-stone-200/80 bg-slate-50/50 flex items-center justify-between gap-3"
-                              >
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                                    {idx + 1}
-                                  </span>
-                                  <img
-                                    src={place.photos[0] || '/images/spots/salines.jpg'}
-                                    alt={place.name}
-                                    className="w-10 h-10 rounded-lg object-cover shrink-0"
-                                  />
-                                  <div className="min-w-0">
-                                    <h4 className="text-xs font-bold text-slate-900 truncate">
-                                      {place.name}
-                                    </h4>
-                                    <p className="text-[11px] text-slate-500 truncate">
-                                      {place.commune}
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => removeFromItinerary(dayNum, place.id)}
-                                  title="Retirer"
-                                  className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="pt-1">
-                          <input
-                            type="text"
-                            value={dayNotes[dayNum] || ''}
-                            onChange={e => handleNoteChange(dayNum, e.target.value)}
-                            placeholder="Repères & notes pratiques (ex: partir à 8h, apporter masque...)"
-                            className="w-full px-3 py-1.5 rounded-lg border border-stone-200/80 text-xs text-slate-700 bg-slate-50/50 focus:bg-white focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* =======================================================
-                ONGLET 3 : PROFIL & PRÉFÉRENCES
+                ONGLET 2 : PROFIL & PRÉFÉRENCES
                 ======================================================= */}
             {activeTab === 'settings' && (
               <section className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-6 max-w-2xl">
@@ -795,7 +584,7 @@ export default function UserAccountPage() {
 
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-slate-700">
-                        Commune de séjour / camp de base
+                        Commune d’attache
                       </label>
                       <select
                         value={prefs.baseCommune}
