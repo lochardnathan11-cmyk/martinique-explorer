@@ -1163,58 +1163,6 @@ export default function UserAccountPage() {
                       })}
                     </div>
                   </div>
-
-                  {/* 3. Langue & Déconnexion */}
-                  <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-5">
-                    <div className="space-y-2.5">
-                      <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                        <Globe className="w-4 h-4 text-teal-700" />
-                        Langue d&apos;affichage
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setLanguage('fr')}
-                          className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
-                            language === 'fr'
-                              ? 'bg-slate-900 text-white border-slate-900'
-                              : 'bg-white text-slate-700 border-stone-200 hover:bg-slate-50'
-                          }`}
-                        >
-                          🇫🇷 Français
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setLanguage('en')}
-                          className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
-                            language === 'en'
-                              ? 'bg-slate-900 text-white border-slate-900'
-                              : 'bg-white text-slate-700 border-stone-200 hover:bg-slate-50'
-                          }`}
-                        >
-                          🇬🇧 English
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-stone-100 space-y-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500">Statut de la session</span>
-                        <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          Active
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Se déconnecter</span>
-                      </button>
-                    </div>
-                  </div>
                 </aside>
               </section>
             )}
