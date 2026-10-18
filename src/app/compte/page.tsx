@@ -53,14 +53,14 @@ const AVATAR_PRESETS = [
 ];
 
 const INTEREST_OPTIONS = [
-  '🏖️ Plages de sable blanc',
-  '🐢 Snorkeling & Tortues',
-  '🥾 Randonnées & Cascades',
-  '🍽️ Restaurants de plage',
-  '⛵ Fonds Blancs & Îlets',
-  '🌋 Plages de sable noir',
-  '🥃 Distilleries & Rhums AOC',
-  '📸 Panoramas & Couchers de soleil'
+  'Plages de sable blanc',
+  'Snorkeling & tortues',
+  'Randonnées & rivières',
+  'Tables de bord de mer',
+  'Fonds blancs & îlets',
+  'Anses volcaniques du Nord',
+  'Distilleries & rhums AOC',
+  'Couchers de soleil & points de vue'
 ];
 
 const DEFAULT_PREFS: UserPreferences = {
@@ -69,7 +69,7 @@ const DEFAULT_PREFS: UserPreferences = {
   favoriteSector: 'Sud Caraïbe',
   bio: 'Amateur de belles anses calmes, de snorkeling matinal aux Anses-d’Arlet et de cuisine créole.',
   avatarPhoto: '',
-  interests: ['🏖️ Plages de sable blanc', '🐢 Snorkeling & Tortues', '🍽️ Restaurants de plage']
+  interests: ['Plages de sable blanc', 'Snorkeling & tortues', 'Tables de bord de mer']
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
@@ -395,10 +395,10 @@ export default function UserAccountPage() {
         ) : (
           /* CONNECTÉ : Interface large, élégante et complète */
           <>
-            {/* 1. Bandeau de profil découpé en 2 : 1/3 Carte à gauche + 2/3 Panorama & Secteur à droite */}
-            <section className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs relative">
+            {/* 1. Bandeau de profil : 1/3 Carte de la Martinique à gauche + 2/3 Photo du littoral à droite */}
+            <section className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs">
               {(() => {
-                // Coordonnées de la commune sur la carte SVG (viewBox 0 0 210 220)
+                // Coordonnées de chaque commune sur la carte de Martinique (viewBox 0 0 215 220)
                 const communeCoords: Record<string, { x: number; y: number }> = {
                   "Grand'Rivière": { x: 46, y: 20 },
                   'Macouba': { x: 58, y: 22 },
@@ -442,47 +442,28 @@ export default function UserAccountPage() {
                   {
                     image: string;
                     headline: string;
-                    subtitle: string;
-                    waterTemp: string;
-                    seaState: string;
-                    highlight: string;
+                    weatherNote: string;
                   }
                 > = {
                   'Sud Caraïbe': {
                     image: '/images/spots/anse-dufour.jpg',
-                    headline: 'Anses-d’Arlet, Anse Dufour & Rocher du Diamant',
-                    subtitle:
-                      'Anses abritées aux eaux limpides, herbiers fréquentés par les tortues vertes et couchers de soleil face au Diamant.',
-                    waterTemp: '28°C',
-                    seaState: 'Mer calme · Visibilité 18 m',
-                    highlight: 'Snorkeling & anses de sable clair'
+                    headline: 'Anse Dufour & Les Anses-d’Arlet',
+                    weatherNote: 'Eau 28°C · Mer calme'
                   },
                   'Extrême Sud': {
                     image: '/images/spots/salines.jpg',
-                    headline: 'Grande Anse des Salines & Lagon de Sainte-Anne',
-                    subtitle:
-                      'Grands rubans de sable blanc bordés de cocotiers, eaux turquoise peu profondes et sentier côtier de la Savane des Pétrifications.',
-                    waterTemp: '28°C',
-                    seaState: 'Lagon paisible · Alizé doux',
-                    highlight: 'Grandes plages & lagon turquoise'
+                    headline: 'Grande Anse des Salines & Sainte-Anne',
+                    weatherNote: 'Eau 28°C · Lagon paisible'
                   },
                   'Nord Volcanique': {
                     image: '/images/spots/montagne-pelee-vue.jpg',
-                    headline: 'Montagne Pelée, Saint-Pierre & Anse Couleuvre',
-                    subtitle:
-                      'Reliefs classés à l’UNESCO, criques sauvages de sable noir volcanique, cascades en forêt tropicale et récifs coralliens.',
-                    waterTemp: '27°C',
-                    seaState: 'Eau claire · Brise de montagne',
-                    highlight: 'Randonnées & plages volcaniques'
+                    headline: 'Montagne Pelée & Baie de Saint-Pierre',
+                    weatherNote: 'Eau 27°C · Côte volcanique'
                   },
                   'Côte Atlantique': {
                     image: '/images/spots/baignoire-josephine.jpg',
-                    headline: 'Presqu’île de la Caravelle & Fonds Blancs du François',
-                    subtitle:
-                      'Hauts-fonds de sable blanc en pleine mer protégés par la barrière de corail, îlets sauvages et réserve naturelle de la Caravelle.',
-                    waterTemp: '28°C',
-                    seaState: 'Barrière récifale · Alizé régulier',
-                    highlight: 'Fonds blancs, îlets & kayak'
+                    headline: 'Fonds Blancs du François & La Caravelle',
+                    weatherNote: 'Eau 28°C · Alizé régulier'
                   }
                 };
 
@@ -490,169 +471,107 @@ export default function UserAccountPage() {
                   sectorShowcases[prefs.favoriteSector] || sectorShowcases['Sud Caraïbe'];
 
                 return (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[176px] sm:min-h-[192px]">
-                    {/* PREMIER TIERS À GAUCHE (1/3) : Carte de la Martinique */}
-                    <div className="lg:col-span-1 relative bg-[#062E3B] lg:border-r border-b lg:border-b-0 border-white/15 px-5 py-4 flex items-center justify-between gap-3 overflow-hidden">
-                      {/* Grille nautique en fond du 1/3 gauche */}
-                      <svg
-                        className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <defs>
-                          <pattern id="mq-grid-left" width="36" height="36" patternUnits="userSpaceOnUse">
-                            <path
-                              d="M 36 0 L 0 0 0 36"
-                              fill="none"
-                              stroke="#BFEFF2"
-                              strokeWidth="0.6"
-                              strokeDasharray="2 3"
-                            />
-                          </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#mq-grid-left)" />
-                      </svg>
-
-                      {/* Légende & repère commune à gauche de la carte */}
-                      <div className="relative z-10 flex flex-col justify-between h-full space-y-3 py-0.5">
-                        <div className="space-y-1">
-                          <div className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-wider uppercase text-teal-300">
-                            <Compass className="w-3.5 h-3.5" />
-                            <span>Carte de l&apos;île</span>
-                          </div>
-                          <p className="text-[11px] font-mono text-teal-100/60">
-                            14°38&apos;N · 61°01&apos;W
-                          </p>
-                        </div>
-
-                        <div className="space-y-1">
-                          <span className="text-[10px] uppercase tracking-wider text-teal-200/70 font-semibold block">
-                            Votre point d&apos;ancrage
+                  <div className="grid grid-cols-1 lg:grid-cols-3 h-auto lg:h-48 border-b border-stone-200/80">
+                    {/* PREMIER TIERS À GAUCHE (1/3) : Carte atlas naturelle de la Martinique */}
+                    <div className="lg:col-span-1 bg-[#E6F2F5] lg:border-r border-b lg:border-b-0 border-stone-200/90 px-5 py-4 flex items-center justify-between gap-3 relative overflow-hidden">
+                      <div className="flex flex-col justify-between h-full py-1 z-10">
+                        <div>
+                          <span className="text-[11px] font-medium text-slate-500 block">
+                            Carte de la Martinique
                           </span>
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-semibold">
-                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                            <span className="truncate">{prefs.baseCommune}</span>
-                          </div>
-                          <span className="text-[11px] text-teal-200/80 block">
+                          <p className="text-base font-bold text-slate-900 mt-0.5">
+                            {prefs.baseCommune}
+                          </p>
+                          <span className="text-xs text-teal-800 font-medium block">
                             {prefs.favoriteSector}
                           </span>
                         </div>
+
+                        <Link
+                          href="/carte"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 hover:text-teal-950 transition-colors mt-3"
+                        >
+                          <span>Ouvrir la carte</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
 
-                      {/* Silhouette complète de la Martinique (non coupée) */}
-                      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+                      {/* Tracé géographique organique (courbes douces, style carte papier) */}
+                      <div className="shrink-0 flex items-center justify-center z-10">
                         <svg
                           viewBox="0 0 215 220"
-                          className="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_6px_16px_rgba(0,0,0,0.4)]"
+                          className="w-36 h-36 sm:w-40 sm:h-40"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          {/* Halo du lagon */}
+                          {/* Halo côtier d'eau peu profonde */}
                           <path
-                            d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
-                            stroke="#5EEAD4"
-                            strokeOpacity="0.22"
-                            strokeWidth="8"
+                            d="M 42 15 C 52 13, 60 15, 68 19 C 78 24, 86 29, 98 39 C 108 47, 118 56, 128 63 C 138 61, 152 54, 165 54 C 173 54, 176 58, 170 63 C 162 67, 150 68, 143 72 C 136 77, 137 86, 144 95 C 152 105, 162 114, 170 126 C 178 139, 181 156, 181 174 C 181 186, 177 198, 167 206 C 161 209, 156 202, 156 193 C 157 183, 159 177, 148 175 C 135 174, 118 174, 102 171 C 88 169, 74 164, 74 156 C 74 148, 82 142, 94 140 C 104 138, 112 136, 111 128 C 110 121, 94 121, 82 118 C 68 114, 56 104, 46 88 C 38 75, 38 62, 32 48 C 25 34, 24 23, 32 17 C 35 15, 39 15, 42 15 Z"
+                            stroke="#CDE5EB"
+                            strokeWidth="9"
                             strokeLinejoin="round"
                           />
 
-                          {/* Tracé de l'île */}
+                          {/* Terre de l'île (vert doux de carte topographique) */}
                           <path
-                            d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
-                            fill="#0D9488"
-                            fillOpacity="0.55"
-                            stroke="#99F6E4"
-                            strokeWidth="1.8"
+                            d="M 42 15 C 52 13, 60 15, 68 19 C 78 24, 86 29, 98 39 C 108 47, 118 56, 128 63 C 138 61, 152 54, 165 54 C 173 54, 176 58, 170 63 C 162 67, 150 68, 143 72 C 136 77, 137 86, 144 95 C 152 105, 162 114, 170 126 C 178 139, 181 156, 181 174 C 181 186, 177 198, 167 206 C 161 209, 156 202, 156 193 C 157 183, 159 177, 148 175 C 135 174, 118 174, 102 171 C 88 169, 74 164, 74 156 C 74 148, 82 142, 94 140 C 104 138, 112 136, 111 128 C 110 121, 94 121, 82 118 C 68 114, 56 104, 46 88 C 38 75, 38 62, 32 48 C 25 34, 24 23, 32 17 C 35 15, 39 15, 42 15 Z"
+                            fill="#D4E6D3"
+                            stroke="#688F6E"
+                            strokeWidth="1.4"
                             strokeLinejoin="round"
                           />
 
-                          {/* Reliefs intérieurs */}
-                          <circle cx="52" cy="38" r="10" stroke="#CCFBF1" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 2" />
-                          <circle cx="72" cy="82" r="13" stroke="#CCFBF1" strokeOpacity="0.25" strokeWidth="1" strokeDasharray="2 2" />
+                          {/* Relief doux intérieur (Pelée & Pitons du Carbet) */}
+                          <ellipse cx="54" cy="40" rx="13" ry="11" fill="#BDD6BC" opacity="0.7" />
+                          <ellipse cx="72" cy="82" rx="15" ry="18" fill="#BDD6BC" opacity="0.6" />
 
-                          {/* Rocher du Diamant & Îlets */}
-                          <circle cx="98" cy="182" r="2.2" fill="#99F6E4" />
-                          <circle cx="158" cy="98" r="1.8" fill="#99F6E4" />
+                          {/* Rocher du Diamant & Îlets du François */}
+                          <circle cx="98" cy="181" r="2" fill="#688F6E" />
+                          <circle cx="156" cy="98" r="1.6" fill="#688F6E" />
 
-                          {/* Repères géographiques */}
-                          <g className="text-[7.5px] fill-teal-100/85 font-medium">
-                            <circle cx="52" cy="38" r="1.6" fill="#CCFBF1" />
-                            <text x="60" y="40">Pelée</text>
-
-                            <circle cx="166" cy="59" r="1.6" fill="#CCFBF1" />
-                            <text x="148" y="49">Caravelle</text>
-
-                            <circle cx="82" cy="116" r="1.8" fill="#CCFBF1" />
-                            <text x="44" y="119">FdF</text>
-
-                            <circle cx="162" cy="200" r="1.6" fill="#CCFBF1" />
-                            <text x="118" y="213">Salines</text>
+                          {/* Repères sobres */}
+                          <g className="text-[7.5px] fill-slate-600 font-medium">
+                            <text x="58" y="38">Pelée</text>
+                            <text x="144" y="48">Caravelle</text>
+                            <text x="36" y="118">FdF</text>
+                            <text x="116" y="212">Salines</text>
                           </g>
 
-                          {/* Marqueur actif sur la commune de l'utilisateur */}
-                          <circle cx={pin.x} cy={pin.y} r="10" fill="#F59E0B" fillOpacity="0.32" />
+                          {/* Épingle sobre sur la commune choisie */}
                           <circle
                             cx={pin.x}
                             cy={pin.y}
-                            r="4.8"
-                            fill="#FBBF24"
+                            r="5"
+                            fill="#C84B31"
                             stroke="#FFFFFF"
-                            strokeWidth="1.6"
+                            strokeWidth="1.8"
                           />
                         </svg>
                       </div>
                     </div>
 
-                    {/* DEUX TIERS À DROITE (2/3) : Panorama côtier & Aperçu du secteur */}
-                    <div className="lg:col-span-2 relative bg-slate-900 px-6 py-5 flex flex-col justify-between overflow-hidden">
+                    {/* DEUX TIERS À DROITE (2/3) : Vraie photo lumineuse sans surcharge */}
+                    <div className="lg:col-span-2 relative h-44 lg:h-full bg-stone-200 overflow-hidden">
                       <img
                         src={currentShowcase.image}
                         alt={currentShowcase.headline}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/55 to-slate-950/65" />
+                      {/* Léger dégradé uniquement en bas pour lire la légende */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-                      <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="space-y-1.5 max-w-xl">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-teal-500/25 border border-teal-300/30 text-teal-200 text-[10px] font-bold uppercase tracking-wider">
-                            <MapPin className="w-3 h-3" />
-                            Secteur préféré · {prefs.favoriteSector}
+                      <div className="absolute bottom-3.5 inset-x-5 flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                          <span className="text-[11px] font-medium text-white/85 block">
+                            {prefs.favoriteSector}
                           </span>
-                          <h2 className="text-base sm:text-xl font-bold text-white leading-snug">
+                          <h2 className="text-base sm:text-lg font-bold text-white leading-tight">
                             {currentShowcase.headline}
                           </h2>
-                          <p className="text-xs text-white/85 leading-relaxed line-clamp-2">
-                            {currentShowcase.subtitle}
-                          </p>
                         </div>
 
-                        {/* Encadré météo / mer du secteur */}
-                        <div className="shrink-0 px-3.5 py-2.5 rounded-xl bg-slate-950/55 backdrop-blur-md border border-white/15 text-white space-y-1">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300 block">
-                            Conditions côtières
-                          </span>
-                          <div className="text-sm font-bold text-white">
-                            Eau {currentShowcase.waterTemp}
-                          </div>
-                          <div className="text-[11px] text-white/80">
-                            {currentShowcase.seaState}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Barre de bas des 2/3 : centres d'intérêt actifs */}
-                      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-3 mt-2 border-t border-white/15">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {prefs.interests.slice(0, 3).map(interest => (
-                            <span
-                              key={interest}
-                              className="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-xs border border-white/15 text-white text-[11px] font-medium"
-                            >
-                              {interest}
-                            </span>
-                          ))}
-                        </div>
-                        <span className="text-[11px] text-teal-200 font-medium">
-                          ✦ {currentShowcase.highlight}
+                        <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-xs text-white text-xs font-medium">
+                          {currentShowcase.weatherNote}
                         </span>
                       </div>
                     </div>
@@ -727,8 +646,8 @@ export default function UserAccountPage() {
                       <span className="text-2xl font-bold text-slate-900 group-hover:text-teal-700">
                         {unlockedBadges.length}/{badges.length}
                       </span>
-                      <span className="text-xs text-teal-700 font-semibold">
-                        ({userPoints} XP)
+                      <span className="text-xs text-slate-500">
+                        étapes
                       </span>
                     </div>
                   </button>
@@ -1156,10 +1075,10 @@ export default function UserAccountPage() {
                   {/* 1. Aperçu en direct de la carte membre */}
                   <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700">
-                        Aperçu public
+                      <span className="text-xs font-bold text-slate-900">
+                        Aperçu de votre profil public
                       </span>
-                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span className="text-[11px] text-slate-400">Communauté</span>
                     </div>
 
                     <div className="p-4 rounded-xl bg-[#FAF8F5] border border-stone-200/80 space-y-3">
@@ -1211,13 +1130,13 @@ export default function UserAccountPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-bold text-slate-900">
-                          Mes badges ({unlockedBadges.length}/{badges.length})
+                          Repères d&apos;exploration ({unlockedBadges.length}/{badges.length})
                         </h3>
                         <p className="text-[11px] text-slate-500">
-                          {userPoints} points d&apos;exploration
+                          Débloqués au fil de vos visites et partages
                         </p>
                       </div>
-                      <Award className="w-5 h-5 text-amber-500" />
+                      <Award className="w-4 h-4 text-teal-700" />
                     </div>
 
                     <div className="space-y-2.5">
@@ -1232,14 +1151,14 @@ export default function UserAccountPage() {
                                 : 'bg-slate-50/60 border-stone-200/70 opacity-75'
                             }`}
                           >
-                            <span className="text-xl shrink-0">{badge.icon}</span>
+                            <span className="text-lg shrink-0">{badge.icon}</span>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-2">
                                 <h4 className="text-xs font-bold text-slate-900 truncate">
                                   {badge.name}
                                 </h4>
-                                <span className="text-[10px] font-semibold text-teal-800 shrink-0">
-                                  {isUnlocked ? '✓ Acquis' : `${badge.requiredPoints} XP`}
+                                <span className="text-[10px] font-medium text-slate-500 shrink-0">
+                                  {isUnlocked ? 'Acquis' : 'À découvrir'}
                                 </span>
                               </div>
                               <p className="text-[11px] text-slate-500 truncate">
