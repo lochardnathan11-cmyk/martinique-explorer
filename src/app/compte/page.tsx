@@ -516,8 +516,9 @@ export default function UserAccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Unsaved changes confirmation modal
+  // Unsaved changes & Logout confirmation modals
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
 
   // Fluid Toast Notification state
@@ -851,11 +852,16 @@ export default function UserAccountPage() {
     });
   };
 
-  const handleLogout = async () => {
-    guardNavigation(async () => {
-      await logout();
-      router.push('/');
+  const handleLogout = () => {
+    guardNavigation(() => {
+      setLogoutConfirmOpen(true);
     });
+  };
+
+  const handleConfirmLogout = async () => {
+    setLogoutConfirmOpen(false);
+    await logout();
+    router.push('/');
   };
 
   // Lieux favoris filtrés
@@ -934,6 +940,61 @@ export default function UserAccountPage() {
                   : 'bg-teal-700'
               }`}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modale de confirmation de déconnexion */}
+      {logoutConfirmOpen && currentUser && (
+        <div className="fixed inset-0 z-[1350] bg-slate-900/45 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl border border-stone-200/90 shadow-2xl max-w-sm w-full overflow-hidden text-left">
+            <div className="px-6 py-5 bg-[#FAF8F5] border-b border-stone-200/80 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200/80 text-[#C84B31] flex items-center justify-center shrink-0">
+                  <LogOut className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Se déconnecter ?
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Compte : {currentUser.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLogoutConfirmOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-200/50 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Êtes-vous sûr de vouloir vous déconnecter ? Vos lieux favoris et vos préférences resteront sauvegardés pour votre prochaine visite.
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLogoutConfirmOpen(false)}
+                  className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 text-slate-700 border border-stone-200/90 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                >
+                  Annuler
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmLogout}
+                  className="py-2.5 px-4 rounded-xl bg-[#C84B31] hover:bg-[#B03E26] text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-2 shadow-2xs"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Me déconnecter</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
