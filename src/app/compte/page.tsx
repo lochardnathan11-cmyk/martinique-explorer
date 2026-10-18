@@ -395,186 +395,274 @@ export default function UserAccountPage() {
         ) : (
           /* CONNECTÉ : Interface large, élégante et complète */
           <>
-            {/* 1. Bandeau de profil avec carte de la Martinique en fond */}
+            {/* 1. Bandeau de profil découpé en 2 : 1/3 Carte à gauche + 2/3 Panorama & Secteur à droite */}
             <section className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs relative">
-              <div className="relative h-36 sm:h-44 bg-gradient-to-r from-[#073B4C] via-[#0A4F63] to-[#086775] overflow-hidden">
-                {/* Photo côtière douce en sous-couche */}
-                <img
-                  src="/images/spots/ponton-anses-arlet.jpg"
-                  alt="Littoral de Martinique"
-                  className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#062E3B]/90 via-[#073B4C]/70 to-[#085A68]/85" />
+              {(() => {
+                // Coordonnées de la commune sur la carte SVG (viewBox 0 0 210 220)
+                const communeCoords: Record<string, { x: number; y: number }> = {
+                  "Grand'Rivière": { x: 46, y: 20 },
+                  'Macouba': { x: 58, y: 22 },
+                  'Basse-Pointe': { x: 68, y: 26 },
+                  'Le Prêcheur': { x: 32, y: 36 },
+                  "L'Ajoupa-Bouillon": { x: 64, y: 38 },
+                  'Le Lorrain': { x: 84, y: 38 },
+                  'Le Morne-Rouge': { x: 56, y: 48 },
+                  'Saint-Pierre': { x: 42, y: 56 },
+                  'Le Marigot': { x: 98, y: 48 },
+                  'Fonds-Saint-Denis': { x: 58, y: 64 },
+                  'Sainte-Marie': { x: 112, y: 58 },
+                  'Le Carbet': { x: 42, y: 74 },
+                  'Le Morne-Vert': { x: 52, y: 76 },
+                  'Gros-Morne': { x: 96, y: 74 },
+                  'La Trinité': { x: 128, y: 70 },
+                  'Bellefontaine': { x: 48, y: 86 },
+                  'Case-Pilote': { x: 56, y: 96 },
+                  'Saint-Joseph': { x: 86, y: 94 },
+                  'Le Robert': { x: 134, y: 92 },
+                  'Schœlcher': { x: 68, y: 108 },
+                  'Fort-de-France': { x: 82, y: 116 },
+                  'Le Lamentin': { x: 104, y: 116 },
+                  'Le François': { x: 146, y: 114 },
+                  'Ducos': { x: 114, y: 132 },
+                  'Le Saint-Esprit': { x: 132, y: 136 },
+                  'Rivière-Salée': { x: 112, y: 148 },
+                  'Les Trois-Îlets': { x: 88, y: 144 },
+                  'Le Vauclin': { x: 164, y: 144 },
+                  "Les Anses-d'Arlet": { x: 76, y: 160 },
+                  'Le Diamant': { x: 98, y: 170 },
+                  'Rivière-Pilote': { x: 134, y: 160 },
+                  'Sainte-Luce': { x: 128, y: 174 },
+                  'Le Marin': { x: 154, y: 172 },
+                  'Sainte-Anne': { x: 158, y: 192 }
+                };
+                const pin = communeCoords[prefs.baseCommune] || { x: 128, y: 174 };
 
-                {/* Grille nautique et lignes topographiques de fond */}
-                <svg
-                  className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <pattern id="mq-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-                      <path
-                        d="M 48 0 L 0 0 0 48"
-                        fill="none"
-                        stroke="#BFEFF2"
-                        strokeWidth="0.6"
-                        strokeDasharray="2 4"
-                      />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#mq-grid)" />
-                </svg>
+                const sectorShowcases: Record<
+                  UserPreferences['favoriteSector'],
+                  {
+                    image: string;
+                    headline: string;
+                    subtitle: string;
+                    waterTemp: string;
+                    seaState: string;
+                    highlight: string;
+                  }
+                > = {
+                  'Sud Caraïbe': {
+                    image: '/images/spots/anse-dufour.jpg',
+                    headline: 'Anses-d’Arlet, Anse Dufour & Rocher du Diamant',
+                    subtitle:
+                      'Anses abritées aux eaux limpides, herbiers fréquentés par les tortues vertes et couchers de soleil face au Diamant.',
+                    waterTemp: '28°C',
+                    seaState: 'Mer calme · Visibilité 18 m',
+                    highlight: 'Snorkeling & anses de sable clair'
+                  },
+                  'Extrême Sud': {
+                    image: '/images/spots/salines.jpg',
+                    headline: 'Grande Anse des Salines & Lagon de Sainte-Anne',
+                    subtitle:
+                      'Grands rubans de sable blanc bordés de cocotiers, eaux turquoise peu profondes et sentier côtier de la Savane des Pétrifications.',
+                    waterTemp: '28°C',
+                    seaState: 'Lagon paisible · Alizé doux',
+                    highlight: 'Grandes plages & lagon turquoise'
+                  },
+                  'Nord Volcanique': {
+                    image: '/images/spots/montagne-pelee-vue.jpg',
+                    headline: 'Montagne Pelée, Saint-Pierre & Anse Couleuvre',
+                    subtitle:
+                      'Reliefs classés à l’UNESCO, criques sauvages de sable noir volcanique, cascades en forêt tropicale et récifs coralliens.',
+                    waterTemp: '27°C',
+                    seaState: 'Eau claire · Brise de montagne',
+                    highlight: 'Randonnées & plages volcaniques'
+                  },
+                  'Côte Atlantique': {
+                    image: '/images/spots/baignoire-josephine.jpg',
+                    headline: 'Presqu’île de la Caravelle & Fonds Blancs du François',
+                    subtitle:
+                      'Hauts-fonds de sable blanc en pleine mer protégés par la barrière de corail, îlets sauvages et réserve naturelle de la Caravelle.',
+                    waterTemp: '28°C',
+                    seaState: 'Barrière récifale · Alizé régulier',
+                    highlight: 'Fonds blancs, îlets & kayak'
+                  }
+                };
 
-                {/* Coordonnées nautiques & Rose des vents à gauche */}
-                <div className="absolute top-3.5 left-5 hidden sm:flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-teal-200/70 select-none">
-                  <Compass className="w-3.5 h-3.5 text-teal-300/80" />
-                  <span>14°38&apos;N · 61°01&apos;W — Carte de Madinina</span>
-                </div>
+                const currentShowcase =
+                  sectorShowcases[prefs.favoriteSector] || sectorShowcases['Sud Caraïbe'];
 
-                {/* Carte détaillée de la Martinique en fond (centrée-droite) */}
-                {(() => {
-                  // Position dynamique du marqueur selon la commune ou le secteur
-                  const communeCoords: Record<string, { x: number; y: number }> = {
-                    'Grand\'Rivière': { x: 46, y: 18 },
-                    'Macouba': { x: 58, y: 20 },
-                    'Basse-Pointe': { x: 68, y: 24 },
-                    'Le Prêcheur': { x: 32, y: 34 },
-                    'L\'Ajoupa-Bouillon': { x: 64, y: 36 },
-                    'Le Lorrain': { x: 84, y: 36 },
-                    'Le Morne-Rouge': { x: 56, y: 46 },
-                    'Saint-Pierre': { x: 42, y: 54 },
-                    'Le Marigot': { x: 98, y: 46 },
-                    'Fonds-Saint-Denis': { x: 58, y: 62 },
-                    'Sainte-Marie': { x: 112, y: 56 },
-                    'Le Carbet': { x: 42, y: 72 },
-                    'Le Morne-Vert': { x: 52, y: 74 },
-                    'Gros-Morne': { x: 96, y: 72 },
-                    'La Trinité': { x: 128, y: 68 },
-                    'Bellefontaine': { x: 48, y: 84 },
-                    'Case-Pilote': { x: 56, y: 94 },
-                    'Saint-Joseph': { x: 86, y: 92 },
-                    'Le Robert': { x: 134, y: 90 },
-                    'Schœlcher': { x: 68, y: 106 },
-                    'Fort-de-France': { x: 82, y: 114 },
-                    'Le Lamentin': { x: 104, y: 114 },
-                    'Le François': { x: 146, y: 112 },
-                    'Ducos': { x: 114, y: 130 },
-                    'Le Saint-Esprit': { x: 132, y: 134 },
-                    'Rivière-Salée': { x: 112, y: 146 },
-                    'Les Trois-Îlets': { x: 88, y: 142 },
-                    'Le Vauclin': { x: 164, y: 142 },
-                    'Les Anses-d\'Arlet': { x: 76, y: 158 },
-                    'Le Diamant': { x: 98, y: 168 },
-                    'Rivière-Pilote': { x: 134, y: 158 },
-                    'Sainte-Luce': { x: 128, y: 172 },
-                    'Le Marin': { x: 154, y: 170 },
-                    'Sainte-Anne': { x: 158, y: 192 }
-                  };
-                  const pin = communeCoords[prefs.baseCommune] || { x: 128, y: 172 };
-
-                  return (
-                    <div className="absolute inset-y-0 right-4 sm:right-10 md:right-48 flex items-center justify-center pointer-events-none select-none">
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[176px] sm:min-h-[192px]">
+                    {/* PREMIER TIERS À GAUCHE (1/3) : Carte de la Martinique */}
+                    <div className="lg:col-span-1 relative bg-[#062E3B] lg:border-r border-b lg:border-b-0 border-white/15 px-5 py-4 flex items-center justify-between gap-3 overflow-hidden">
+                      {/* Grille nautique en fond du 1/3 gauche */}
                       <svg
-                        viewBox="0 0 240 220"
-                        className="w-48 h-48 sm:w-60 sm:h-60 opacity-90 drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
-                        fill="none"
+                        className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        {/* Halo bathymétrique (lagon entourant l'île) */}
-                        <path
-                          d="M40 12 C62 8, 92 22, 118 48 C130 60, 148 54, 174 52 C182 54, 178 66, 150 72 C142 82, 152 96, 170 118 C184 136, 190 162, 184 194 C178 208, 162 214, 154 202 C148 188, 134 180, 102 178 C84 176, 68 166, 70 150 C72 138, 96 138, 102 128 C98 118, 76 118, 62 106 C46 92, 34 72, 26 48 C18 28, 24 15, 40 12 Z"
-                          stroke="#5EEAD4"
-                          strokeOpacity="0.22"
-                          strokeWidth="8"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M40 12 C62 8, 92 22, 118 48 C130 60, 148 54, 174 52 C182 54, 178 66, 150 72 C142 82, 152 96, 170 118 C184 136, 190 162, 184 194 C178 208, 162 214, 154 202 C148 188, 134 180, 102 178 C84 176, 68 166, 70 150 C72 138, 96 138, 102 128 C98 118, 76 118, 62 106 C46 92, 34 72, 26 48 C18 28, 24 15, 40 12 Z"
-                          stroke="#99F6E4"
-                          strokeOpacity="0.3"
-                          strokeWidth="1.2"
-                          strokeDasharray="3 3"
-                        />
-
-                        {/* Tracé géographique fidèle de la Martinique */}
-                        <path
-                          d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
-                          fill="#0D9488"
-                          fillOpacity="0.45"
-                          stroke="#99F6E4"
-                          strokeWidth="1.8"
-                          strokeLinejoin="round"
-                        />
-
-                        {/* Reliefs intérieurs (Montagne Pelée & Pitons du Carbet) */}
-                        <circle cx="52" cy="38" r="12" stroke="#CCFBF1" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 2" />
-                        <circle cx="72" cy="82" r="15" stroke="#CCFBF1" strokeOpacity="0.25" strokeWidth="1" strokeDasharray="2 2" />
-                        <circle cx="152" cy="145" r="11" stroke="#CCFBF1" strokeOpacity="0.22" strokeWidth="1" strokeDasharray="2 2" />
-
-                        {/* Rocher du Diamant & Îlets du François */}
-                        <circle cx="98" cy="181" r="2.2" fill="#99F6E4" fillOpacity="0.8" />
-                        <circle cx="158" cy="98" r="1.8" fill="#99F6E4" fillOpacity="0.7" />
-                        <circle cx="164" cy="105" r="1.5" fill="#99F6E4" fillOpacity="0.7" />
-
-                        {/* Points de repère principaux de l'île */}
-                        <g className="text-[7px] fill-teal-100/75 font-medium">
-                          <circle cx="52" cy="38" r="1.8" fill="#CCFBF1" />
-                          <text x="60" y="40">Mt. Pelée</text>
-
-                          <circle cx="166" cy="59" r="1.8" fill="#CCFBF1" />
-                          <text x="174" y="61">Caravelle</text>
-
-                          <circle cx="82" cy="114" r="2" fill="#CCFBF1" />
-                          <text x="35" y="117">Fort-de-France</text>
-
-                          <circle cx="76" cy="158" r="1.8" fill="#CCFBF1" />
-                          <text x="18" y="162">Anses-d’Arlet</text>
-
-                          <circle cx="162" cy="200" r="1.8" fill="#CCFBF1" />
-                          <text x="170" y="203">Les Salines</text>
-                        </g>
-
-                        {/* Marqueur lumineux sur la commune d'attache de l'utilisateur */}
-                        <circle
-                          cx={pin.x}
-                          cy={pin.y}
-                          r="9"
-                          fill="#F59E0B"
-                          fillOpacity="0.28"
-                        />
-                        <circle
-                          cx={pin.x}
-                          cy={pin.y}
-                          r="4.5"
-                          fill="#FBBF24"
-                          stroke="#FFFFFF"
-                          strokeWidth="1.5"
-                        />
+                        <defs>
+                          <pattern id="mq-grid-left" width="36" height="36" patternUnits="userSpaceOnUse">
+                            <path
+                              d="M 36 0 L 0 0 0 36"
+                              fill="none"
+                              stroke="#BFEFF2"
+                              strokeWidth="0.6"
+                              strokeDasharray="2 3"
+                            />
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#mq-grid-left)" />
                       </svg>
-                    </div>
-                  );
-                })()}
 
-                {/* Badge secteur & commune en bas à droite du bandeau */}
-                <div className="absolute bottom-3.5 right-4 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/55 backdrop-blur-md border border-teal-300/25 text-white text-xs font-medium shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <MapPin className="w-3.5 h-3.5 text-teal-300" />
-                  <span>{prefs.favoriteSector} · {prefs.baseCommune}</span>
-                </div>
-              </div>
+                      {/* Légende & repère commune à gauche de la carte */}
+                      <div className="relative z-10 flex flex-col justify-between h-full space-y-3 py-0.5">
+                        <div className="space-y-1">
+                          <div className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-wider uppercase text-teal-300">
+                            <Compass className="w-3.5 h-3.5" />
+                            <span>Carte de l&apos;île</span>
+                          </div>
+                          <p className="text-[11px] font-mono text-teal-100/60">
+                            14°38&apos;N · 61°01&apos;W
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider text-teal-200/70 font-semibold block">
+                            Votre point d&apos;ancrage
+                          </span>
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                            <span className="truncate">{prefs.baseCommune}</span>
+                          </div>
+                          <span className="text-[11px] text-teal-200/80 block">
+                            {prefs.favoriteSector}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Silhouette complète de la Martinique (non coupée) */}
+                      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+                        <svg
+                          viewBox="0 0 215 220"
+                          className="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_6px_16px_rgba(0,0,0,0.4)]"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          {/* Halo du lagon */}
+                          <path
+                            d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
+                            stroke="#5EEAD4"
+                            strokeOpacity="0.22"
+                            strokeWidth="8"
+                            strokeLinejoin="round"
+                          />
+
+                          {/* Tracé de l'île */}
+                          <path
+                            d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
+                            fill="#0D9488"
+                            fillOpacity="0.55"
+                            stroke="#99F6E4"
+                            strokeWidth="1.8"
+                            strokeLinejoin="round"
+                          />
+
+                          {/* Reliefs intérieurs */}
+                          <circle cx="52" cy="38" r="10" stroke="#CCFBF1" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 2" />
+                          <circle cx="72" cy="82" r="13" stroke="#CCFBF1" strokeOpacity="0.25" strokeWidth="1" strokeDasharray="2 2" />
+
+                          {/* Rocher du Diamant & Îlets */}
+                          <circle cx="98" cy="182" r="2.2" fill="#99F6E4" />
+                          <circle cx="158" cy="98" r="1.8" fill="#99F6E4" />
+
+                          {/* Repères géographiques */}
+                          <g className="text-[7.5px] fill-teal-100/85 font-medium">
+                            <circle cx="52" cy="38" r="1.6" fill="#CCFBF1" />
+                            <text x="60" y="40">Pelée</text>
+
+                            <circle cx="166" cy="59" r="1.6" fill="#CCFBF1" />
+                            <text x="148" y="49">Caravelle</text>
+
+                            <circle cx="82" cy="116" r="1.8" fill="#CCFBF1" />
+                            <text x="44" y="119">FdF</text>
+
+                            <circle cx="162" cy="200" r="1.6" fill="#CCFBF1" />
+                            <text x="118" y="213">Salines</text>
+                          </g>
+
+                          {/* Marqueur actif sur la commune de l'utilisateur */}
+                          <circle cx={pin.x} cy={pin.y} r="10" fill="#F59E0B" fillOpacity="0.32" />
+                          <circle
+                            cx={pin.x}
+                            cy={pin.y}
+                            r="4.8"
+                            fill="#FBBF24"
+                            stroke="#FFFFFF"
+                            strokeWidth="1.6"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* DEUX TIERS À DROITE (2/3) : Panorama côtier & Aperçu du secteur */}
+                    <div className="lg:col-span-2 relative bg-slate-900 px-6 py-5 flex flex-col justify-between overflow-hidden">
+                      <img
+                        src={currentShowcase.image}
+                        alt={currentShowcase.headline}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/55 to-slate-950/65" />
+
+                      <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1.5 max-w-xl">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-teal-500/25 border border-teal-300/30 text-teal-200 text-[10px] font-bold uppercase tracking-wider">
+                            <MapPin className="w-3 h-3" />
+                            Secteur préféré · {prefs.favoriteSector}
+                          </span>
+                          <h2 className="text-base sm:text-xl font-bold text-white leading-snug">
+                            {currentShowcase.headline}
+                          </h2>
+                          <p className="text-xs text-white/85 leading-relaxed line-clamp-2">
+                            {currentShowcase.subtitle}
+                          </p>
+                        </div>
+
+                        {/* Encadré météo / mer du secteur */}
+                        <div className="shrink-0 px-3.5 py-2.5 rounded-xl bg-slate-950/55 backdrop-blur-md border border-white/15 text-white space-y-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300 block">
+                            Conditions côtières
+                          </span>
+                          <div className="text-sm font-bold text-white">
+                            Eau {currentShowcase.waterTemp}
+                          </div>
+                          <div className="text-[11px] text-white/80">
+                            {currentShowcase.seaState}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Barre de bas des 2/3 : centres d'intérêt actifs */}
+                      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-3 mt-2 border-t border-white/15">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {prefs.interests.slice(0, 3).map(interest => (
+                            <span
+                              key={interest}
+                              className="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-xs border border-white/15 text-white text-[11px] font-medium"
+                            >
+                              {interest}
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-[11px] text-teal-200 font-medium">
+                          ✦ {currentShowcase.highlight}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="p-5 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-                {/* Filigrane discret de la Martinique dans la partie blanche */}
-                <svg
-                  viewBox="0 0 240 220"
-                  className="hidden lg:block absolute right-64 top-1/2 -translate-y-1/2 w-44 h-44 text-teal-900/[0.04] pointer-events-none select-none"
-                  fill="currentColor"
-                >
-                  <path d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z" />
-                </svg>
-
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 -mt-12 sm:-mt-14 relative z-10">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-teal-800 text-white border-4 border-white shadow-md flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 relative z-10">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-teal-800 text-white border-2 border-stone-200 shadow-xs flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
                     {prefs.avatarPhoto ? (
                       <img
                         src={prefs.avatarPhoto}
@@ -586,7 +674,7 @@ export default function UserAccountPage() {
                     )}
                   </div>
 
-                  <div className="space-y-1.5 pt-1 sm:pt-8">
+                  <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                         {currentUser.name}
