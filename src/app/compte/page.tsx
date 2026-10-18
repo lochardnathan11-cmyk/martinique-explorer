@@ -1273,7 +1273,7 @@ export default function UserAccountPage() {
             )}
 
             {/* =======================================================
-                ONGLET 2 : MES INFORMATIONS & PRÉFÉRENCES (TOUT RASSEMBLÉ EN UN SEUL BLOC SIMPLE ET COMPLET)
+                ONGLET 2 : MES INFORMATIONS & PRÉFÉRENCES (UN SEUL BLOC AÉRÉ, LISIBLE ET BIEN AGENCÉ)
                 ======================================================= */}
             {activeTab === 'settings' && (
               <section>
@@ -1281,32 +1281,45 @@ export default function UserAccountPage() {
                   onSubmit={handleSaveProfile}
                   className="bg-white rounded-2xl border border-stone-200/90 shadow-2xs overflow-hidden"
                 >
-                  {/* En-tête unique */}
-                  <div className="px-6 sm:px-8 py-5 border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
+                  {/* En-tête principal aéré */}
+                  <div className="px-6 sm:px-10 py-6 sm:py-7 border-b border-stone-200/80 bg-[#FAF8F5]/60 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
                         Mon profil & mes préférences
                       </h2>
-                      <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Votre identité, votre ville d&apos;attache en Martinique et vos activités favorites au même endroit.
+                      <p className="text-sm text-slate-600 mt-1">
+                        Personnalisez votre identité, votre ville d&apos;attache en Martinique et vos activités favorites.
                       </p>
                     </div>
 
-                    <span className="text-xs font-medium text-slate-500 bg-[#FAF8F5] border border-stone-200/80 px-3 py-1.5 rounded-lg">
-                      Camp de base : <strong className="text-slate-800">{prefs.baseCommune}</strong>
-                    </span>
+                    <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white border border-stone-200/90 text-xs sm:text-sm text-slate-600 shadow-2xs">
+                      <MapPin className="w-4 h-4 text-[#C84B31] shrink-0" />
+                      <span>
+                        Ville actuelle : <strong className="text-slate-900">{prefs.baseCommune}</strong>
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Contenu rassemblé en 2 colonnes équilibrées */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-stone-100">
-                    {/* COLONNE GAUCHE (5/12) : Identité, Photo & Présentation */}
-                    <div className="lg:col-span-5 p-6 sm:p-8 space-y-5">
-                      {/* Sélecteur de photo de profil compact */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-700 block">
-                          Photo du profil
+                  <div className="p-6 sm:p-10 space-y-10">
+                    {/* 1. IDENTITÉ & PHOTO DE PROFIL */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200/70 flex items-center justify-center text-teal-800">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                            Identité & photo de profil
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* 6 vignettes sur 1 seule ligne de 6 colonnes (aucun élément orphelin) */}
+                      <div className="space-y-2.5">
+                        <label className="text-sm font-semibold text-slate-800 block">
+                          Choisissez l&apos;image associée à votre profil
                         </label>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
                           {AVATAR_PRESETS.map(preset => {
                             const isSelected = prefs.avatarPhoto === preset.url;
                             return (
@@ -1314,25 +1327,33 @@ export default function UserAccountPage() {
                                 key={preset.id}
                                 type="button"
                                 onClick={() => setPrefs(prev => ({ ...prev, avatarPhoto: preset.url }))}
-                                title={preset.label}
-                                className={`group relative p-1 rounded-xl border transition-all cursor-pointer flex flex-col items-center gap-1 w-[68px] ${
+                                className={`group p-2.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-2 ${
                                   isSelected
-                                    ? 'border-teal-700 bg-teal-50/50 ring-2 ring-teal-700/20'
-                                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                                    ? 'border-teal-700 bg-teal-50/60 ring-2 ring-teal-700/20 shadow-2xs'
+                                    : 'border-stone-200/90 hover:border-stone-300 bg-white hover:bg-stone-50/50'
                                 }`}
                               >
-                                <div className="w-11 h-11 rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-sm">
+                                <div className="w-full h-20 sm:h-24 rounded-xl overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-2xl relative">
                                   {preset.url ? (
                                     <img
                                       src={preset.url}
                                       alt={preset.label}
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                   ) : (
                                     <span>{nameInput ? nameInput.charAt(0).toUpperCase() : 'M'}</span>
                                   )}
+                                  {isSelected && (
+                                    <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center shadow-xs">
+                                      <Check className="w-3 h-3" />
+                                    </span>
+                                  )}
                                 </div>
-                                <span className="text-[10px] font-medium text-slate-600 truncate w-full text-center">
+                                <span
+                                  className={`text-xs sm:text-sm font-semibold ${
+                                    isSelected ? 'text-teal-950' : 'text-slate-700'
+                                  }`}
+                                >
                                   {preset.label}
                                 </span>
                               </button>
@@ -1341,10 +1362,10 @@ export default function UserAccountPage() {
                         </div>
                       </div>
 
-                      {/* Nom & Email */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-700">
+                      {/* Nom, Email et Courte présentation bien lisibles */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-800 block">
                             Prénom & Nom (ou pseudo)
                           </label>
                           <input
@@ -1353,26 +1374,25 @@ export default function UserAccountPage() {
                             value={nameInput}
                             onChange={e => setNameInput(e.target.value)}
                             placeholder="Votre nom ou pseudo"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700"
+                            className="w-full px-4 py-3 rounded-xl border border-stone-200/90 text-sm sm:text-base text-slate-900 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/15"
                           />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-700">
-                            Adresse email
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-800 block">
+                            Adresse email du compte
                           </label>
                           <input
                             type="email"
                             disabled
                             value={currentUser.email}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-slate-100 text-sm text-slate-500 cursor-not-allowed"
+                            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-100/80 text-sm sm:text-base text-slate-500 cursor-not-allowed"
                           />
                         </div>
                       </div>
 
-                      {/* Courte présentation */}
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-800 block">
                           Courte présentation
                         </label>
                         <textarea
@@ -1380,17 +1400,30 @@ export default function UserAccountPage() {
                           value={prefs.bio}
                           onChange={e => setPrefs(prev => ({ ...prev, bio: e.target.value }))}
                           placeholder="Ce que vous aimez découvrir en Martinique (plages, randonnées, plongée...)"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-slate-900 focus:outline-none focus:border-teal-700 resize-none"
+                          className="w-full px-4 py-3 rounded-xl border border-stone-200/90 text-sm sm:text-base text-slate-900 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/15"
                         />
                       </div>
                     </div>
 
-                    {/* COLONNE DROITE (7/12) : Ancrage en Martinique, Activités & Repères */}
-                    <div className="lg:col-span-7 p-6 sm:p-8 space-y-6">
-                      {/* 3 menus déroulants : Profil, Commune, Secteur */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-700">
+                    <hr className="border-stone-200/80" />
+
+                    {/* 2. ANCRAGE EN MARTINIQUE & ACTIVITÉS FAVORITES */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200/70 flex items-center justify-center text-teal-800">
+                          <Compass className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                            Ancrage en Martinique & centres d&apos;intérêt
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* 3 grands menus déroulants alignés sur 3 colonnes */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-800 block">
                             Votre profil
                           </label>
                           <CustomSelect
@@ -1426,8 +1459,8 @@ export default function UserAccountPage() {
                           />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-700">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-800 block">
                             Commune d&apos;attache
                           </label>
                           <CustomSelect
@@ -1443,8 +1476,8 @@ export default function UserAccountPage() {
                           />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-700">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-800 block">
                             Secteur côtier préféré
                           </label>
                           <CustomSelect
@@ -1481,17 +1514,18 @@ export default function UserAccountPage() {
                         </div>
                       </div>
 
-                      {/* Activités favorites */}
-                      <div className="space-y-2">
+                      {/* 8 activités alignées proprement en grille de 4 colonnes x 2 lignes */}
+                      <div className="space-y-3 pt-1">
                         <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-slate-700">
+                          <label className="text-sm font-semibold text-slate-800">
                             Vos activités favorites sur l&apos;île
                           </label>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full">
                             {prefs.interests.length} sélectionnée{prefs.interests.length > 1 ? 's' : ''}
                           </span>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           {INTEREST_OPTIONS.map(item => {
                             const active = prefs.interests.includes(item);
                             return (
@@ -1499,67 +1533,99 @@ export default function UserAccountPage() {
                                 key={item}
                                 type="button"
                                 onClick={() => toggleInterest(item)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                                className={`px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
                                   active
-                                    ? 'bg-teal-800 text-white border-teal-800'
-                                    : 'bg-slate-50 text-slate-700 border-stone-200 hover:bg-slate-100'
+                                    ? 'bg-teal-800 text-white border-teal-800 shadow-2xs'
+                                    : 'bg-[#FAF8F5]/70 text-slate-700 border-stone-200/90 hover:bg-stone-100/80 hover:border-stone-300'
                                 }`}
                               >
                                 <span>{item}</span>
-                                {active && <Check className="w-3.5 h-3.5 text-teal-200" />}
+                                <span
+                                  className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                                    active
+                                      ? 'bg-white/20 text-white'
+                                      : 'border border-stone-300 bg-white text-transparent'
+                                  }`}
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                </span>
                               </button>
                             );
                           })}
                         </div>
                       </div>
+                    </div>
 
-                      {/* Repères d'exploration intégrés sobrement */}
-                      <div className="pt-4 border-t border-stone-100 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-700">
-                            Repères d&apos;exploration ({unlockedBadges.length}/{badges.length})
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            {userPoints} pts d&apos;exploration
-                          </span>
+                    <hr className="border-stone-200/80" />
+
+                    {/* 3. REPÈRES D'EXPLORATION (5 cartes alignées sur 1 seule ligne de 5 colonnes) */}
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200/70 flex items-center justify-center text-teal-800">
+                            <Award className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                              Repères d&apos;exploration ({unlockedBadges.length}/{badges.length})
+                            </h3>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {badges.map(badge => {
-                            const isUnlocked = badge.unlocked || userPoints >= badge.requiredPoints;
-                            return (
-                              <div
-                                key={badge.id}
-                                className={`px-3 py-2 rounded-xl border flex items-center gap-2 ${
-                                  isUnlocked
-                                    ? 'bg-teal-50/40 border-teal-200/80 text-slate-900'
-                                    : 'bg-slate-50/60 border-stone-200/60 text-slate-500 opacity-70'
-                                }`}
-                              >
-                                <span className="text-base shrink-0">{badge.icon}</span>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-bold truncate">{badge.name}</p>
-                                  <p className="text-[10px] text-slate-500 truncate">
-                                    {isUnlocked ? 'Acquis' : 'À découvrir'}
-                                  </p>
-                                </div>
+
+                        <span className="text-xs sm:text-sm font-medium text-slate-500">
+                          {userPoints} pts d&apos;exploration cumulés
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                        {badges.map(badge => {
+                          const isUnlocked = badge.unlocked || userPoints >= badge.requiredPoints;
+                          return (
+                            <div
+                              key={badge.id}
+                              className={`p-4 rounded-xl border flex flex-col justify-between gap-2.5 ${
+                                isUnlocked
+                                  ? 'bg-teal-50/50 border-teal-200 text-slate-900'
+                                  : 'bg-[#FAF8F5]/60 border-stone-200/80 text-slate-600'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-2xl">{badge.icon}</span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                                    isUnlocked
+                                      ? 'bg-teal-800 text-white'
+                                      : 'bg-stone-200/70 text-slate-600'
+                                  }`}
+                                >
+                                  {isUnlocked ? 'Acquis' : 'À découvrir'}
+                                </span>
                               </div>
-                            );
-                          })}
-                        </div>
+                              <div>
+                                <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                                  {badge.name}
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                                  {badge.description}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
 
-                  {/* Barre d'action unique en bas */}
-                  <div className="px-6 sm:px-8 py-4 bg-[#FAF8F5] border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <span className="text-xs text-slate-500">
-                      Vos modifications mettent à jour votre carte et votre photo de ville en haut de page.
+                  {/* Barre de validation en bas */}
+                  <div className="px-6 sm:px-10 py-5 bg-[#FAF8F5] border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <span className="text-xs sm:text-sm text-slate-600">
+                      Vos modifications mettent immédiatement à jour la carte et la photo de votre ville en haut de page.
                     </span>
 
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-2xs"
+                      className="px-7 py-3.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-xs"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>{isSaving ? 'Enregistrement...' : 'Enregistrer mes modifications'}</span>
