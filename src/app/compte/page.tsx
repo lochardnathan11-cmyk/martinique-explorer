@@ -395,22 +395,184 @@ export default function UserAccountPage() {
         ) : (
           /* CONNECTÉ : Interface large, élégante et complète */
           <>
-            {/* 1. Bandeau de profil avec couverture Martinique */}
-            <section className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs">
-              <div className="relative h-32 sm:h-40 bg-slate-900 overflow-hidden">
+            {/* 1. Bandeau de profil avec carte de la Martinique en fond */}
+            <section className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs relative">
+              <div className="relative h-36 sm:h-44 bg-gradient-to-r from-[#073B4C] via-[#0A4F63] to-[#086775] overflow-hidden">
+                {/* Photo côtière douce en sous-couche */}
                 <img
                   src="/images/spots/ponton-anses-arlet.jpg"
                   alt="Littoral de Martinique"
-                  className="w-full h-full object-cover opacity-65"
+                  className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-900/25 to-transparent" />
-                <div className="absolute bottom-3 right-4 hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-xs text-white/90 text-[11px] font-medium">
-                  <MapPin className="w-3 h-3 text-teal-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#062E3B]/90 via-[#073B4C]/70 to-[#085A68]/85" />
+
+                {/* Grille nautique et lignes topographiques de fond */}
+                <svg
+                  className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <pattern id="mq-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+                      <path
+                        d="M 48 0 L 0 0 0 48"
+                        fill="none"
+                        stroke="#BFEFF2"
+                        strokeWidth="0.6"
+                        strokeDasharray="2 4"
+                      />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#mq-grid)" />
+                </svg>
+
+                {/* Coordonnées nautiques & Rose des vents à gauche */}
+                <div className="absolute top-3.5 left-5 hidden sm:flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-teal-200/70 select-none">
+                  <Compass className="w-3.5 h-3.5 text-teal-300/80" />
+                  <span>14°38&apos;N · 61°01&apos;W — Carte de Madinina</span>
+                </div>
+
+                {/* Carte détaillée de la Martinique en fond (centrée-droite) */}
+                {(() => {
+                  // Position dynamique du marqueur selon la commune ou le secteur
+                  const communeCoords: Record<string, { x: number; y: number }> = {
+                    'Grand\'Rivière': { x: 46, y: 18 },
+                    'Macouba': { x: 58, y: 20 },
+                    'Basse-Pointe': { x: 68, y: 24 },
+                    'Le Prêcheur': { x: 32, y: 34 },
+                    'L\'Ajoupa-Bouillon': { x: 64, y: 36 },
+                    'Le Lorrain': { x: 84, y: 36 },
+                    'Le Morne-Rouge': { x: 56, y: 46 },
+                    'Saint-Pierre': { x: 42, y: 54 },
+                    'Le Marigot': { x: 98, y: 46 },
+                    'Fonds-Saint-Denis': { x: 58, y: 62 },
+                    'Sainte-Marie': { x: 112, y: 56 },
+                    'Le Carbet': { x: 42, y: 72 },
+                    'Le Morne-Vert': { x: 52, y: 74 },
+                    'Gros-Morne': { x: 96, y: 72 },
+                    'La Trinité': { x: 128, y: 68 },
+                    'Bellefontaine': { x: 48, y: 84 },
+                    'Case-Pilote': { x: 56, y: 94 },
+                    'Saint-Joseph': { x: 86, y: 92 },
+                    'Le Robert': { x: 134, y: 90 },
+                    'Schœlcher': { x: 68, y: 106 },
+                    'Fort-de-France': { x: 82, y: 114 },
+                    'Le Lamentin': { x: 104, y: 114 },
+                    'Le François': { x: 146, y: 112 },
+                    'Ducos': { x: 114, y: 130 },
+                    'Le Saint-Esprit': { x: 132, y: 134 },
+                    'Rivière-Salée': { x: 112, y: 146 },
+                    'Les Trois-Îlets': { x: 88, y: 142 },
+                    'Le Vauclin': { x: 164, y: 142 },
+                    'Les Anses-d\'Arlet': { x: 76, y: 158 },
+                    'Le Diamant': { x: 98, y: 168 },
+                    'Rivière-Pilote': { x: 134, y: 158 },
+                    'Sainte-Luce': { x: 128, y: 172 },
+                    'Le Marin': { x: 154, y: 170 },
+                    'Sainte-Anne': { x: 158, y: 192 }
+                  };
+                  const pin = communeCoords[prefs.baseCommune] || { x: 128, y: 172 };
+
+                  return (
+                    <div className="absolute inset-y-0 right-4 sm:right-10 md:right-48 flex items-center justify-center pointer-events-none select-none">
+                      <svg
+                        viewBox="0 0 240 220"
+                        className="w-48 h-48 sm:w-60 sm:h-60 opacity-90 drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        {/* Halo bathymétrique (lagon entourant l'île) */}
+                        <path
+                          d="M40 12 C62 8, 92 22, 118 48 C130 60, 148 54, 174 52 C182 54, 178 66, 150 72 C142 82, 152 96, 170 118 C184 136, 190 162, 184 194 C178 208, 162 214, 154 202 C148 188, 134 180, 102 178 C84 176, 68 166, 70 150 C72 138, 96 138, 102 128 C98 118, 76 118, 62 106 C46 92, 34 72, 26 48 C18 28, 24 15, 40 12 Z"
+                          stroke="#5EEAD4"
+                          strokeOpacity="0.22"
+                          strokeWidth="8"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M40 12 C62 8, 92 22, 118 48 C130 60, 148 54, 174 52 C182 54, 178 66, 150 72 C142 82, 152 96, 170 118 C184 136, 190 162, 184 194 C178 208, 162 214, 154 202 C148 188, 134 180, 102 178 C84 176, 68 166, 70 150 C72 138, 96 138, 102 128 C98 118, 76 118, 62 106 C46 92, 34 72, 26 48 C18 28, 24 15, 40 12 Z"
+                          stroke="#99F6E4"
+                          strokeOpacity="0.3"
+                          strokeWidth="1.2"
+                          strokeDasharray="3 3"
+                        />
+
+                        {/* Tracé géographique fidèle de la Martinique */}
+                        <path
+                          d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z"
+                          fill="#0D9488"
+                          fillOpacity="0.45"
+                          stroke="#99F6E4"
+                          strokeWidth="1.8"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Reliefs intérieurs (Montagne Pelée & Pitons du Carbet) */}
+                        <circle cx="52" cy="38" r="12" stroke="#CCFBF1" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 2" />
+                        <circle cx="72" cy="82" r="15" stroke="#CCFBF1" strokeOpacity="0.25" strokeWidth="1" strokeDasharray="2 2" />
+                        <circle cx="152" cy="145" r="11" stroke="#CCFBF1" strokeOpacity="0.22" strokeWidth="1" strokeDasharray="2 2" />
+
+                        {/* Rocher du Diamant & Îlets du François */}
+                        <circle cx="98" cy="181" r="2.2" fill="#99F6E4" fillOpacity="0.8" />
+                        <circle cx="158" cy="98" r="1.8" fill="#99F6E4" fillOpacity="0.7" />
+                        <circle cx="164" cy="105" r="1.5" fill="#99F6E4" fillOpacity="0.7" />
+
+                        {/* Points de repère principaux de l'île */}
+                        <g className="text-[7px] fill-teal-100/75 font-medium">
+                          <circle cx="52" cy="38" r="1.8" fill="#CCFBF1" />
+                          <text x="60" y="40">Mt. Pelée</text>
+
+                          <circle cx="166" cy="59" r="1.8" fill="#CCFBF1" />
+                          <text x="174" y="61">Caravelle</text>
+
+                          <circle cx="82" cy="114" r="2" fill="#CCFBF1" />
+                          <text x="35" y="117">Fort-de-France</text>
+
+                          <circle cx="76" cy="158" r="1.8" fill="#CCFBF1" />
+                          <text x="18" y="162">Anses-d’Arlet</text>
+
+                          <circle cx="162" cy="200" r="1.8" fill="#CCFBF1" />
+                          <text x="170" y="203">Les Salines</text>
+                        </g>
+
+                        {/* Marqueur lumineux sur la commune d'attache de l'utilisateur */}
+                        <circle
+                          cx={pin.x}
+                          cy={pin.y}
+                          r="9"
+                          fill="#F59E0B"
+                          fillOpacity="0.28"
+                        />
+                        <circle
+                          cx={pin.x}
+                          cy={pin.y}
+                          r="4.5"
+                          fill="#FBBF24"
+                          stroke="#FFFFFF"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </div>
+                  );
+                })()}
+
+                {/* Badge secteur & commune en bas à droite du bandeau */}
+                <div className="absolute bottom-3.5 right-4 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/55 backdrop-blur-md border border-teal-300/25 text-white text-xs font-medium shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <MapPin className="w-3.5 h-3.5 text-teal-300" />
                   <span>{prefs.favoriteSector} · {prefs.baseCommune}</span>
                 </div>
               </div>
 
-              <div className="p-5 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="p-5 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+                {/* Filigrane discret de la Martinique dans la partie blanche */}
+                <svg
+                  viewBox="0 0 240 220"
+                  className="hidden lg:block absolute right-64 top-1/2 -translate-y-1/2 w-44 h-44 text-teal-900/[0.04] pointer-events-none select-none"
+                  fill="currentColor"
+                >
+                  <path d="M42 15 L64 17 L88 30 L114 50 L128 64 L158 55 L173 57 L166 65 L144 69 L138 88 L156 108 L168 122 L178 145 L181 175 L178 194 L164 206 L156 192 L160 176 L136 175 L102 172 L74 160 L78 144 L92 140 L112 136 L110 124 L82 120 L60 104 L42 78 L40 60 L25 36 L29 20 Z" />
+                </svg>
+
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 -mt-12 sm:-mt-14 relative z-10">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-teal-800 text-white border-4 border-white shadow-md flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
                     {prefs.avatarPhoto ? (
@@ -446,7 +608,7 @@ export default function UserAccountPage() {
                 </div>
 
                 {/* Statistiques rapides à droite */}
-                <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-stone-200/80 pt-4 md:pt-0 md:pl-8 shrink-0">
+                <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-stone-200/80 pt-4 md:pt-0 md:pl-8 shrink-0 relative z-10">
                   <button
                     type="button"
                     onClick={() => setActiveTab('favorites')}
