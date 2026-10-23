@@ -907,30 +907,34 @@ export default function InscriptionPage() {
                   </p>
                 </div>
 
-                {/* Section interactive avatar */}
+                {/* Section interactive avatar avec dimensions strictement verrouillées */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center pt-1">
-                  {/* Aperçu à gauche (4/12) */}
+                  {/* Aperçu à gauche (4/12) - Hauteur strictement fixe et stable */}
                   <div className="sm:col-span-4 p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col items-center text-center space-y-2">
-                    <div className="w-18 h-18 rounded-2xl overflow-hidden bg-teal-800 text-white flex items-center justify-center text-2xl font-bold shadow-md border-2 border-white ring-2 ring-teal-700/20 relative">
+                    {/* Cadre de prévisualisation : taille strictly locked à h-28 w-full */}
+                    <div className="w-full h-28 rounded-2xl overflow-hidden bg-teal-800 text-white flex items-center justify-center shadow-md border-2 border-white ring-2 ring-teal-700/20 relative shrink-0">
                       {avatarPhoto ? (
                         <img
                           src={avatarPhoto}
                           alt="Avatar sélectionné"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-center"
                         />
                       ) : (
-                        <span>{name ? name.charAt(0).toUpperCase() : 'M'}</span>
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-teal-800 text-white">
+                          <span className="text-3xl font-extrabold">{name ? name.charAt(0).toUpperCase() : 'N'}</span>
+                          <span className="text-[10px] text-teal-200 uppercase font-semibold tracking-wider mt-0.5">Initiales</span>
+                        </div>
                       )}
                     </div>
 
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 truncate">
+                    <div className="min-w-0 w-full space-y-0.5">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
                         {name || 'Explorateur'}
                       </p>
-                      <p className="text-[10px] text-teal-800 font-semibold truncate">
+                      <p className="text-[11px] text-teal-800 font-semibold truncate">
                         {travelerType}
                       </p>
-                      <p className="text-[10px] text-slate-500 truncate">
+                      <p className="text-[11px] text-slate-500 truncate">
                         📍 {baseCommune}
                       </p>
                     </div>
@@ -946,7 +950,7 @@ export default function InscriptionPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-1.5 px-2 rounded-xl bg-white border border-stone-200/90 hover:border-teal-700 text-slate-700 hover:text-teal-900 text-[11px] font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-1.5 px-2 rounded-xl bg-white border border-stone-200/90 hover:border-teal-700 text-slate-700 hover:text-teal-900 text-[11px] font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                     >
                       <Camera className="w-3.5 h-3.5 text-teal-700" />
                       <span>Importer ma photo</span>
@@ -972,15 +976,15 @@ export default function InscriptionPage() {
                                 : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50'
                             }`}
                           >
-                            <div className="w-full h-11 sm:h-12 rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-sm relative">
+                            <div className="w-full h-12 rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-sm relative shrink-0">
                               {preset.url ? (
                                 <img
                                   src={preset.url}
                                   alt={preset.label}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
                                 />
                               ) : (
-                                <span>{name ? name.charAt(0).toUpperCase() : 'M'}</span>
+                                <span className="text-base font-extrabold text-white">{name ? name.charAt(0).toUpperCase() : 'N'}</span>
                               )}
                               {isSelected && (
                                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center shadow-xs">
@@ -988,7 +992,7 @@ export default function InscriptionPage() {
                                 </span>
                               )}
                             </div>
-                            <span className={`text-[10px] font-bold truncate leading-tight ${
+                            <span className={`text-[11px] font-bold truncate leading-tight w-full text-center ${
                               isSelected ? 'text-teal-950' : 'text-slate-700'
                             }`}>
                               {preset.label}
