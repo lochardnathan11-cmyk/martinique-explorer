@@ -326,7 +326,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ onNavigate = () =>
   const cleanBadgeText = (badge?: string, isLocal?: boolean) => {
     if (isLocal) return 'Habitant';
     if (!badge) return 'Voyageur';
-    const stripped = badge.replace(/[^\p{L}\p{N}\s-]/gu, '').trim();
+    const stripped = badge.replace(/[^a-zA-Z0-9\s\u00C0-\u017F-]/g, '').trim();
     return stripped || 'Voyageur';
   };
 
