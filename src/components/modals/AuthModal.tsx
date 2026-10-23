@@ -162,12 +162,11 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
             </button>
             <button
               type="button"
-              onClick={() => { setTab('signup'); setSuccessMsg(null); setErrorMsg(null); }}
-              className={`py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                tab === 'signup'
-                  ? 'bg-white text-teal-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
+              onClick={() => {
+                closeModal();
+                router.push('/inscription');
+              }}
+              className="py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-teal-900 transition-all cursor-pointer"
             >
               Créer un compte
             </button>
@@ -193,7 +192,10 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
               {tab === 'login' && (
                 <button
                   type="button"
-                  onClick={() => { setTab('signup'); setErrorMsg(null); }}
+                  onClick={() => {
+                    closeModal();
+                    router.push('/inscription');
+                  }}
                   className="text-[10px] font-bold text-teal-800 hover:text-teal-950 underline underline-offset-2 shrink-0 cursor-pointer"
                 >
                   S’inscrire ?
@@ -281,6 +283,24 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
                   </>
                 )}
               </button>
+
+              {tab === 'login' && (
+                <div className="pt-2 border-t border-stone-200/80 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeModal();
+                      router.push('/inscription');
+                    }}
+                    className="text-[11px] text-slate-500 hover:text-teal-900 transition-colors cursor-pointer"
+                  >
+                    Pas encore de compte ?{' '}
+                    <strong className="text-teal-800 font-bold underline underline-offset-2">
+                      Découvrir & s&apos;inscrire (+30 XP) →
+                    </strong>
+                  </button>
+                </div>
+              )}
             </form>
           )}
         </div>

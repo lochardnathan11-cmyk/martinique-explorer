@@ -581,6 +581,24 @@ export default function UserAccountPage() {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as AccountTab | null;
+      if (tabParam && ['favorites', 'settings', 'badges'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+      if (params.get('welcome') === '1') {
+        setActiveTab('settings');
+        setTimeout(() => {
+          showToast(
+            'Bienvenue sur Martinique Explorer ! 🎉',
+            'success',
+            'Votre profil et votre carnet de voyage ont été configurés avec succès.'
+          );
+        }, 350);
+      }
+    }
+
     return () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       if (toastCleanupRef.current) clearTimeout(toastCleanupRef.current);

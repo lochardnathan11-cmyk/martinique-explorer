@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown, Compass, Heart, Award } from 'lucide-react';
+import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown, Compass, Heart, Award, Sparkles } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
 import LanguageSelector from '@/components/layout/LanguageSelector';
 import { TRANSLATIONS } from '@/data/translations';
@@ -375,19 +375,33 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                 )}
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => openModal('auth')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                  scrolled || activeSection !== 'home'
-                    ? 'border-stone-200/90 text-slate-800 hover:text-teal-900 hover:border-stone-300 bg-white shadow-2xs'
-                    : 'border-white/25 text-white hover:bg-white/20 bg-white/10'
-                }`}
-                aria-label="Se connecter ou créer un compte"
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Compte</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openModal('auth')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    scrolled || activeSection !== 'home'
+                      ? 'border-stone-200/90 text-slate-800 hover:text-teal-900 hover:border-stone-300 bg-white shadow-2xs'
+                      : 'border-white/25 text-white hover:bg-white/20 bg-white/10'
+                  }`}
+                  aria-label="Se connecter"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Connexion</span>
+                </button>
+
+                <Link
+                  href="/inscription"
+                  className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                    scrolled || activeSection !== 'home'
+                      ? 'bg-teal-800 text-white hover:bg-teal-900'
+                      : 'bg-white text-teal-900 hover:bg-white/95'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Créer mon carnet</span>
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -506,13 +520,24 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                 )}
               </div>
             ) : (
-              <button
-                onClick={() => { openModal('auth'); setMobileOpen(false); }}
-                className="w-full py-2.5 rounded-xl border border-lagon-border text-deep text-xs font-medium flex items-center justify-center gap-2"
-              >
-                <User className="w-4 h-4 text-action" />
-                <span>Se connecter / Créer un compte</span>
-              </button>
+              <div className="space-y-2">
+                <Link
+                  href="/inscription"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full py-2.5 rounded-xl bg-teal-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Créer mon carnet d&apos;exploration (+30 XP)</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { openModal('auth'); setMobileOpen(false); }}
+                  className="w-full py-2 rounded-xl border border-stone-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-stone-50 cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Déjà membre ? Se connecter</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
