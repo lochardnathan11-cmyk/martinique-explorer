@@ -1464,7 +1464,7 @@ export const BADGES_LIST: UserBadge[] = [
   {
     id: 'b-anchor',
     name: 'Premier Ancrage',
-    tier: 'Sceau I',
+    tier: 'Badge Bronze',
     categoryLabel: 'Sélection & Favoris',
     description: 'Vous avez posé vos valises sur l’île et constitué votre première sélection d’adresses incontournables.',
     howToEarn: 'Enregistrer au moins 3 lieux (plages, tables ou activités) dans vos favoris.',
@@ -1477,9 +1477,9 @@ export const BADGES_LIST: UserBadge[] = [
   {
     id: 'b-beach',
     name: 'Éclaireur des Anses',
-    tier: 'Sceau II',
+    tier: 'Badge Argent',
     categoryLabel: 'Plages & Criques',
-    description: 'Des grandes anses de sable blond du Sud aux criques volcaniques du Nord, le littoral n’a plus de secret pour vous.',
+    description: 'Des grandes anses de sable blond du Sud aux criques volcaniques du Nord, le littoral se dévoile à vous.',
     howToEarn: 'Sauvegarder au moins 4 plages ou criques secrètes dans vos favoris.',
     icon: '🏖️',
     unlocked: false,
@@ -1490,10 +1490,10 @@ export const BADGES_LIST: UserBadge[] = [
   {
     id: 'b-reef',
     name: 'Ami des Tortues & du Lagon',
-    tier: 'Sceau III',
+    tier: 'Badge Argent',
     categoryLabel: 'Faune & Récifs',
     description: 'Observateur attentif et respectueux des herbiers marins, des tortues vertes et des jardins coralliens.',
-    howToEarn: 'Ajouter au moins 2 spots de snorkeling ou d’observation des tortues (Anse Dufour, Anse Noire, Grande Anse d’Arlet, Anse Figuier...) à vos favoris.',
+    howToEarn: 'Ajouter au moins 2 spots de snorkeling ou d’observation des tortues à vos favoris.',
     icon: '🐢',
     unlocked: false,
     requiredPoints: 75,
@@ -1503,7 +1503,7 @@ export const BADGES_LIST: UserBadge[] = [
   {
     id: 'b-hiking',
     name: 'Boussole des Mornes',
-    tier: 'Sceau IV',
+    tier: 'Badge Or',
     categoryLabel: 'Sentiers & Reliefs',
     description: 'Explorateur des sentiers de la forêt tropicale, des cascades fraîches, de la mangrove et des pitons volcaniques.',
     howToEarn: 'Enregistrer au moins 2 randonnées, sorties nature ou points de vue dans vos favoris.',
@@ -1515,10 +1515,10 @@ export const BADGES_LIST: UserBadge[] = [
   },
   {
     id: 'b-vigie',
-    name: 'Vigie du Littoral',
-    tier: 'Sceau V',
+    name: 'Vigie Communautaire',
+    tier: 'Badge Or',
     categoryLabel: 'Météo & Entraide',
-    description: 'Membre engagé qui renseigne son camp de base et partage ses observations pour guider les voyageurs de l’île.',
+    description: 'Membre engagé qui renseigne son camp de base et partage ses observations météo pour guider la communauté.',
     howToEarn: 'Personnaliser votre profil voyageur dans les réglages OU publier un relevé météo / message communautaire.',
     icon: '🌊',
     unlocked: false,
@@ -1528,25 +1528,28 @@ export const BADGES_LIST: UserBadge[] = [
   },
   {
     id: 'b-ambassador',
-    name: 'Ambassadeur de Madinina',
-    tier: 'Sceau d’Honneur',
+    name: 'Grand Trophée de Madinina',
+    tier: 'Trophée Diamant',
     categoryLabel: 'Distinction Suprême',
-    description: 'Distinction suprême décernée aux amoureux fidèles de la Martinique ayant validé les 5 premiers sceaux d’exploration.',
-    howToEarn: 'Débloquer l’intégralité des 5 premiers sceaux thématiques de l’île.',
+    description: 'La plus haute distinction décernée aux explorateurs passionnés ayant débloqué les 5 premiers badges d’exploration.',
+    howToEarn: 'Débloquer l’intégralité des 5 premiers badges thématiques de l’île.',
     icon: '👑',
     unlocked: false,
-    requiredPoints: 200,
+    requiredPoints: 250,
     targetCount: 5,
-    unitLabel: 'sceaux débloqués'
+    unitLabel: 'badges débloqués'
   }
 ];
 
 export const EXPLORER_LEVELS: ExplorerLevel[] = [
   { level: 1, name: 'Initié de Madinina', minXP: 0, nextXP: 100, icon: '🧭' },
-  { level: 2, name: 'Explorateur des Côtes', minXP: 100, nextXP: 220, icon: '🏖️' },
-  { level: 3, name: 'Navigateur des Caraïbes', minXP: 220, nextXP: 380, icon: '⛵' },
-  { level: 4, name: 'Vigie Insulaire', minXP: 380, nextXP: 550, icon: '⭐' },
-  { level: 5, name: 'Ambassadeur de Madinina', minXP: 550, nextXP: 800, icon: '👑' }
+  { level: 2, name: 'Curieux des Anses', minXP: 100, nextXP: 250, icon: '🏖️' },
+  { level: 3, name: 'Explorateur du Lagon', minXP: 250, nextXP: 450, icon: '🤿' },
+  { level: 4, name: 'Aventurier des Mornes', minXP: 450, nextXP: 700, icon: '🌿' },
+  { level: 5, name: 'Navigateur des Caraïbes', minXP: 700, nextXP: 1050, icon: '⛵' },
+  { level: 6, name: 'Connaisseur de l’Île', minXP: 1050, nextXP: 1500, icon: '⭐' },
+  { level: 7, name: 'Gardien de Madinina', minXP: 1500, nextXP: 2100, icon: '🐢' },
+  { level: 8, name: 'Grand Ambassadeur', minXP: 2100, nextXP: 3000, icon: '👑' }
 ];
 
 export const INITIAL_BLOG_POSTS: BlogPost[] = [

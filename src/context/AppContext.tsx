@@ -473,7 +473,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return userCreatedAlerts + userCreatedPosts + userCreatedTopics + (hasSavedProfile ? 1 : 0);
   }, [userCreatedAlerts, userCreatedPosts, userCreatedTopics, hasSavedProfile]);
 
-  // 2. Évaluation stricte et unifiée des 6 Sceaux de l'île
+  // 2. Évaluation stricte et unifiée des Badges d'Exploration
   const badges: UserBadge[] = useMemo(() => {
     const firstFive = BADGES_LIST.filter(b => b.id !== 'b-ambassador').map(badge => {
       const targetCount = badge.targetCount || 1;

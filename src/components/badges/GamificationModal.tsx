@@ -14,7 +14,7 @@ export default function GamificationModal() {
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <span className="text-[11px] font-bold tracking-wider uppercase text-teal-900">
-              Passeport & Sceaux de Madinina
+              Niveaux & Badges d&apos;Exploration
             </span>
             <h3 className="text-xl font-bold text-slate-900">
               Votre progression d&apos;Explorateur
@@ -70,10 +70,10 @@ export default function GamificationModal() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Les 6 Sceaux de l&apos;île
+              Les Badges d&apos;Exploration
             </h4>
             <span className="text-xs font-semibold text-teal-900">
-              {badges.filter(b => b.unlocked).length} / {badges.length} acquis
+              {badges.filter(b => b.unlocked).length} / {badges.length} débloqués
             </span>
           </div>
 
@@ -93,7 +93,7 @@ export default function GamificationModal() {
                     <h5 className="font-bold text-slate-900 text-xs truncate">{b.name}</h5>
                     {b.unlocked ? (
                       <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded">
-                        ✓ Acquis
+                        ✓ Débloqué
                       </span>
                     ) : (
                       <span className="text-[10px] text-slate-500 font-medium">

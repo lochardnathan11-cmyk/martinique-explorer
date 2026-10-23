@@ -320,7 +320,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                       >
                         <div className="flex items-center gap-2.5">
                           <Award className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>Mes Badges & Sceaux</span>
+                          <span>Mes Badges & Niveaux</span>
                         </div>
                         <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60">
                           {userPoints} XP

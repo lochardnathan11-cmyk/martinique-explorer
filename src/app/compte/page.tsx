@@ -36,7 +36,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
-import { BADGES_LIST } from '@/data/mockData';
+import { BADGES_LIST, EXPLORER_LEVELS } from '@/data/mockData';
 import { UserBadge } from '@/types';
 
 type AccountTab = 'favorites' | 'settings' | 'badges';
@@ -1477,7 +1477,7 @@ export default function UserAccountPage() {
                     </div>
                   </button>
 
-                  {/* Carte 2 : Niveau d'Explorateur & Sceaux acquis */}
+                  {/* Carte 2 : Niveau d'Explorateur & Badges débloqués */}
                   <button
                     type="button"
                     onClick={handleOpenBadgesSection}
@@ -1490,14 +1490,14 @@ export default function UserAccountPage() {
                         </div>
                         <div>
                           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                            Niveau {currentLevel.level} · Sceaux
+                            Niveau {currentLevel.level} · Badges
                           </span>
                           <div className="flex items-baseline gap-1.5 mt-0.5">
                             <span className="text-xl font-bold text-slate-900 group-hover:text-teal-800 transition-colors">
                               {unlockedBadges.length}/{badges.length}
                             </span>
                             <span className="text-xs font-medium text-slate-500">
-                              sceaux acquis
+                              badges débloqués
                             </span>
                           </div>
                         </div>
@@ -2066,14 +2066,14 @@ export default function UserAccountPage() {
 
                         <div className="space-y-1">
                           <span className="text-[11px] font-bold uppercase tracking-widest text-teal-900/70 block">
-                            Passeport de l&apos;Explorateur · Madinina
+                            Passeport de l&apos;Explorateur · Expérience Globale
                           </span>
                           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                             {currentLevel.name}
                           </h2>
                           <p className="text-xs sm:text-sm text-slate-600">
-                            {unlockedBadges.length} sur {badges.length} sceaux validés ·{' '}
-                            <strong className="text-teal-900 font-semibold">{userPoints} points d&apos;exploration (XP)</strong>
+                            {unlockedBadges.length} sur {badges.length} badges débloqués ·{' '}
+                            <strong className="text-teal-900 font-semibold">{userPoints} points d&apos;expérience (XP)</strong>
                           </p>
                         </div>
                       </div>
@@ -2082,7 +2082,7 @@ export default function UserAccountPage() {
                       <div className="bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200/90 p-5 lg:min-w-[320px] space-y-3 shadow-2xs">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-slate-600">
-                            Progression vers le Niveau {nextLevel ? nextLevel.level : 5}
+                            Progression vers le Niveau {nextLevel ? nextLevel.level : 8}
                           </span>
                           <span className="font-bold text-teal-900">
                             {userPoints} / {nextLevel ? nextLevel.minXP : userPoints} XP
@@ -2108,7 +2108,7 @@ export default function UserAccountPage() {
                               </>
                             ) : (
                               <span className="text-teal-900 font-bold">
-                                👑 Rang d&apos;exploration maximal atteint !
+                                👑 Rang suprême d&apos;Ambassadeur atteint !
                               </span>
                             )}
                           </span>
@@ -2156,14 +2156,67 @@ export default function UserAccountPage() {
                         </div>
 
                         <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-teal-200/70 space-y-0.5">
-                          <span className="text-[10px] text-teal-900 font-semibold block">Bonus des Sceaux</span>
+                          <span className="text-[10px] text-teal-900 font-semibold block">Bonus des Badges</span>
                           <div className="font-bold text-teal-900">+{xpBreakdown.badgesBonusXP} XP</div>
-                          <span className="text-[10px] text-teal-700 font-medium">{unlockedBadges.length} sceaux validés</span>
+                          <span className="text-[10px] text-teal-700 font-medium">{unlockedBadges.length} badges débloqués</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Frise chronologique stylisée des 6 Sceaux de l'île */}
+                    {/* Échelle globale des 8 Niveaux d'Exploration */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white/85 border border-stone-200/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          <span>L&apos;Échelle des 8 Niveaux d&apos;Exploration</span>
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-semibold">
+                          Rang actuel : Niveau {currentLevel.level} / 8
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                        {EXPLORER_LEVELS.map(lvl => {
+                          const isReached = currentLevel.level >= lvl.level;
+                          const isCurrent = currentLevel.level === lvl.level;
+
+                          return (
+                            <div
+                              key={lvl.level}
+                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col justify-between gap-1 relative ${
+                                isCurrent
+                                  ? 'bg-amber-50/90 border-amber-400 ring-2 ring-amber-400/40 shadow-xs'
+                                  : isReached
+                                  ? 'bg-teal-50/70 border-teal-200 text-teal-950'
+                                  : 'bg-stone-50/70 border-stone-200/80 opacity-60 text-slate-400'
+                              }`}
+                            >
+                              <div className="text-xl">{lvl.icon}</div>
+                              <div>
+                                <span className={`text-[9px] font-extrabold uppercase tracking-wider block ${
+                                  isCurrent ? 'text-amber-700' : isReached ? 'text-teal-800' : 'text-slate-400'
+                                }`}>
+                                  Niv. {lvl.level}
+                                </span>
+                                <p className="text-[10px] font-bold truncate leading-tight text-slate-900">
+                                  {lvl.name}
+                                </p>
+                              </div>
+                              <span className="text-[9px] text-slate-500 font-medium">
+                                {lvl.minXP} XP
+                              </span>
+                              {isCurrent && (
+                                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[9px] font-bold shadow-xs">
+                                  ★
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Frise chronologique stylisée des Badges d'Exploration */}
                     <div className="pt-2 border-t border-stone-200/70">
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                         {badges.map((b, idx) => {
@@ -2192,7 +2245,7 @@ export default function UserAccountPage() {
                                       : 'bg-stone-100 text-slate-500'
                                   }`}
                                 >
-                                  {reached ? '✓ Acquis' : `${b.currentCount}/${b.targetCount}`}
+                                  {reached ? '✓ Débloqué' : `${b.currentCount}/${b.targetCount}`}
                                 </span>
                               </div>
                               <div>
@@ -2211,15 +2264,15 @@ export default function UserAccountPage() {
                   </div>
                 </div>
 
-                {/* 2. LA GALERIE DES 6 SCEAUX D'EXPLORATION (MISSIONS CONCRÈTES) */}
+                {/* 2. LA GALERIE DES BADGES D'EXPLORATION (MISSIONS CONCRÈTES) */}
                 <div className="space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                        Les 6 Sceaux de Madinina
+                        Les Badges d&apos;Exploration de Madinina
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Chaque sceau valide une vraie étape de votre découverte de l&apos;île et vous rapporte un bonus d&apos;expérience direct.
+                        Chaque badge valide une étape concrète de votre voyage et vous rapporte un bonus d&apos;expérience direct.
                       </p>
                     </div>
                     <span className="text-xs font-bold text-teal-900 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/70 shrink-0 self-start sm:self-auto">
@@ -2250,7 +2303,7 @@ export default function UserAccountPage() {
                           }`}
                         >
                           <div className="space-y-4">
-                            {/* En-tête de carte : Sceau stylisé + Badge XP */}
+                            {/* En-tête de carte : Badge d'exploration + Points XP */}
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3.5">
                                 <div
@@ -2320,7 +2373,7 @@ export default function UserAccountPage() {
                                   }`}
                                 >
                                   {isUnlocked
-                                    ? '✓ Sceau acquis'
+                                    ? '✓ Badge débloqué'
                                     : `Encore ${Math.max(0, targetCount - currentCount)} (${pct}%)`}
                                 </span>
                               </div>
@@ -2405,7 +2458,7 @@ export default function UserAccountPage() {
                                 )}
                                 {badge.id === 'b-ambassador' && (
                                   <span className="text-[11px] text-slate-500 italic">
-                                    Débloqué automatiquement dès obtention des 5 premiers sceaux.
+                                    Débloqué automatiquement dès obtention des 5 premiers badges.
                                   </span>
                                 )}
                               </div>
@@ -2440,10 +2493,10 @@ export default function UserAccountPage() {
                     <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 space-y-1.5">
                       <div className="font-bold text-slate-900 flex items-center gap-2">
                         <span className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px] font-extrabold">2</span>
-                        <span>Déblocage des 6 Sceaux</span>
+                        <span>Badges d&apos;Exploration</span>
                       </div>
                       <p>
-                        Chaque thématique (plages, lagon, randonnées, vigie) possède son propre compteur. Remplir la condition d&apos;un sceau vous fait gagner un gros bonus de <strong>+50 à +200 XP</strong>.
+                        Chaque thématique (plages, lagon, randonnées, vigie) possède son propre compteur. Valider une mission de badge vous fait remporter un bonus majeur de <strong>+50 à +200 XP</strong>.
                       </p>
                     </div>
 
@@ -2453,7 +2506,7 @@ export default function UserAccountPage() {
                         <span>Montée en Niveau d&apos;Explorateur</span>
                       </div>
                       <p>
-                        Vos points cumulés déterminent votre rang sur l&apos;île : d&apos;<em>Initié de Madinina</em> (Niveau 1) jusqu&apos;à <em>Ambassadeur de Madinina</em> (Niveau 5).
+                        Vos points cumulés déterminent votre rang sur l&apos;île : d&apos;<em>Initié de Madinina</em> (Niveau 1) jusqu&apos;à <em>Grand Ambassadeur</em> (Niveau 8).
                       </p>
                     </div>
                   </div>

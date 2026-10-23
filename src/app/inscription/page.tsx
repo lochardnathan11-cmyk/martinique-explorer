@@ -418,10 +418,10 @@ export default function InscriptionPage() {
                   🧭
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
-                  Badges & Sceaux de l&apos;île
+                  Niveaux & Badges d&apos;Exploration
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Enregistrez vos favoris, gagnez des points d&apos;exploration (XP) et débloquez les 6 sceaux officiels de l&apos;île.
+                  Enregistrez vos favoris, gagnez des points d&apos;exploration (XP), débloquez des badges et montez parmi les 8 niveaux d&apos;exploration.
                 </p>
               </div>
             </div>

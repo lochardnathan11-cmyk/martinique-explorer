@@ -117,8 +117,8 @@ export default function FavoriteAuthPromptModal() {
 
             <div className="p-2.5 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 space-y-1">
               <div className="text-sm">🧭</div>
-              <div className="text-[11px] font-bold text-slate-900 leading-tight">6 Sceaux</div>
-              <div className="text-[10px] text-slate-500">à débloquer</div>
+              <div className="text-[11px] font-bold text-slate-900 leading-tight">Badges & XP</div>
+              <div className="text-[10px] text-slate-500">8 Niveaux</div>
             </div>
           </div>
 
