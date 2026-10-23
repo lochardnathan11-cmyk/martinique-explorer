@@ -55,7 +55,19 @@ const POPULAR_COMMUNES = [
   'Les Trois-Îlets',
   'Le Diamant',
   'Sainte-Luce',
-  'Les Anses-d’Arlet'
+  'Les Anses-d’Arlet',
+  'Tartane',
+  'Saint-Pierre',
+  'Le François'
+];
+
+const AVATAR_PRESETS = [
+  { id: 'salines', label: 'Les Salines', url: '/images/spots/salines.jpg' },
+  { id: 'dufour', label: 'Anse Dufour', url: '/images/spots/anse-dufour.jpg' },
+  { id: 'diamant', label: 'Le Diamant', url: '/images/spots/diamant.jpg' },
+  { id: 'pelee', label: 'Montagne Pelée', url: '/images/spots/montagne-pelee-vue.jpg' },
+  { id: 'arlet', label: 'Anses-d’Arlet', url: '/images/spots/ponton-anses-arlet.jpg' },
+  { id: 'initials', label: 'Initiales', url: '' }
 ];
 
 export default function InscriptionPage() {
@@ -70,7 +82,9 @@ export default function InscriptionPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Étape 3: Préférences
+  // Étape 3: Préférences (parcours progressif en 4 slides fluides)
+  const [prefSubStep, setPrefSubStep] = useState<1 | 2 | 3 | 4>(1);
+  const [maxPrefSubStep, setMaxPrefSubStep] = useState<number>(1);
   const [travelerType, setTravelerType] = useState('Voyageur en séjour');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([
     'Plages de sable blanc',
@@ -78,6 +92,31 @@ export default function InscriptionPage() {
     'Tables de bord de mer'
   ]);
   const [baseCommune, setBaseCommune] = useState('Sainte-Anne');
+  const [avatarPhoto, setAvatarPhoto] = useState<string>('/images/spots/salines.jpg');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const goToPrefSubStep = (next: 1 | 2 | 3 | 4) => {
+    setPrefSubStep(next);
+    if (next > maxPrefSubStep) {
+      setMaxPrefSubStep(next);
+    }
+  };
+
+  const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('La photo ne doit pas dépasser 5 Mo.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      if (typeof ev.target?.result === 'string') {
+        setAvatarPhoto(ev.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Recherche dynamique de commune
   const [communeSearch, setCommuneSearch] = useState('Sainte-Anne');
@@ -160,7 +199,7 @@ export default function InscriptionPage() {
         baseCommune,
         favoriteSector: sector,
         bio: `Explorateur basé à ${baseCommune}. Passionné par : ${selectedInterests.slice(0, 2).join(', ')}.`,
-        avatarPhoto: '',
+        avatarPhoto,
         interests: selectedInterests.length > 0 ? selectedInterests : ['Plages de sable blanc', 'Snorkeling & tortues']
       };
 
@@ -519,164 +558,285 @@ export default function InscriptionPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* ÉTAPE 3 : PRÉFÉRENCES (Refonte 2 colonnes ultra-fluide & SANS DÉFILEMENT) */}
-        {/* ========================================================= */}
+        {/* ÉTAPE 3 : PRÉFÉRENCES (Parcours interactif en 4 slides fluides & immersifs) */}
+        {/* ========================================================================= */}
         {step === 3 && (
-          <div className="max-w-3xl w-full mx-auto bg-white/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 shadow-2xl space-y-3.5 animate-fadeIn">
-            {/* Header compact */}
-            <div className="space-y-0.5">
-              <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">
-                Étape 3 sur 3 · Personnalisation de votre compte
-              </span>
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                Personnalisez vos préférences de voyage
-              </h2>
-              <p className="text-xs text-slate-500">
-                Ces informations pré-remplissent votre profil pour adapter vos suggestions d&apos;adresses.
-              </p>
+          <div className="max-w-2xl sm:max-w-3xl w-full mx-auto bg-white/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 shadow-2xl space-y-3.5 animate-fadeIn">
+            {/* Header avec indicateur de sous-étapes et barre de progression 4 crans */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Personnalisation du compte · Étape {prefSubStep} sur 4</span>
+                </span>
+                <span className="text-xs font-bold text-slate-700">
+                  {prefSubStep === 1 && '1. Votre profil'}
+                  {prefSubStep === 2 && '2. Camp de base'}
+                  {prefSubStep === 3 && '3. Vos envies'}
+                  {prefSubStep === 4 && '4. Photo de profil'}
+                </span>
+              </div>
+
+              {/* Barre de progression cliquable */}
+              <div className="grid grid-cols-4 gap-1.5">
+                {[1, 2, 3, 4].map(num => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => {
+                      if (num <= maxPrefSubStep) setPrefSubStep(num as 1 | 2 | 3 | 4);
+                    }}
+                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                      num <= prefSubStep
+                        ? 'bg-teal-700 shadow-xs'
+                        : num <= maxPrefSubStep
+                        ? 'bg-teal-200 hover:bg-teal-300'
+                        : 'bg-stone-200'
+                    }`}
+                    aria-label={`Étape ${num}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            {/* Grille 2 colonnes parfaitement équilibrée */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-1">
-              {/* Colonne gauche (5/12) : Profil + Recherche dynamique de commune */}
-              <div className="md:col-span-5 space-y-3">
-                {/* 1. Profil voyageur (chips 2x2) */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    1. Votre profil
-                  </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {TRAVELER_PROFILES.map(p => {
-                      const active = travelerType === p.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setTravelerType(p.id)}
-                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2 ${
-                            active
-                              ? 'bg-teal-50 border-teal-700 text-teal-950 font-bold shadow-2xs ring-1 ring-teal-700/20'
-                              : 'bg-stone-50 border-stone-200/80 text-slate-600 hover:bg-stone-100'
-                          }`}
-                        >
-                          <span className="text-base shrink-0">{p.icon}</span>
-                          <span className="text-[11px] leading-tight font-semibold truncate">{p.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+            {/* ------------------------------------------------------------- */}
+            {/* SLIDE 1 : VOTRE PROFIL VOYAGEUR                               */}
+            {/* ------------------------------------------------------------- */}
+            {prefSubStep === 1 && (
+              <div className="space-y-3.5 animate-fadeIn">
+                <div className="space-y-0.5">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                    Quel type d&apos;explorateur êtes-vous ?
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Pour adapter vos suggestions d&apos;itinéraires et de spots au fil de vos journées.
+                  </p>
                 </div>
 
-                {/* 2. Recherche intuitive de commune (avec autocomplétion instantanée) */}
-                <div className="space-y-1.5 relative" ref={communeDropdownRef}>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
-                    <span>2. Camp de base (commune)</span>
-                    <span className="text-[10px] text-teal-800 font-semibold">{baseCommune}</span>
-                  </label>
-
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={communeSearch}
-                      onFocus={() => {
-                        setIsCommuneDropdownOpen(true);
-                        if (communeSearch === baseCommune) setCommuneSearch('');
-                      }}
-                      onChange={e => {
-                        setCommuneSearch(e.target.value);
-                        setIsCommuneDropdownOpen(true);
-                      }}
-                      placeholder="Tapez le nom d'une ville (ex: Sainte-Anne...)"
-                      className="w-full text-xs pl-8 pr-7 py-2 rounded-xl bg-stone-50 border border-stone-200 text-slate-900 placeholder:text-slate-400 focus:border-teal-700 focus:bg-white transition-all outline-none"
-                    />
-                    {communeSearch && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+                  {TRAVELER_PROFILES.map(p => {
+                    const active = travelerType === p.id;
+                    return (
                       <button
+                        key={p.id}
                         type="button"
-                        onClick={() => {
-                          setCommuneSearch('');
+                        onClick={() => setTravelerType(p.id)}
+                        className={`p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 group ${
+                          active
+                            ? 'bg-teal-50/80 border-teal-700 text-teal-950 shadow-sm ring-2 ring-teal-700/20'
+                            : 'bg-stone-50/70 border-stone-200/90 text-slate-700 hover:bg-stone-100/70'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-white border border-stone-200/70 shadow-2xs flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
+                          {p.icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                            {p.label}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                            {p.subtitle}
+                          </p>
+                        </div>
+                        {active && (
+                          <div className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                            <Check className="w-3 h-3" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-slate-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Identifiants</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(2)}
+                    className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Continuer vers ma commune</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* SLIDE 2 : VOTRE CAMP DE BASE (COMMUNE)                        */}
+            {/* ------------------------------------------------------------- */}
+            {prefSubStep === 2 && (
+              <div className="space-y-3.5 animate-fadeIn">
+                <div className="space-y-0.5">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                    Où séjournez-vous en Martinique ?
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Votre camp de base pour calculer les distances, vos plages proches et la météo locale.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 pt-0.5">
+                  {/* Barre de recherche avec autocomplétion */}
+                  <div className="space-y-1 relative" ref={communeDropdownRef}>
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={communeSearch}
+                        onFocus={() => {
+                          setIsCommuneDropdownOpen(true);
+                          if (communeSearch === baseCommune) setCommuneSearch('');
+                        }}
+                        onChange={e => {
+                          setCommuneSearch(e.target.value);
                           setIsCommuneDropdownOpen(true);
                         }}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                        placeholder="Rechercher parmi les 34 communes (ex : Sainte-Anne, Les Trois-Îlets...)"
+                        className="w-full text-xs sm:text-sm pl-10 pr-9 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-slate-900 placeholder:text-slate-400 focus:border-teal-700 focus:bg-white transition-all outline-none"
+                        autoFocus
+                      />
+                      {communeSearch && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCommuneSearch('');
+                            setIsCommuneDropdownOpen(true);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Dropdown autocomplétion */}
+                    {isCommuneDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-2xl bg-white border border-stone-200 shadow-2xl z-50 p-1 divide-y divide-stone-100">
+                        {filteredCommunes.length > 0 ? (
+                          filteredCommunes.map(commune => {
+                            const isSelected = baseCommune === commune;
+                            return (
+                              <button
+                                key={commune}
+                                type="button"
+                                onClick={() => {
+                                  setBaseCommune(commune);
+                                  setCommuneSearch(commune);
+                                  setIsCommuneDropdownOpen(false);
+                                }}
+                                className={`w-full px-3 py-2 text-xs text-left rounded-xl transition-colors flex items-center justify-between cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-teal-800 text-white font-bold'
+                                    : 'text-slate-700 hover:bg-teal-50 hover:text-teal-900'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-3.5 h-3.5 opacity-70" />
+                                  <span>{commune}</span>
+                                </div>
+                                {isSelected && <Check className="w-3.5 h-3.5" />}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="p-3 text-center text-xs text-slate-400">
+                            Aucune commune trouvée pour « {communeSearch} »
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  {/* Liste déroulante des résultats de recherche */}
-                  {isCommuneDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 max-h-36 overflow-y-auto rounded-xl bg-white border border-stone-200 shadow-xl z-50 p-1 divide-y divide-stone-100">
-                      {filteredCommunes.length > 0 ? (
-                        filteredCommunes.map(commune => {
-                          const isSelected = baseCommune === commune;
-                          return (
-                            <button
-                              key={commune}
-                              type="button"
-                              onClick={() => {
-                                setBaseCommune(commune);
-                                setCommuneSearch(commune);
-                                setIsCommuneDropdownOpen(false);
-                              }}
-                              className={`w-full px-2.5 py-1.5 text-xs text-left rounded-lg transition-colors flex items-center justify-between cursor-pointer ${
-                                isSelected
-                                  ? 'bg-teal-800 text-white font-bold'
-                                  : 'text-slate-700 hover:bg-teal-50 hover:text-teal-900'
-                              }`}
-                            >
-                              <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3 h-3 opacity-60" />
-                                <span>{commune}</span>
-                              </div>
-                              {isSelected && <Check className="w-3 h-3" />}
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <div className="p-2 text-center text-xs text-slate-400">
-                          Aucune commune pour « {communeSearch} »
-                        </div>
-                      )}
+                  {/* Pill sélectionnée en évidence */}
+                  <div className="p-2.5 rounded-xl bg-teal-50/80 border border-teal-200/80 flex items-center justify-between text-xs text-teal-950 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-teal-800 shrink-0" />
+                      <span>Camp de base actif : <strong>{baseCommune}</strong></span>
                     </div>
-                  )}
+                    <span className="text-[10px] text-teal-800 bg-white px-2 py-0.5 rounded-full border border-teal-200/60 font-bold">
+                      Confirmé ✓
+                    </span>
+                  </div>
 
-                  {/* Accès rapide 1-clic aux communes phares */}
-                  <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                    {POPULAR_COMMUNES.map(com => (
-                      <button
-                        key={com}
-                        type="button"
-                        onClick={() => {
-                          setBaseCommune(com);
-                          setCommuneSearch(com);
-                          setIsCommuneDropdownOpen(false);
-                        }}
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors cursor-pointer ${
-                          baseCommune === com
-                            ? 'bg-teal-800 text-white font-semibold shadow-2xs'
-                            : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
-                        }`}
-                      >
-                        {com}
-                      </button>
-                    ))}
+                  {/* Raccourcis communes phares */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                      Suggestions rapides :
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {POPULAR_COMMUNES.map(com => (
+                        <button
+                          key={com}
+                          type="button"
+                          onClick={() => {
+                            setBaseCommune(com);
+                            setCommuneSearch(com);
+                            setIsCommuneDropdownOpen(false);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                            baseCommune === com
+                              ? 'bg-teal-800 text-white font-bold shadow-2xs'
+                              : 'bg-stone-100 text-slate-700 hover:bg-stone-200'
+                          }`}
+                        >
+                          {com}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Colonne droite (7/12) : 8 Envies prioritaires en tuiles cliquables */}
-              <div className="md:col-span-7 space-y-1.5">
+                <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(1)}
+                    className="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-slate-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Profil</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(3)}
+                    className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Continuer vers mes envies</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* SLIDE 3 : VOS ENVIES PRIORITAIRES                            */}
+            {/* ------------------------------------------------------------- */}
+            {prefSubStep === 3 && (
+              <div className="space-y-3.5 animate-fadeIn">
                 <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    3. Vos envies prioritaires sur l&apos;île
-                  </label>
-                  <span className="text-[10px] text-slate-400">
-                    {selectedInterests.length} cochée(s)
+                  <div className="space-y-0.5">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                      Vos envies prioritaires sur l&apos;île
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Cochez tout ce que vous avez envie de vivre (au moins une).
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200/60 shrink-0">
+                    {selectedInterests.length} sélectionnée(s)
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                   {INTEREST_TILES.map(tile => {
                     const Icon = tile.icon;
                     const active = selectedInterests.includes(tile.id);
@@ -685,58 +845,193 @@ export default function InscriptionPage() {
                         key={tile.id}
                         type="button"
                         onClick={() => toggleInterest(tile.id)}
-                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 group ${
                           active
-                            ? 'bg-teal-50 border-teal-700 text-teal-950 font-bold shadow-2xs'
-                            : 'bg-stone-50 border-stone-200/80 text-slate-600 hover:bg-stone-100'
+                            ? 'bg-teal-50/80 border-teal-700 text-teal-950 font-bold shadow-2xs'
+                            : 'bg-stone-50/70 border-stone-200/90 text-slate-700 hover:bg-stone-100/70'
                         }`}
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${tile.color}`}>
-                            <Icon className="w-3 h-3" />
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${tile.color}`}>
+                            <Icon className="w-4 h-4" />
                           </div>
-                          <span className="text-[11px] leading-tight truncate">
+                          <span className="text-xs font-semibold leading-tight truncate">
                             {tile.label}
                           </span>
                         </div>
-                        {active && <Check className="w-3.5 h-3.5 text-teal-800 shrink-0" />}
+                        {active ? (
+                          <div className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                            <Check className="w-3 h-3" />
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border border-stone-300 group-hover:border-stone-400 shrink-0" />
+                        )}
                       </button>
                     );
                   })}
                 </div>
-              </div>
-            </div>
 
-            {/* Validation finale visible immédiatement sans scroll */}
-            <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-slate-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Identifiants</span>
-              </button>
+                <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(2)}
+                    className="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-slate-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Commune</span>
+                  </button>
 
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={handleFinalSubmit}
-                className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-60"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Création du compte...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Valider & Créer mon compte (+30 XP)</span>
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(4)}
+                    className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Continuer vers ma photo</span>
                     <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* SLIDE 4 : PHOTO DE PROFIL & VALIDATION FINALE                 */}
+            {/* ------------------------------------------------------------- */}
+            {prefSubStep === 4 && (
+              <div className="space-y-3.5 animate-fadeIn">
+                <div className="space-y-0.5">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                    Votre photo de profil
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Choisissez un spot emblématique de Madinina ou importez votre propre photo.
+                  </p>
+                </div>
+
+                {/* Section interactive avatar */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center pt-1">
+                  {/* Aperçu à gauche (4/12) */}
+                  <div className="sm:col-span-4 p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col items-center text-center space-y-2">
+                    <div className="w-18 h-18 rounded-2xl overflow-hidden bg-teal-800 text-white flex items-center justify-center text-2xl font-bold shadow-md border-2 border-white ring-2 ring-teal-700/20 relative">
+                      {avatarPhoto ? (
+                        <img
+                          src={avatarPhoto}
+                          alt="Avatar sélectionné"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{name ? name.charAt(0).toUpperCase() : 'M'}</span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-900 truncate">
+                        {name || 'Explorateur'}
+                      </p>
+                      <p className="text-[10px] text-teal-800 font-semibold truncate">
+                        {travelerType}
+                      </p>
+                      <p className="text-[10px] text-slate-500 truncate">
+                        📍 {baseCommune}
+                      </p>
+                    </div>
+
+                    {/* Bouton pour importer une photo */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleCustomPhotoUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-1.5 px-2 rounded-xl bg-white border border-stone-200/90 hover:border-teal-700 text-slate-700 hover:text-teal-900 text-[11px] font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-teal-700" />
+                      <span>Importer ma photo</span>
+                    </button>
+                  </div>
+
+                  {/* Choix des vignettes de spots (8/12) */}
+                  <div className="sm:col-span-8 space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-600 block">
+                      Ou choisissez un spot officiel de l&apos;île :
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {AVATAR_PRESETS.map(preset => {
+                        const isSelected = avatarPhoto === preset.url;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => setAvatarPhoto(preset.url)}
+                            className={`group p-1.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                              isSelected
+                                ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-700/20 shadow-2xs'
+                                : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50'
+                            }`}
+                          >
+                            <div className="w-full h-11 sm:h-12 rounded-lg overflow-hidden bg-teal-800 text-white flex items-center justify-center font-bold text-sm relative">
+                              {preset.url ? (
+                                <img
+                                  src={preset.url}
+                                  alt={preset.label}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                              ) : (
+                                <span>{name ? name.charAt(0).toUpperCase() : 'M'}</span>
+                              )}
+                              {isSelected && (
+                                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center shadow-xs">
+                                  <Check className="w-2.5 h-2.5" />
+                                </span>
+                              )}
+                            </div>
+                            <span className={`text-[10px] font-bold truncate leading-tight ${
+                              isSelected ? 'text-teal-950' : 'text-slate-700'
+                            }`}>
+                              {preset.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Validation finale */}
+                <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => goToPrefSubStep(3)}
+                    className="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-slate-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Envies</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={handleFinalSubmit}
+                    className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Création du compte...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Valider & Créer mon compte (+30 XP)</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
