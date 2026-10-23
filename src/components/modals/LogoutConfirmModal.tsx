@@ -56,7 +56,7 @@ export default function LogoutConfirmModal() {
         {/* Corps */}
         <div className="p-6 space-y-5">
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Êtes-vous sûr de vouloir vous déconnecter ? Vos lieux favoris, vos points d’exploration et votre carnet de voyage restent sauvegardés pour votre prochaine visite.
+            Êtes-vous sûr de vouloir vous déconnecter ? Vos lieux favoris, vos points d’exploration et votre compte restent sauvegardés pour votre prochaine visite.
           </p>
 
           <div className="grid grid-cols-2 gap-3 pt-1">

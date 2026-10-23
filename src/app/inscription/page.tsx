@@ -279,10 +279,10 @@ export default function InscriptionPage() {
                 <span>Bienvenue en Martinique · Madinina</span>
               </span>
               <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 tracking-tight leading-tight">
-                Votre carnet d’exploration commence ici
+                Créez votre compte Martinique Explorer
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-                Martinique Explorer réunit les plus belles pépites secrètes, la météo des plages en direct et un carnet de voyage sur-mesure pour vivre l&apos;île comme un initié.
+                Martinique Explorer réunit les plus belles pépites secrètes, la météo des plages en direct et un profil personnalisé pour vivre l&apos;île comme un initié.
               </p>
             </div>
 
@@ -316,7 +316,7 @@ export default function InscriptionPage() {
                   🧭
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
-                  Carnet & Sceaux de l&apos;île
+                  Badges & Sceaux de l&apos;île
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Enregistrez vos favoris, gagnez des points d&apos;exploration (XP) et débloquez les 6 sceaux officiels de l&apos;île.
@@ -334,7 +334,7 @@ export default function InscriptionPage() {
                     Bonus de bienvenue : +30 points XP offerts
                   </h4>
                   <p className="text-[11px] text-teal-800 truncate">
-                    Complétez votre profil en 1 minute pour activer votre carnet d&apos;explorateur.
+                    Complétez votre profil en 1 minute pour activer votre compte.
                   </p>
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function InscriptionPage() {
                 onClick={() => setStep(2)}
                 className="px-5 sm:px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer shrink-0"
               >
-                <span>Créer mon carnet d&apos;exploration</span>
+                <span>Créer mon compte</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -463,7 +463,7 @@ export default function InscriptionPage() {
             {/* Header compact */}
             <div className="space-y-0.5">
               <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">
-                Étape 3 sur 3 · Pré-remplissage du carnet
+                Étape 3 sur 3 · Personnalisation de votre compte
               </span>
               <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 Personnalisez vos préférences de voyage
@@ -664,11 +664,11 @@ export default function InscriptionPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Création du carnet...</span>
+                    <span>Création du compte...</span>
                   </>
                 ) : (
                   <>
-                    <span>Valider & Ouvrir mon Carnet (+30 XP)</span>
+                    <span>Valider & Créer mon compte (+30 XP)</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -680,7 +680,7 @@ export default function InscriptionPage() {
 
       {/* 3. Footer minimaliste 1 ligne */}
       <footer className="py-2 text-center text-[11px] text-slate-400 shrink-0">
-        Martinique Explorer · Carnet de voyage éco-responsable & solidaire de Madinina
+        Martinique Explorer · Plateforme éco-responsable & solidaire de Madinina
       </footer>
     </div>
   );

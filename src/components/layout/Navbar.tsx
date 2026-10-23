@@ -387,7 +387,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Créer mon carnet</span>
+                  <span>Créer mon compte</span>
                 </Link>
               </div>
             )}
@@ -514,7 +514,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                   className="w-full py-2.5 rounded-xl bg-teal-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Créer mon carnet d&apos;exploration (+30 XP)</span>
+                  <span>Créer mon compte (+30 XP)</span>
                 </Link>
                 <button
                   type="button"

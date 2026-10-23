@@ -20,7 +20,7 @@ export default function GamificationModal() {
               Votre progression d&apos;Explorateur
             </h3>
             <p className="text-xs text-slate-500">
-              Vos découvertes, vos signalements météo et vos favoris font grandir votre carnet de voyage.
+              Vos découvertes, vos signalements météo et vos favoris font grandir votre profil et vos récompenses.
             </p>
           </div>
           <button
@@ -117,7 +117,7 @@ export default function GamificationModal() {
             onClick={closeModal}
             className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1.5 transition-colors"
           >
-            <span>Ouvrir mon carnet d&apos;exploration complet</span>
+            <span>Accéder à mon compte</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

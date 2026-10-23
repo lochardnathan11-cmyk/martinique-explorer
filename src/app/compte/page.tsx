@@ -593,7 +593,7 @@ export default function UserAccountPage() {
           showToast(
             'Bienvenue sur Martinique Explorer ! 🎉',
             'success',
-            'Votre profil et votre carnet de voyage ont été configurés avec succès.'
+            'Votre profil et votre compte ont été configurés avec succès.'
           );
         }, 350);
       }
@@ -1471,7 +1471,7 @@ export default function UserAccountPage() {
                         </span>
                       </div>
                       <span className="text-[11px] text-teal-800 font-medium inline-flex items-center gap-0.5 mt-0.5">
-                        <span>Voir mon carnet</span>
+                        <span>Voir mes favoris</span>
                         <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -2040,7 +2040,7 @@ export default function UserAccountPage() {
             )}
 
             {/* =======================================================
-                ONGLET 3 : MES BADGES & PROGRESSION LONG TERME (CARNET DE VOYAGE MADININA)
+                ONGLET 3 : MES BADGES & PROGRESSION LONG TERME (ESPACE MADININA)
                 ======================================================= */}
             {activeTab === 'badges' && (
               <div id="reperes-exploration" className="space-y-8">
@@ -2417,12 +2417,12 @@ export default function UserAccountPage() {
                   </div>
                 </div>
 
-                {/* 3. BARÈME & PHILOSOPHIE DU CARNET (SÉPARATION CLAIRE ENTRE ACTIONS, SCEAUX ET NIVEAUX) */}
+                {/* 3. BARÈME & NIVEAUX D'EXPLORATION */}
                 <div className="p-6 sm:p-7 rounded-3xl bg-white border border-stone-200/90 shadow-2xs space-y-4">
                   <div className="flex items-center gap-2.5 text-teal-900">
                     <Sparkles className="w-5 h-5 text-amber-500" />
                     <h4 className="text-base font-bold text-slate-900">
-                      Comment fonctionne votre Carnet d&apos;Exploration ?
+                      Comment fonctionnent vos points & vos récompenses ?
                     </h4>
                   </div>
 
