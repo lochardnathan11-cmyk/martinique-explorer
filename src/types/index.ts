@@ -159,6 +159,15 @@ export interface UserBadge {
   unitLabel?: string;
 }
 
+export interface ExplorerLevel {
+  level: number;
+  name: string;
+  minXP: number;
+  nextXP: number;
+  icon: string;
+  badgeCountRequired?: number;
+}
+
 export interface ItineraryDay {
   dayNumber: number;
   title: string;

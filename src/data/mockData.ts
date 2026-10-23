@@ -1,4 +1,4 @@
-import { PlaceItem, CommunityAlert, SocialPost, ForumTopic, UserBadge, BlogPost } from '@/types';
+import { PlaceItem, CommunityAlert, SocialPost, ForumTopic, UserBadge, ExplorerLevel, BlogPost } from '@/types';
 
 export const INITIAL_PLACES: PlaceItem[] = [
   {
@@ -1539,6 +1539,14 @@ export const BADGES_LIST: UserBadge[] = [
     targetCount: 5,
     unitLabel: 'sceaux débloqués'
   }
+];
+
+export const EXPLORER_LEVELS: ExplorerLevel[] = [
+  { level: 1, name: 'Initié de Madinina', minXP: 0, nextXP: 100, icon: '🧭' },
+  { level: 2, name: 'Explorateur des Côtes', minXP: 100, nextXP: 220, icon: '🏖️' },
+  { level: 3, name: 'Navigateur des Caraïbes', minXP: 220, nextXP: 380, icon: '⛵' },
+  { level: 4, name: 'Vigie Insulaire', minXP: 380, nextXP: 550, icon: '⭐' },
+  { level: 5, name: 'Ambassadeur de Madinina', minXP: 550, nextXP: 800, icon: '👑' }
 ];
 
 export const INITIAL_BLOG_POSTS: BlogPost[] = [

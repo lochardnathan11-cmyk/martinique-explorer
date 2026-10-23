@@ -502,6 +502,11 @@ export default function UserAccountPage() {
     forumTopics,
     userPoints,
     addPoints,
+    badges,
+    currentLevel,
+    nextLevel,
+    levelProgress,
+    xpBreakdown,
     language,
     setLanguage
   } = useApp();
@@ -894,120 +899,11 @@ export default function UserAccountPage() {
     return true;
   });
 
-  // Décompte concret par catégorie de lieux et actions réelles pour l'attribution logique des badges
-  const beachCount = favoritePlaces.filter(
-    p => p.category === 'beach' || p.category === 'hidden_gem'
-  ).length;
-
-  const snorkelingCount = favoritePlaces.filter(
-    p =>
-      p.category === 'snorkeling' ||
-      (p.subCategory && /snorkeling|tortue|plongée/i.test(p.subCategory)) ||
-      (p.tags && p.tags.some(t => /snorkeling|tortue|plongée|aquarium/i.test(t)))
-  ).length;
-
-  const hikingCount = favoritePlaces.filter(
-    p =>
-      p.category === 'hiking' ||
-      p.category === 'activity' ||
-      p.category === 'excursion' ||
-      p.category === 'viewpoint'
-  ).length;
-
-  const userCreatedAlerts = alerts.filter(a => a.id.startsWith('alt-')).length;
-  const userCreatedPosts = posts.filter(p => p.id.startsWith('post-')).length;
-  const userCreatedTopics = forumTopics.filter(t => t.id.startsWith('f-')).length;
-  const hasSavedCustomProfile =
-    Boolean(savedName && savedName.trim().length > 0) ||
-    savedPrefs.baseCommune !== DEFAULT_PREFS.baseCommune ||
-    savedPrefs.bio !== DEFAULT_PREFS.bio;
-
-  const communityActionsCount =
-    userCreatedAlerts + userCreatedPosts + userCreatedTopics + (hasSavedCustomProfile ? 1 : 0);
-
-  // 1. Évaluation stricte et cohérente des 6 Sceaux (chaque badge dépend uniquement de sa vraie mission)
-  const evaluatedBadges: UserBadge[] = useMemo(() => {
-    const firstFiveEvaluated = BADGES_LIST.filter(b => b.id !== 'b-ambassador').map(badge => {
-      const targetCount = badge.targetCount || 1;
-      let currentCount = 0;
-
-      if (badge.id === 'b-anchor') {
-        // Sceau I : Premier Ancrage (3 lieux en favoris)
-        currentCount = Math.min(targetCount, favoritePlaces.length);
-      } else if (badge.id === 'b-beach') {
-        // Sceau II : Éclaireur des Anses (4 plages ou criques en favoris)
-        currentCount = Math.min(targetCount, beachCount);
-      } else if (badge.id === 'b-reef') {
-        // Sceau III : Ami des Tortues & du Lagon (2 spots snorkeling / tortues en favoris)
-        currentCount = Math.min(targetCount, snorkelingCount);
-      } else if (badge.id === 'b-hiking') {
-        // Sceau IV : Boussole des Mornes (2 randonnées / sorties nature en favoris)
-        currentCount = Math.min(targetCount, hikingCount);
-      } else if (badge.id === 'b-vigie') {
-        // Sceau V : Vigie du Littoral (profil configuré ou partage météo/communauté)
-        currentCount = Math.min(targetCount, communityActionsCount);
-      }
-
-      const isUnlocked = currentCount >= targetCount;
-
-      return {
-        ...badge,
-        unlocked: isUnlocked,
-        currentCount,
-        targetCount
-      };
-    });
-
-    const unlockedFirstFiveCount = firstFiveEvaluated.filter(b => b.unlocked).length;
-    const ambassadorTemplate = BADGES_LIST.find(b => b.id === 'b-ambassador');
-
-    if (!ambassadorTemplate) return firstFiveEvaluated;
-
-    const ambassadorTarget = ambassadorTemplate.targetCount || 5;
-    const ambassadorBadge: UserBadge = {
-      ...ambassadorTemplate,
-      currentCount: Math.min(ambassadorTarget, unlockedFirstFiveCount),
-      targetCount: ambassadorTarget,
-      unlocked: unlockedFirstFiveCount >= ambassadorTarget
-    };
-
-    return [...firstFiveEvaluated, ambassadorBadge];
-  }, [favoritePlaces.length, beachCount, snorkelingCount, hikingCount, communityActionsCount]);
-
-  const unlockedBadges = evaluatedBadges.filter(b => b.unlocked);
-  const nextBadge = evaluatedBadges.find(b => !b.unlocked) || null;
+  // Les badges, niveaux et points proviennent désormais de la source unique et réactive d'AppContext
+  const unlockedBadges = badges.filter(b => b.unlocked);
+  const nextBadge = badges.find(b => !b.unlocked) || null;
   const currentRankBadge =
     unlockedBadges.length > 0 ? unlockedBadges[unlockedBadges.length - 1] : null;
-
-  // 2. Calcul transparent des Points d'Exploration (XP) et du Niveau global
-  const badgesBonusXP = unlockedBadges.reduce((sum, b) => sum + b.requiredPoints, 0);
-  const favoritesXP = favoritePlaces.length * 15;
-  const profileAndCommunityXP =
-    (currentUser ? 30 : 0) + ( userCreatedAlerts + userCreatedPosts + userCreatedTopics ) * 25;
-  const effectivePoints = favoritesXP + profileAndCommunityXP + badgesBonusXP;
-
-  const EXPLORER_LEVELS = [
-    { level: 1, name: 'Initié de Madinina', minXP: 0, nextXP: 100, icon: '🧭' },
-    { level: 2, name: 'Explorateur des Côtes', minXP: 100, nextXP: 220, icon: '🏖️' },
-    { level: 3, name: 'Navigateur des Caraïbes', minXP: 220, nextXP: 380, icon: '⛵' },
-    { level: 4, name: 'Vigie Insulaire', minXP: 380, nextXP: 550, icon: '⭐' },
-    { level: 5, name: 'Ambassadeur de Madinina', minXP: 550, nextXP: 800, icon: '👑' }
-  ];
-
-  const currentLevel =
-    EXPLORER_LEVELS.slice().reverse().find(l => effectivePoints >= l.minXP) || EXPLORER_LEVELS[0];
-  const nextLevel = EXPLORER_LEVELS.find(l => l.level === currentLevel.level + 1) || null;
-  const levelProgress = nextLevel
-    ? Math.min(
-        100,
-        Math.max(
-          6,
-          Math.round(
-            ((effectivePoints - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100
-          )
-        )
-      )
-    : 100;
 
   const handleOpenBadgesSection = () => {
     handleTabChange('badges');
@@ -1641,7 +1537,7 @@ export default function UserAccountPage() {
                           </span>
                           <div className="flex items-baseline gap-1.5 mt-0.5">
                             <span className="text-xl font-bold text-slate-900 group-hover:text-teal-800 transition-colors">
-                              {unlockedBadges.length}/{evaluatedBadges.length}
+                              {unlockedBadges.length}/{badges.length}
                             </span>
                             <span className="text-xs font-medium text-slate-500">
                               sceaux acquis
@@ -1651,7 +1547,7 @@ export default function UserAccountPage() {
                       </div>
 
                       <span className="px-2.5 py-1 rounded-lg bg-teal-800/10 text-teal-900 border border-teal-200/60 text-xs font-bold shrink-0">
-                        {effectivePoints} XP
+                        {userPoints} XP
                       </span>
                     </div>
 
@@ -1667,7 +1563,7 @@ export default function UserAccountPage() {
                           {currentLevel.name}
                         </span>
                         <span className="text-teal-800 font-semibold shrink-0">
-                          {nextLevel ? `${effectivePoints}/${nextLevel.minXP} XP` : 'Rang Max'}
+                          {nextLevel ? `${userPoints}/${nextLevel.minXP} XP` : 'Rang Max'}
                         </span>
                       </div>
                     </div>
@@ -1681,7 +1577,7 @@ export default function UserAccountPage() {
               {[
                 { id: 'favorites', label: `Mes Favoris (${favoritePlaces.length})`, icon: Heart },
                 { id: 'settings', label: 'Mes informations & préférences', icon: Settings },
-                { id: 'badges', label: `Mes Badges (${unlockedBadges.length}/${evaluatedBadges.length})`, icon: Award }
+                { id: 'badges', label: `Mes Badges (${unlockedBadges.length}/${badges.length})`, icon: Award }
               ].map(tab => {
                 const Icon = tab.icon;
                 const active = activeTab === tab.id;
@@ -2219,8 +2115,8 @@ export default function UserAccountPage() {
                             {currentLevel.name}
                           </h2>
                           <p className="text-xs sm:text-sm text-slate-600">
-                            {unlockedBadges.length} sur {evaluatedBadges.length} sceaux validés ·{' '}
-                            <strong className="text-teal-900 font-semibold">{effectivePoints} points d&apos;exploration (XP)</strong>
+                            {unlockedBadges.length} sur {badges.length} sceaux validés ·{' '}
+                            <strong className="text-teal-900 font-semibold">{userPoints} points d&apos;exploration (XP)</strong>
                           </p>
                         </div>
                       </div>
@@ -2232,7 +2128,7 @@ export default function UserAccountPage() {
                             Progression vers le Niveau {nextLevel ? nextLevel.level : 5}
                           </span>
                           <span className="font-bold text-teal-900">
-                            {effectivePoints} / {nextLevel ? nextLevel.minXP : effectivePoints} XP
+                            {userPoints} / {nextLevel ? nextLevel.minXP : userPoints} XP
                           </span>
                         </div>
 
@@ -2249,7 +2145,7 @@ export default function UserAccountPage() {
                               <>
                                 Encore{' '}
                                 <strong className="text-teal-900 font-semibold">
-                                  {Math.max(0, nextLevel.minXP - effectivePoints)} XP
+                                  {Math.max(0, nextLevel.minXP - userPoints)} XP
                                 </strong>{' '}
                                 pour « {nextLevel.name} »
                               </>
@@ -2266,10 +2162,54 @@ export default function UserAccountPage() {
                       </div>
                     </div>
 
+                    {/* Origine transparente de vos points (XP) */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white/85 border border-stone-200/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-900">
+                          Origine transparente de vos {userPoints} XP
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          Calculé en temps réel selon vos actions
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs">
+                        <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-stone-200/70 space-y-0.5">
+                          <span className="text-[10px] text-slate-500 block">Lieux favoris</span>
+                          <div className="font-bold text-slate-900">+{xpBreakdown.favoritesXP} XP</div>
+                          <span className="text-[10px] text-teal-800 font-medium">{favoritePlaces.length} adresses (15 XP/u)</span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-stone-200/70 space-y-0.5">
+                          <span className="text-[10px] text-slate-500 block">Itinéraire</span>
+                          <div className="font-bold text-slate-900">+{xpBreakdown.itineraryXP} XP</div>
+                          <span className="text-[10px] text-teal-800 font-medium">Étapes planifiées (10 XP/u)</span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-stone-200/70 space-y-0.5">
+                          <span className="text-[10px] text-slate-500 block">Profil voyageur</span>
+                          <div className="font-bold text-slate-900">+{xpBreakdown.profileXP} XP</div>
+                          <span className="text-[10px] text-teal-800 font-medium">Camp de base & préférences</span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-stone-200/70 space-y-0.5">
+                          <span className="text-[10px] text-slate-500 block">Entraide & Météo</span>
+                          <div className="font-bold text-slate-900">+{xpBreakdown.communityXP} XP</div>
+                          <span className="text-[10px] text-teal-800 font-medium">Relevés & partages</span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-teal-200/70 space-y-0.5">
+                          <span className="text-[10px] text-teal-900 font-semibold block">Bonus des Sceaux</span>
+                          <div className="font-bold text-teal-900">+{xpBreakdown.badgesBonusXP} XP</div>
+                          <span className="text-[10px] text-teal-700 font-medium">{unlockedBadges.length} sceaux validés</span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Frise chronologique stylisée des 6 Sceaux de l'île */}
-                    <div className="pt-4 border-t border-stone-200/70">
+                    <div className="pt-2 border-t border-stone-200/70">
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                        {evaluatedBadges.map((b, idx) => {
+                        {badges.map((b, idx) => {
                           const reached = b.unlocked;
                           const isCurrentTarget = nextBadge?.id === b.id;
 
@@ -2322,16 +2262,16 @@ export default function UserAccountPage() {
                         Les 6 Sceaux de Madinina
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Chaque sceau valide une vraie étape de votre découverte de l&apos;île et vous rapporte un bonus d&apos;expérience.
+                        Chaque sceau valide une vraie étape de votre découverte de l&apos;île et vous rapporte un bonus d&apos;expérience direct.
                       </p>
                     </div>
                     <span className="text-xs font-bold text-teal-900 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/70 shrink-0 self-start sm:self-auto">
-                      {unlockedBadges.length} / {evaluatedBadges.length} accomplis
+                      {unlockedBadges.length} / {badges.length} accomplis
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {evaluatedBadges.map(badge => {
+                    {badges.map(badge => {
                       const isUnlocked = badge.unlocked;
                       const isNextTarget = nextBadge?.id === badge.id;
                       const currentCount = badge.currentCount || 0;

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown, Compass, Heart } from 'lucide-react';
+import { Menu, X, Shield, User, LogOut, Loader2, ChevronDown, Compass, Heart, Award } from 'lucide-react';
 import LogoIcon from '@/components/ui/LogoIcon';
 import LanguageSelector from '@/components/layout/LanguageSelector';
 import { TRANSLATIONS } from '@/data/translations';
@@ -15,7 +15,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ activeSection, setActiveSection }: NavbarProps) {
-  const { language, openModal, setSelectedCategory, currentUser, logout, favorites } = useApp();
+  const { language, openModal, setSelectedCategory, currentUser, logout, favorites, userPoints, badges } = useApp();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -322,6 +322,20 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                       >
                         <User className="w-4 h-4 text-teal-800 shrink-0" />
                         <span>Mon profil & favoris</span>
+                      </Link>
+
+                      <Link
+                        href="/compte?tab=badges"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:text-teal-900 hover:bg-stone-100/80 rounded-xl transition-colors flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Award className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>Mes Badges & Sceaux</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60">
+                          {userPoints} XP
+                        </span>
                       </Link>
 
                       <button

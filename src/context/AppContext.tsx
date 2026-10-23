@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   PlaceItem,
   CommunityAlert,
@@ -9,14 +9,16 @@ import {
   UserRole,
   AppLanguage,
   ItineraryDay,
-  UserBadge
+  UserBadge,
+  ExplorerLevel
 } from '@/types';
 import {
   INITIAL_PLACES,
   INITIAL_ALERTS,
   INITIAL_POSTS,
   INITIAL_FORUM_TOPICS,
-  BADGES_LIST
+  BADGES_LIST,
+  EXPLORER_LEVELS
 } from '@/data/mockData';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 
@@ -73,6 +75,18 @@ interface AppContextType {
   userPoints: number;
   addPoints: (pts: number) => void;
   badges: UserBadge[];
+  currentLevel: ExplorerLevel;
+  nextLevel: ExplorerLevel | null;
+  levelProgress: number;
+  xpBreakdown: {
+    favoritesXP: number;
+    itineraryXP: number;
+    profileXP: number;
+    communityXP: number;
+    badgesBonusXP: number;
+    extraXP: number;
+    totalXP: number;
+  };
 
   // Global search & filters
   searchQuery: string;
@@ -119,8 +133,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('visitor');
   const [language, setLanguage] = useState<AppLanguage>('fr');
-  const [userPoints, setUserPoints] = useState<number>(0);
-  const [badges, setBadges] = useState<UserBadge[]>(BADGES_LIST);
+  const [extraXP, setExtraXP] = useState<number>(0);
+  const [hasSavedProfile, setHasSavedProfile] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<{ type: string | null; data?: any }>({ type: null });
@@ -130,12 +144,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persistence in localStorage on browser side & Supabase session listener
   useEffect(() => {
     try {
-      let currentFavs = ['salines', 'anse-dufour'];
       const savedFavs = localStorage.getItem('mq_favorites');
       if (savedFavs) {
         const parsedFavs = JSON.parse(savedFavs);
         if (Array.isArray(parsedFavs)) {
-          currentFavs = parsedFavs;
           setFavorites(parsedFavs);
         }
       }
@@ -145,16 +157,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentUser(u);
         setUserRole(u.role);
       }
-
-      const hasSavedProfile = Boolean(localStorage.getItem('mq_account_prefs_v2'));
-      const baselinePts = currentFavs.length * 10 + (hasSavedProfile ? 30 : 0);
-      const rawPoints = Number(localStorage.getItem('mq_user_points') || '0');
-      const hydratedPoints = Math.max(Number.isFinite(rawPoints) ? rawPoints : 0, baselinePts);
-      setUserPoints(hydratedPoints);
-      localStorage.setItem('mq_user_points', String(hydratedPoints));
-      setBadges(
-        BADGES_LIST.map(b => (hydratedPoints >= b.requiredPoints ? { ...b, unlocked: true } : b))
-      );
+      const savedExtra = Number(localStorage.getItem('mq_extra_xp') || '0');
+      if (Number.isFinite(savedExtra)) {
+        setExtraXP(savedExtra);
+      }
+      setHasSavedProfile(Boolean(localStorage.getItem('mq_account_prefs_v2')));
     } catch (e) {
       // Ignore in SSR
     }
@@ -373,32 +380,157 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  // 1. Décompte concret par catégorie de lieux et actions réelles
+  const favoritePlaces = useMemo(() => {
+    return places.filter(p => favorites.includes(p.id));
+  }, [places, favorites]);
+
+  const beachCount = useMemo(() => {
+    return favoritePlaces.filter(p => p.category === 'beach' || p.category === 'hidden_gem').length;
+  }, [favoritePlaces]);
+
+  const snorkelingCount = useMemo(() => {
+    return favoritePlaces.filter(
+      p =>
+        p.category === 'snorkeling' ||
+        (p.subCategory && /snorkeling|tortue|plongée/i.test(p.subCategory)) ||
+        (p.tags && p.tags.some(t => /snorkeling|tortue|plongée|aquarium/i.test(t)))
+    ).length;
+  }, [favoritePlaces]);
+
+  const hikingCount = useMemo(() => {
+    return favoritePlaces.filter(
+      p =>
+        p.category === 'hiking' ||
+        p.category === 'activity' ||
+        p.category === 'excursion' ||
+        p.category === 'viewpoint'
+    ).length;
+  }, [favoritePlaces]);
+
+  const userCreatedAlerts = useMemo(() => {
+    return alerts.filter(a => a.id.startsWith('alt-')).length;
+  }, [alerts]);
+
+  const userCreatedPosts = useMemo(() => {
+    return posts.filter(p => p.id.startsWith('post-')).length;
+  }, [posts]);
+
+  const userCreatedTopics = useMemo(() => {
+    return forumTopics.filter(t => t.id.startsWith('f-')).length;
+  }, [forumTopics]);
+
+  const communityActionsCount = useMemo(() => {
+    return userCreatedAlerts + userCreatedPosts + userCreatedTopics + (hasSavedProfile ? 1 : 0);
+  }, [userCreatedAlerts, userCreatedPosts, userCreatedTopics, hasSavedProfile]);
+
+  // 2. Évaluation stricte et unifiée des 6 Sceaux de l'île
+  const badges: UserBadge[] = useMemo(() => {
+    const firstFive = BADGES_LIST.filter(b => b.id !== 'b-ambassador').map(badge => {
+      const targetCount = badge.targetCount || 1;
+      let currentCount = 0;
+
+      if (badge.id === 'b-anchor') {
+        currentCount = Math.min(targetCount, favoritePlaces.length);
+      } else if (badge.id === 'b-beach') {
+        currentCount = Math.min(targetCount, beachCount);
+      } else if (badge.id === 'b-reef') {
+        currentCount = Math.min(targetCount, snorkelingCount);
+      } else if (badge.id === 'b-hiking') {
+        currentCount = Math.min(targetCount, hikingCount);
+      } else if (badge.id === 'b-vigie') {
+        currentCount = Math.min(targetCount, communityActionsCount);
+      }
+
+      return {
+        ...badge,
+        unlocked: currentCount >= targetCount,
+        currentCount,
+        targetCount
+      };
+    });
+
+    const unlockedFirstFiveCount = firstFive.filter(b => b.unlocked).length;
+    const ambassadorTemplate = BADGES_LIST.find(b => b.id === 'b-ambassador');
+    if (!ambassadorTemplate) return firstFive;
+
+    const ambassadorTarget = ambassadorTemplate.targetCount || 5;
+    const ambassadorBadge: UserBadge = {
+      ...ambassadorTemplate,
+      currentCount: Math.min(ambassadorTarget, unlockedFirstFiveCount),
+      targetCount: ambassadorTarget,
+      unlocked: unlockedFirstFiveCount >= ambassadorTarget
+    };
+
+    return [...firstFive, ambassadorBadge];
+  }, [favoritePlaces.length, beachCount, snorkelingCount, hikingCount, communityActionsCount]);
+
+  // 3. Calcul transparent et équitable du Barème de Points (XP)
+  const xpBreakdown = useMemo(() => {
+    const favoritesXP = favoritePlaces.length * 15;
+    const itineraryPlacesCount = itinerary.reduce((sum, d) => sum + (d.places ? d.places.length : 0), 0);
+    const itineraryXP = itineraryPlacesCount * 10;
+    const profileXP = (currentUser ? 30 : 0) + (hasSavedProfile ? 30 : 0);
+    const communityXP = userCreatedAlerts * 25 + userCreatedPosts * 20 + userCreatedTopics * 15;
+    const badgesBonusXP = badges.filter(b => b.unlocked).reduce((sum, b) => sum + b.requiredPoints, 0);
+    const totalXP = favoritesXP + itineraryXP + profileXP + communityXP + badgesBonusXP + extraXP;
+
+    return {
+      favoritesXP,
+      itineraryXP,
+      profileXP,
+      communityXP,
+      badgesBonusXP,
+      extraXP,
+      totalXP
+    };
+  }, [
+    favoritePlaces.length,
+    itinerary,
+    currentUser,
+    hasSavedProfile,
+    userCreatedAlerts,
+    userCreatedPosts,
+    userCreatedTopics,
+    badges,
+    extraXP
+  ]);
+
+  const userPoints = xpBreakdown.totalXP;
+
+  const currentLevel = useMemo(() => {
+    return EXPLORER_LEVELS.slice().reverse().find(l => userPoints >= l.minXP) || EXPLORER_LEVELS[0];
+  }, [userPoints]);
+
+  const nextLevel = useMemo(() => {
+    return EXPLORER_LEVELS.find(l => l.level === currentLevel.level + 1) || null;
+  }, [currentLevel]);
+
+  const levelProgress = useMemo(() => {
+    if (!nextLevel) return 100;
+    const range = nextLevel.minXP - currentLevel.minXP;
+    if (range <= 0) return 100;
+    return Math.min(100, Math.max(6, Math.round(((userPoints - currentLevel.minXP) / range) * 100)));
+  }, [userPoints, currentLevel, nextLevel]);
+
+  const addPoints = (pts: number) => {
+    setExtraXP(prev => {
+      const next = prev + pts;
+      try {
+        localStorage.setItem('mq_extra_xp', String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
   const toggleFavorite = (placeId: string) => {
-    let added = false;
     setFavorites(prev => {
       const exists = prev.includes(placeId);
-      added = !exists;
       const next = exists ? prev.filter(id => id !== placeId) : [...prev, placeId];
       try {
         localStorage.setItem('mq_favorites', JSON.stringify(next));
       } catch (e) {}
       return next;
-    });
-    if (added) {
-      addPoints(10);
-    }
-  };
-
-  const addPoints = (pts: number) => {
-    setUserPoints(prev => {
-      const newScore = prev + pts;
-      try {
-        localStorage.setItem('mq_user_points', String(newScore));
-      } catch (e) {}
-      setBadges(currentBadges =>
-        currentBadges.map(b => (newScore >= b.requiredPoints ? { ...b, unlocked: true } : b))
-      );
-      return newScore;
     });
   };
 
@@ -569,6 +701,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         userPoints,
         addPoints,
         badges,
+        currentLevel,
+        nextLevel,
+        levelProgress,
+        xpBreakdown,
         searchQuery,
         setSearchQuery,
         selectedCategory,
