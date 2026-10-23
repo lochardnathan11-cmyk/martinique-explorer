@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import LogoIcon from '@/components/ui/LogoIcon';
+import LanguageSelector from '@/components/layout/LanguageSelector';
 import { MARTINIQUE_COMMUNES, normalizeSearchText } from '@/data/communes';
 
 const TRAVELER_PROFILES = [
@@ -59,7 +60,7 @@ const POPULAR_COMMUNES = [
 
 export default function InscriptionPage() {
   const router = useRouter();
-  const { signup, addPoints, openModal } = useApp();
+  const { signup, addPoints, openModal, currentUser } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -180,115 +181,177 @@ export default function InscriptionPage() {
   };
 
   return (
-    <div className="h-dvh max-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col justify-between overflow-hidden font-sans selection:bg-teal-100 selection:text-teal-900">
-      {/* 1. Header & Stepper unifié (h-14) */}
-      <header className="border-b border-stone-200/80 bg-white/95 backdrop-blur-md shrink-0 h-14 sm:h-15 flex items-center px-4 sm:px-6">
-        <div className="max-w-5xl w-full mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <LogoIcon className="w-8 h-8" />
-            <span className="font-extrabold text-sm tracking-tight text-slate-900 hidden sm:inline">
-              Martinique Explorer
-            </span>
+    <div className="relative h-dvh max-h-screen text-slate-800 flex flex-col justify-between overflow-hidden font-sans selection:bg-teal-500 selection:text-white">
+      {/* Fond immersif caraïbéen identique à la page d'accueil */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <img
+          src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=85"
+          alt="Plage de sable blanc et eau turquoise en Martinique"
+          className="w-full h-full object-cover object-center scale-100"
+        />
+        {/* Voiles sombres et dégradés profonds pour sublimer la clarté et le contraste */}
+        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-deep/85 via-deep/60 to-deep/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-deep/85 via-transparent to-deep/45" />
+      </div>
+
+      {/* 1. Header & Stepper unifié style page d'accueil (fond translucide, branding officiel et pilule de verre) */}
+      <header className="relative z-30 border-b border-white/15 bg-slate-950/40 backdrop-blur-md shrink-0 h-16 sm:h-18 flex items-center px-4 sm:px-6 lg:px-10">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 sm:gap-4">
+          {/* Logo officiel Martinique Explorer identique à la page d'accueil */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 text-left group shrink-0 focus:outline-none cursor-pointer"
+          >
+            <div className="transition-transform duration-300 group-hover:scale-105 shrink-0 shadow-sm rounded-[14px]">
+              <LogoIcon className="w-9 h-9 sm:w-10 sm:h-10" />
+            </div>
+            <div>
+              <span className="text-base sm:text-lg lg:text-xl font-semibold tracking-tight text-white block leading-tight">
+                Martinique <span className="font-light text-action">Explorer</span>
+              </span>
+              <span className="hidden md:block text-[10px] tracking-widest uppercase text-white/70 -mt-0.5 font-medium">
+                Madinina • Île aux Fleurs
+              </span>
+            </div>
           </Link>
 
-          {/* Stepper centré avec numéros clairs */}
-          <div className="flex items-center gap-2 sm:gap-4 text-xs font-semibold">
+          {/* Stepper capsule moderne en verre dépoli */}
+          <div className="flex items-center gap-1.5 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 sm:px-4 py-1.5 shadow-soft">
+            {/* Étape 1 */}
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="flex items-center gap-1.5 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer group"
             >
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
-                  step === 1 ? 'bg-teal-800 text-white shadow-2xs' : 'bg-teal-100 text-teal-900'
+                className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold transition-all ${
+                  step === 1
+                    ? 'bg-action text-white shadow-xs ring-2 ring-white/30'
+                    : 'bg-white/20 text-white/90 group-hover:bg-white/30'
                 }`}
               >
                 {step > 1 ? '✓' : '1'}
               </span>
-              <span className={step === 1 ? 'text-slate-900 font-bold' : 'text-slate-500'}>
+              <span
+                className={`text-xs font-semibold hidden md:inline transition-colors ${
+                  step === 1 ? 'text-white font-bold' : 'text-white/70 group-hover:text-white'
+                }`}
+              >
                 Découverte
               </span>
             </button>
 
-            <div className="h-0.5 w-6 sm:w-12 bg-stone-200" />
+            <div className="h-0.5 w-3 sm:w-6 lg:w-8 bg-white/25 rounded-full" />
 
+            {/* Étape 2 */}
             <button
               type="button"
               onClick={() => { if (step > 1) setStep(2); }}
-              className={`flex items-center gap-1.5 ${step >= 2 ? 'cursor-pointer' : 'cursor-default'}`}
+              className={`flex items-center gap-1.5 ${step >= 2 ? 'cursor-pointer group' : 'cursor-default opacity-60'}`}
             >
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
+                className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold transition-all ${
                   step === 2
-                    ? 'bg-teal-800 text-white shadow-2xs'
+                    ? 'bg-action text-white shadow-xs ring-2 ring-white/30'
                     : step > 2
-                    ? 'bg-teal-100 text-teal-900'
-                    : 'bg-stone-200 text-slate-400'
+                    ? 'bg-white/20 text-white/90 group-hover:bg-white/30'
+                    : 'bg-white/15 text-white/50'
                 }`}
               >
                 {step > 2 ? '✓' : '2'}
               </span>
-              <span className={step === 2 ? 'text-slate-900 font-bold' : 'text-slate-500'}>
+              <span
+                className={`text-xs font-semibold hidden md:inline transition-colors ${
+                  step === 2 ? 'text-white font-bold' : 'text-white/70 group-hover:text-white'
+                }`}
+              >
                 Identifiants
               </span>
             </button>
 
-            <div className="h-0.5 w-6 sm:w-12 bg-stone-200" />
+            <div className="h-0.5 w-3 sm:w-6 lg:w-8 bg-white/25 rounded-full" />
 
-            <div className="flex items-center gap-1.5">
+            {/* Étape 3 */}
+            <div className={`flex items-center gap-1.5 ${step === 3 ? '' : 'opacity-60'}`}>
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
-                  step === 3 ? 'bg-teal-800 text-white shadow-2xs' : 'bg-stone-200 text-slate-400'
+                className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold transition-all ${
+                  step === 3
+                    ? 'bg-action text-white shadow-xs ring-2 ring-white/30'
+                    : 'bg-white/15 text-white/50'
                 }`}
               >
                 3
               </span>
-              <span className={step === 3 ? 'text-slate-900 font-bold' : 'text-slate-500'}>
+              <span
+                className={`text-xs font-semibold hidden md:inline ${
+                  step === 3 ? 'text-white font-bold' : 'text-white/70'
+                }`}
+              >
                 Préférences
               </span>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openModal('auth')}
-            className="text-xs font-semibold text-slate-700 hover:text-teal-900 px-3 py-1.5 rounded-xl border border-stone-200/90 hover:border-teal-700 bg-white hover:bg-stone-50 transition-all cursor-pointer shrink-0"
-          >
-            Se connecter
-          </button>
+          {/* Côté droit : Sélecteur de langue & Connexion style page d'accueil */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <LanguageSelector scrolled={false} isHome={true} />
+
+            {currentUser ? (
+              <Link
+                href="/compte"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/25 text-white hover:bg-white/20 bg-white/10 text-xs font-semibold backdrop-blur-md transition-all shadow-xs"
+              >
+                <div className="w-5 h-5 rounded-md bg-teal-800 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="hidden sm:inline max-w-[100px] truncate">{currentUser.name}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openModal('auth')}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl border border-white/25 text-white hover:bg-white/20 bg-white/10 text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer"
+                aria-label="Se connecter"
+              >
+                <User className="w-3.5 h-3.5 text-white/90" />
+                <span className="hidden sm:inline">Se connecter</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
       {/* 2. Conteneur centré verticalement : 100% visible sans scroll */}
-      <main className="flex-1 min-h-0 flex flex-col justify-center max-w-4xl w-full mx-auto px-4 sm:px-6 py-2">
+      <main className="flex-1 min-h-0 flex flex-col justify-center max-w-4xl w-full mx-auto px-4 sm:px-6 py-2 relative z-10">
         {errorMessage && (
-          <div className="mb-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 animate-fadeIn shadow-2xs shrink-0">
+          <div className="mb-2.5 p-2.5 rounded-xl bg-rose-50/95 backdrop-blur-md border border-rose-200 text-rose-800 text-xs flex items-center gap-2 animate-fadeIn shadow-lg shrink-0">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span className="font-semibold leading-tight">{errorMessage}</span>
           </div>
         )}
 
         {/* ========================================================= */}
-        {/* ÉTAPE 1 : DÉCOUVERTE (Identique à la capture utilisateur) */}
+        {/* ÉTAPE 1 : DÉCOUVERTE                                      */}
         {/* ========================================================= */}
         {step === 1 && (
           <div className="space-y-4 sm:space-y-5 animate-fadeIn">
-            <div className="text-center space-y-2">
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/70 text-[11px] font-bold uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-amber-500" />
+            <div className="text-center space-y-1.5 sm:space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span>Bienvenue en Martinique · Madinina</span>
               </span>
-              <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
                 Créez votre compte Martinique Explorer
               </h1>
-              <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-white/90 max-w-xl mx-auto leading-relaxed drop-shadow-xs">
                 Martinique Explorer réunit les plus belles pépites secrètes, la météo des plages en direct et un profil personnalisé pour vivre l&apos;île comme un initié.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center text-lg">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/50 shadow-xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center text-lg shadow-2xs">
                   🏖️
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
@@ -299,8 +362,8 @@ export default function InscriptionPage() {
                 </p>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center text-lg">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/50 shadow-xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center text-lg shadow-2xs">
                   🌊
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
@@ -311,8 +374,8 @@ export default function InscriptionPage() {
                 </p>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center text-lg">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/50 shadow-xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center text-lg shadow-2xs">
                   🧭
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
@@ -324,16 +387,16 @@ export default function InscriptionPage() {
               </div>
             </div>
 
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-teal-50/90 border border-teal-200/80 flex items-center justify-between gap-4 shadow-2xs">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-white/50 flex items-center justify-between gap-4 shadow-xl">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-teal-800 text-white flex items-center justify-center text-xs font-extrabold shrink-0">
+                <div className="w-9 h-9 rounded-full bg-teal-800 text-white flex items-center justify-center text-xs font-extrabold shrink-0 shadow-xs">
                   +30
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-teal-950 truncate">
+                  <h4 className="text-xs font-bold text-slate-900 truncate">
                     Bonus de bienvenue : +30 points XP offerts
                   </h4>
-                  <p className="text-[11px] text-teal-800 truncate">
+                  <p className="text-[11px] text-slate-600 truncate">
                     Complétez votre profil en 1 minute pour activer votre compte.
                   </p>
                 </div>
@@ -342,7 +405,7 @@ export default function InscriptionPage() {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="px-5 sm:px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer shrink-0"
+                className="px-5 sm:px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer shrink-0"
               >
                 <span>Créer mon compte</span>
                 <ArrowRight className="w-4 h-4" />
@@ -355,7 +418,7 @@ export default function InscriptionPage() {
         {/* ÉTAPE 2 : IDENTIFIANTS                                    */}
         {/* ========================================================= */}
         {step === 2 && (
-          <div className="max-w-md w-full mx-auto bg-white p-5 sm:p-6 rounded-3xl border border-stone-200/90 shadow-xl space-y-3.5 animate-fadeIn">
+          <div className="max-w-md w-full mx-auto bg-white/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 shadow-2xl space-y-3.5 animate-fadeIn">
             <div className="space-y-0.5">
               <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">
                 Étape 2 sur 3
@@ -459,7 +522,7 @@ export default function InscriptionPage() {
         {/* ÉTAPE 3 : PRÉFÉRENCES (Refonte 2 colonnes ultra-fluide & SANS DÉFILEMENT) */}
         {/* ========================================================= */}
         {step === 3 && (
-          <div className="max-w-3xl w-full mx-auto bg-white p-5 sm:p-6 rounded-3xl border border-stone-200/90 shadow-xl space-y-3.5 animate-fadeIn">
+          <div className="max-w-3xl w-full mx-auto bg-white/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 shadow-2xl space-y-3.5 animate-fadeIn">
             {/* Header compact */}
             <div className="space-y-0.5">
               <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">
@@ -679,7 +742,7 @@ export default function InscriptionPage() {
       </main>
 
       {/* 3. Footer minimaliste 1 ligne */}
-      <footer className="py-2 text-center text-[11px] text-slate-400 shrink-0">
+      <footer className="py-2.5 text-center text-[11px] text-white/70 shrink-0 relative z-10 drop-shadow-xs">
         Martinique Explorer · Plateforme éco-responsable & solidaire de Madinina
       </footer>
     </div>
