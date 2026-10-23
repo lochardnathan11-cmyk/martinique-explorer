@@ -130,7 +130,7 @@ export interface SocialPost {
 export interface ForumTopic {
   id: string;
   title: string;
-  category: 'Tourisme' | 'Restaurants' | 'Activités' | 'Immobilier' | 'Vie locale' | 'Retraite' | 'Conseils';
+  category: 'Tourisme' | 'Plages' | 'Restaurants' | 'Activités' | 'Immobilier' | 'Vie locale' | 'Retraite' | 'Conseils';
   author: {
     name: string;
     avatar: string;
@@ -151,6 +151,9 @@ export interface UserBadge {
   icon: string;
   unlocked: boolean;
   requiredPoints: number;
+  tier?: string;
+  howToEarn?: string;
+  categoryLabel?: string;
 }
 
 export interface ItineraryDay {

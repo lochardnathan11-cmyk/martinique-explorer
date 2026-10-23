@@ -1463,43 +1463,69 @@ export const INITIAL_FORUM_TOPICS: ForumTopic[] = [
 export const BADGES_LIST: UserBadge[] = [
   {
     id: 'b-explorer',
-    name: 'Explorateur Madinina',
-    description: 'A visité et commenté plus de 5 plages et spots différents',
+    name: 'Carnet d’Ancrage',
+    tier: 'Palier 1',
+    categoryLabel: 'Premiers repères',
+    description: 'Votre camp de base est choisi et vos premières adresses insulaires sont enregistrées.',
+    howToEarn: 'Personnalisez et enregistrez votre profil (+30 pts) puis ajoutez au moins 2 lieux en favoris (+10 pts/lieu).',
     icon: '🧭',
     unlocked: false,
     requiredPoints: 50
   },
   {
     id: 'b-beach-master',
-    name: 'Expert Plages',
-    description: 'A partagé plus de 3 états de plage ou conditions en direct',
+    name: 'Éclaireur des Anses',
+    tier: 'Palier 2',
+    categoryLabel: 'Carnet de route',
+    description: 'Vous composez une sélection variée de plages, criques et tables créoles du Nord au Sud.',
+    howToEarn: 'Sauvegardez 6+ lieux coup de cœur en favoris (+10 pts/lieu) ou ajoutez des étapes à votre itinéraire.',
     icon: '🏖️',
     unlocked: false,
-    requiredPoints: 100
+    requiredPoints: 120
   },
   {
-    id: 'b-local-guide',
-    name: 'Guide Local Certifié',
-    description: 'A aidé plus de 20 voyageurs sur le forum d\'entraide',
-    icon: '⭐',
+    id: 'b-turtle-friend',
+    name: 'Veilleur du Lagon',
+    tier: 'Palier 3',
+    categoryLabel: 'Faune & Récifs',
+    description: 'Observateur attentif des herbiers marins, des tortues et des fonds coralliens de l’île.',
+    howToEarn: 'Partagez vos photos, récits de sortie et conseils d’observation dans l’espace Communauté (+20 pts/post).',
+    icon: '🐢',
     unlocked: false,
     requiredPoints: 250
   },
   {
-    id: 'b-turtle-friend',
-    name: 'Ami des Tortues',
-    description: 'A rédigé un guide respectueux du snorkeling responsable',
-    icon: '🐢',
+    id: 'b-coastal-watch',
+    name: 'Vigie du Littoral',
+    tier: 'Palier 4',
+    categoryLabel: 'Météo & Mer',
+    description: 'Vos relevés d’état de la mer, d’alizés et de sargasses aident les voyageurs en temps réel.',
+    howToEarn: 'Publiez régulièrement des signalements côtiers en direct (sargasses, houle, clarté de l’eau : +25 pts/alerte).',
+    icon: '🌊',
     unlocked: false,
-    requiredPoints: 150
+    requiredPoints: 450
+  },
+  {
+    id: 'b-local-guide',
+    name: 'Passeur d’Adresses',
+    tier: 'Palier 5',
+    categoryLabel: 'Entraide locale',
+    description: 'Référence bienveillante sur le forum et découvreur de pépites authentiques en Martinique.',
+    howToEarn: 'Participez aux sujets d’entraide du forum (+15 pts) et proposez de nouvelles adresses vérifiées (+30 pts/lieu).',
+    icon: '⭐',
+    unlocked: false,
+    requiredPoints: 750
   },
   {
     id: 'b-ambassador',
-    name: 'Ambassadeur de la Martinique',
-    description: 'Pilier de la communauté Martinique Explorer (1000+ XP)',
+    name: 'Ambassadeur de Madinina',
+    tier: 'Palier 6',
+    categoryLabel: 'Long terme',
+    description: 'Distinction suprême saluant votre fidélité au fil des saisons et vos contributions durables.',
+    howToEarn: 'Cumulez 1 200 pts sur la durée grâce à vos séjours, partages photos, relevés météo et coups de cœur.',
     icon: '👑',
     unlocked: false,
-    requiredPoints: 1000
+    requiredPoints: 1200
   }
 ];
 

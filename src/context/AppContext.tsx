@@ -130,14 +130,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persistence in localStorage on browser side & Supabase session listener
   useEffect(() => {
     try {
+      let currentFavs = ['salines', 'anse-dufour'];
       const savedFavs = localStorage.getItem('mq_favorites');
-      if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      if (savedFavs) {
+        const parsedFavs = JSON.parse(savedFavs);
+        if (Array.isArray(parsedFavs)) {
+          currentFavs = parsedFavs;
+          setFavorites(parsedFavs);
+        }
+      }
       const savedUser = localStorage.getItem('mq_current_user');
       if (savedUser) {
         const u = JSON.parse(savedUser) as AuthUser;
         setCurrentUser(u);
         setUserRole(u.role);
       }
+
+      const hasSavedProfile = Boolean(localStorage.getItem('mq_account_prefs_v2'));
+      const baselinePts = currentFavs.length * 10 + (hasSavedProfile ? 30 : 0);
+      const rawPoints = Number(localStorage.getItem('mq_user_points') || '0');
+      const hydratedPoints = Math.max(Number.isFinite(rawPoints) ? rawPoints : 0, baselinePts);
+      setUserPoints(hydratedPoints);
+      localStorage.setItem('mq_user_points', String(hydratedPoints));
+      setBadges(
+        BADGES_LIST.map(b => (hydratedPoints >= b.requiredPoints ? { ...b, unlocked: true } : b))
+      );
     } catch (e) {
       // Ignore in SSR
     }
@@ -357,19 +374,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFavorite = (placeId: string) => {
+    let added = false;
     setFavorites(prev => {
-      const next = prev.includes(placeId) ? prev.filter(id => id !== placeId) : [...prev, placeId];
+      const exists = prev.includes(placeId);
+      added = !exists;
+      const next = exists ? prev.filter(id => id !== placeId) : [...prev, placeId];
       try {
         localStorage.setItem('mq_favorites', JSON.stringify(next));
       } catch (e) {}
       return next;
     });
-    addPoints(10);
+    if (added) {
+      addPoints(10);
+    }
   };
 
   const addPoints = (pts: number) => {
     setUserPoints(prev => {
       const newScore = prev + pts;
+      try {
+        localStorage.setItem('mq_user_points', String(newScore));
+      } catch (e) {}
       setBadges(currentBadges =>
         currentBadges.map(b => (newScore >= b.requiredPoints ? { ...b, unlocked: true } : b))
       );
