@@ -154,6 +154,9 @@ export interface UserBadge {
   tier?: string;
   howToEarn?: string;
   categoryLabel?: string;
+  currentCount?: number;
+  targetCount?: number;
+  unitLabel?: string;
 }
 
 export interface ItineraryDay {

@@ -36,6 +36,8 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { MARTINIQUE_COMMUNES } from '@/data/communes';
+import { BADGES_LIST } from '@/data/mockData';
+import { UserBadge } from '@/types';
 
 type AccountTab = 'favorites' | 'settings' | 'badges';
 
@@ -495,9 +497,11 @@ export default function UserAccountPage() {
     favorites,
     toggleFavorite,
     places,
+    alerts,
+    posts,
+    forumTopics,
     userPoints,
     addPoints,
-    badges,
     language,
     setLanguage
   } = useApp();
@@ -890,12 +894,119 @@ export default function UserAccountPage() {
     return true;
   });
 
-  const unlockedBadges = badges.filter(b => b.unlocked || userPoints >= b.requiredPoints);
-  const nextBadge = badges.find(b => !b.unlocked && userPoints < b.requiredPoints) || null;
+  // Décompte concret par catégorie de lieux et actions réelles pour l'attribution logique des badges
+  const beachCount = favoritePlaces.filter(
+    p => p.category === 'beach' || p.category === 'hidden_gem'
+  ).length;
+
+  const snorkelingCount = favoritePlaces.filter(
+    p =>
+      p.category === 'snorkeling' ||
+      (p.subCategory && /snorkeling|tortue|plongée/i.test(p.subCategory)) ||
+      (p.tags && p.tags.some(t => /snorkeling|tortue|plongée|aquarium/i.test(t)))
+  ).length;
+
+  const hikingCount = favoritePlaces.filter(
+    p =>
+      p.category === 'hiking' ||
+      p.category === 'activity' ||
+      p.category === 'excursion' ||
+      p.category === 'viewpoint'
+  ).length;
+
+  const userCreatedAlerts = alerts.filter(a => a.id.startsWith('alt-')).length;
+  const userCreatedPosts = posts.filter(p => p.id.startsWith('post-')).length;
+  const userCreatedTopics = forumTopics.filter(t => t.id.startsWith('f-')).length;
+  const hasSavedCustomProfile =
+    Boolean(savedName && savedName.trim().length > 0) ||
+    savedPrefs.baseCommune !== DEFAULT_PREFS.baseCommune ||
+    savedPrefs.bio !== DEFAULT_PREFS.bio;
+
+  const communityActionsCount =
+    userCreatedAlerts + userCreatedPosts + userCreatedTopics + (hasSavedCustomProfile ? 1 : 0);
+
+  // 1. Évaluation stricte et cohérente des 6 Sceaux (chaque badge dépend uniquement de sa vraie mission)
+  const evaluatedBadges: UserBadge[] = useMemo(() => {
+    const firstFiveEvaluated = BADGES_LIST.filter(b => b.id !== 'b-ambassador').map(badge => {
+      const targetCount = badge.targetCount || 1;
+      let currentCount = 0;
+
+      if (badge.id === 'b-anchor') {
+        // Sceau I : Premier Ancrage (3 lieux en favoris)
+        currentCount = Math.min(targetCount, favoritePlaces.length);
+      } else if (badge.id === 'b-beach') {
+        // Sceau II : Éclaireur des Anses (4 plages ou criques en favoris)
+        currentCount = Math.min(targetCount, beachCount);
+      } else if (badge.id === 'b-reef') {
+        // Sceau III : Ami des Tortues & du Lagon (2 spots snorkeling / tortues en favoris)
+        currentCount = Math.min(targetCount, snorkelingCount);
+      } else if (badge.id === 'b-hiking') {
+        // Sceau IV : Boussole des Mornes (2 randonnées / sorties nature en favoris)
+        currentCount = Math.min(targetCount, hikingCount);
+      } else if (badge.id === 'b-vigie') {
+        // Sceau V : Vigie du Littoral (profil configuré ou partage météo/communauté)
+        currentCount = Math.min(targetCount, communityActionsCount);
+      }
+
+      const isUnlocked = currentCount >= targetCount;
+
+      return {
+        ...badge,
+        unlocked: isUnlocked,
+        currentCount,
+        targetCount
+      };
+    });
+
+    const unlockedFirstFiveCount = firstFiveEvaluated.filter(b => b.unlocked).length;
+    const ambassadorTemplate = BADGES_LIST.find(b => b.id === 'b-ambassador');
+
+    if (!ambassadorTemplate) return firstFiveEvaluated;
+
+    const ambassadorTarget = ambassadorTemplate.targetCount || 5;
+    const ambassadorBadge: UserBadge = {
+      ...ambassadorTemplate,
+      currentCount: Math.min(ambassadorTarget, unlockedFirstFiveCount),
+      targetCount: ambassadorTarget,
+      unlocked: unlockedFirstFiveCount >= ambassadorTarget
+    };
+
+    return [...firstFiveEvaluated, ambassadorBadge];
+  }, [favoritePlaces.length, beachCount, snorkelingCount, hikingCount, communityActionsCount]);
+
+  const unlockedBadges = evaluatedBadges.filter(b => b.unlocked);
+  const nextBadge = evaluatedBadges.find(b => !b.unlocked) || null;
   const currentRankBadge =
     unlockedBadges.length > 0 ? unlockedBadges[unlockedBadges.length - 1] : null;
-  const progressToNext = nextBadge
-    ? Math.min(100, Math.round((userPoints / nextBadge.requiredPoints) * 100))
+
+  // 2. Calcul transparent des Points d'Exploration (XP) et du Niveau global
+  const badgesBonusXP = unlockedBadges.reduce((sum, b) => sum + b.requiredPoints, 0);
+  const favoritesXP = favoritePlaces.length * 15;
+  const profileAndCommunityXP =
+    (currentUser ? 30 : 0) + ( userCreatedAlerts + userCreatedPosts + userCreatedTopics ) * 25;
+  const effectivePoints = favoritesXP + profileAndCommunityXP + badgesBonusXP;
+
+  const EXPLORER_LEVELS = [
+    { level: 1, name: 'Initié de Madinina', minXP: 0, nextXP: 100, icon: '🧭' },
+    { level: 2, name: 'Explorateur des Côtes', minXP: 100, nextXP: 220, icon: '🏖️' },
+    { level: 3, name: 'Navigateur des Caraïbes', minXP: 220, nextXP: 380, icon: '⛵' },
+    { level: 4, name: 'Vigie Insulaire', minXP: 380, nextXP: 550, icon: '⭐' },
+    { level: 5, name: 'Ambassadeur de Madinina', minXP: 550, nextXP: 800, icon: '👑' }
+  ];
+
+  const currentLevel =
+    EXPLORER_LEVELS.slice().reverse().find(l => effectivePoints >= l.minXP) || EXPLORER_LEVELS[0];
+  const nextLevel = EXPLORER_LEVELS.find(l => l.level === currentLevel.level + 1) || null;
+  const levelProgress = nextLevel
+    ? Math.min(
+        100,
+        Math.max(
+          6,
+          Math.round(
+            ((effectivePoints - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100
+          )
+        )
+      )
     : 100;
 
   const handleOpenBadgesSection = () => {
@@ -1513,7 +1624,7 @@ export default function UserAccountPage() {
                     </div>
                   </button>
 
-                  {/* Carte 2 : Badges acquis & Progression long terme */}
+                  {/* Carte 2 : Niveau d'Explorateur & Sceaux acquis */}
                   <button
                     type="button"
                     onClick={handleOpenBadgesSection}
@@ -1521,26 +1632,26 @@ export default function UserAccountPage() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200/80 text-teal-800 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <Award className="w-4 h-4" />
+                        <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200/80 text-teal-800 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform text-xl">
+                          <span>{currentLevel.icon}</span>
                         </div>
                         <div>
                           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                            Badges acquis
+                            Niveau {currentLevel.level} · Sceaux
                           </span>
                           <div className="flex items-baseline gap-1.5 mt-0.5">
                             <span className="text-xl font-bold text-slate-900 group-hover:text-teal-800 transition-colors">
-                              {unlockedBadges.length}/{badges.length}
+                              {unlockedBadges.length}/{evaluatedBadges.length}
                             </span>
                             <span className="text-xs font-medium text-slate-500">
-                              paliers
+                              sceaux acquis
                             </span>
                           </div>
                         </div>
                       </div>
 
                       <span className="px-2.5 py-1 rounded-lg bg-teal-800/10 text-teal-900 border border-teal-200/60 text-xs font-bold shrink-0">
-                        {userPoints} pts
+                        {effectivePoints} XP
                       </span>
                     </div>
 
@@ -1548,17 +1659,15 @@ export default function UserAccountPage() {
                       <div className="h-1.5 w-full rounded-full bg-stone-200/90 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-teal-700 transition-all duration-500"
-                          style={{ width: `${Math.max(8, progressToNext)}%` }}
+                          style={{ width: `${Math.max(6, levelProgress)}%` }}
                         />
                       </div>
                       <div className="flex items-center justify-between gap-2 text-[11px]">
                         <span className="text-slate-600 font-medium truncate">
-                          {nextBadge
-                            ? `Prochain : ${nextBadge.icon} ${nextBadge.name}`
-                            : '👑 Tous les paliers acquis'}
+                          {currentLevel.name}
                         </span>
                         <span className="text-teal-800 font-semibold shrink-0">
-                          {nextBadge ? `${userPoints}/${nextBadge.requiredPoints} pts` : 'Complet'}
+                          {nextLevel ? `${effectivePoints}/${nextLevel.minXP} XP` : 'Rang Max'}
                         </span>
                       </div>
                     </div>
@@ -1572,7 +1681,7 @@ export default function UserAccountPage() {
               {[
                 { id: 'favorites', label: `Mes Favoris (${favoritePlaces.length})`, icon: Heart },
                 { id: 'settings', label: 'Mes informations & préférences', icon: Settings },
-                { id: 'badges', label: `Mes Badges (${unlockedBadges.length}/${badges.length})`, icon: Award }
+                { id: 'badges', label: `Mes Badges (${unlockedBadges.length}/${evaluatedBadges.length})`, icon: Award }
               ].map(tab => {
                 const Icon = tab.icon;
                 const active = activeTab === tab.id;
@@ -2095,10 +2204,10 @@ export default function UserAccountPage() {
                       <div className="flex items-center gap-4 sm:gap-5">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-amber-300/80 shadow-xs flex flex-col items-center justify-center shrink-0 relative group">
                           <span className="text-3xl sm:text-4xl drop-shadow-xs">
-                            {currentRankBadge ? currentRankBadge.icon : '🧭'}
+                            {currentLevel.icon}
                           </span>
-                          <span className="absolute -bottom-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-2xs">
-                            {currentRankBadge ? currentRankBadge.tier : 'Départ'}
+                          <span className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-2xs">
+                            Niveau {currentLevel.level}
                           </span>
                         </div>
 
@@ -2107,56 +2216,61 @@ export default function UserAccountPage() {
                             Passeport de l&apos;Explorateur · Madinina
                           </span>
                           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                            {currentRankBadge ? currentRankBadge.name : 'Initié de Madinina'}
+                            {currentLevel.name}
                           </h2>
                           <p className="text-xs sm:text-sm text-slate-600">
-                            {unlockedBadges.length} sur {badges.length} sceaux débloqués ·{' '}
-                            <strong className="text-teal-900 font-semibold">{userPoints} points d&apos;exploration</strong>
+                            {unlockedBadges.length} sur {evaluatedBadges.length} sceaux validés ·{' '}
+                            <strong className="text-teal-900 font-semibold">{effectivePoints} points d&apos;exploration (XP)</strong>
                           </p>
                         </div>
                       </div>
 
-                      {/* Carte métrique d'avancement vers le prochain jalon */}
-                      <div className="bg-white/90 backdrop-blur-xs rounded-2xl border border-stone-200/90 p-4 sm:p-5 lg:min-w-[300px] space-y-2.5 shadow-2xs">
+                      {/* Carte métrique d'avancement vers le prochain rang */}
+                      <div className="bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200/90 p-5 lg:min-w-[320px] space-y-3 shadow-2xs">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-slate-600">
-                            Prochain jalon de route
+                            Progression vers le Niveau {nextLevel ? nextLevel.level : 5}
                           </span>
                           <span className="font-bold text-teal-900">
-                            {userPoints} / {nextBadge ? nextBadge.requiredPoints : 1200} pts
+                            {effectivePoints} / {nextLevel ? nextLevel.minXP : effectivePoints} XP
                           </span>
                         </div>
 
                         <div className="h-2 w-full rounded-full bg-stone-100 overflow-hidden">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-teal-800 to-teal-600 transition-all duration-700"
-                            style={{ width: `${Math.max(6, progressToNext)}%` }}
+                            style={{ width: `${Math.max(6, levelProgress)}%` }}
                           />
                         </div>
 
-                        <p className="text-xs text-slate-500 leading-snug">
-                          {nextBadge ? (
-                            <>
-                              Encore{' '}
-                              <strong className="text-teal-900 font-bold">
-                                {Math.max(0, nextBadge.requiredPoints - userPoints)} pts
-                              </strong>{' '}
-                              pour décrocher le sceau « {nextBadge.name} » ({nextBadge.tier}).
-                            </>
-                          ) : (
-                            <span className="text-teal-900 font-bold">
-                              👑 Vous avez conquis l&apos;ensemble des distinctions de l&apos;île !
-                            </span>
-                          )}
-                        </p>
+                        <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-stone-100">
+                          <span>
+                            {nextLevel ? (
+                              <>
+                                Encore{' '}
+                                <strong className="text-teal-900 font-semibold">
+                                  {Math.max(0, nextLevel.minXP - effectivePoints)} XP
+                                </strong>{' '}
+                                pour « {nextLevel.name} »
+                              </>
+                            ) : (
+                              <span className="text-teal-900 font-bold">
+                                👑 Rang d&apos;exploration maximal atteint !
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-stone-400 font-medium">
+                            {levelProgress}%
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     {/* Frise chronologique stylisée des 6 Sceaux de l'île */}
-                    <div className="pt-2 border-t border-stone-200/70">
+                    <div className="pt-4 border-t border-stone-200/70">
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                        {badges.map((b, idx) => {
-                          const reached = b.unlocked || userPoints >= b.requiredPoints;
+                        {evaluatedBadges.map((b, idx) => {
+                          const reached = b.unlocked;
                           const isCurrentTarget = nextBadge?.id === b.id;
 
                           return (
@@ -2171,7 +2285,7 @@ export default function UserAccountPage() {
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-lg">{b.icon}</span>
+                                <span className="text-xl">{b.icon}</span>
                                 <span
                                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                                     reached
@@ -2181,12 +2295,12 @@ export default function UserAccountPage() {
                                       : 'bg-stone-100 text-slate-500'
                                   }`}
                                 >
-                                  {reached ? '✓ Sceau' : `${b.requiredPoints}p`}
+                                  {reached ? '✓ Acquis' : `${b.currentCount}/${b.targetCount}`}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">
-                                  Étape {idx + 1}
+                                  {b.tier}
                                 </span>
                                 <p className="text-xs font-bold text-slate-900 truncate">
                                   {b.name}
@@ -2200,155 +2314,31 @@ export default function UserAccountPage() {
                   </div>
                 </div>
 
-                {/* 2. LE GUIDE D'ACTION DU VOYAGEUR (LES 4 VOIES DE PROGRESSION) */}
-                <div className="space-y-4">
+                {/* 2. LA GALERIE DES 6 SCEAUX D'EXPLORATION (MISSIONS CONCRÈTES) */}
+                <div className="space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-900">
-                      Comment enrichir votre carnet d&apos;exploration ?
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500">
-                      Chaque retour d&apos;expérience et lieu sauvegardé participe à la communauté.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Voie 1 : Dénicher & Sauvegarder */}
-                    <div className="p-5 rounded-2xl bg-white border border-stone-200/90 hover:border-rose-300 transition-all flex flex-col justify-between gap-4 group shadow-2xs">
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200/70 text-[#C84B31] flex items-center justify-center">
-                            <Heart className="w-5 h-5" />
-                          </div>
-                          <span className="text-xs font-bold text-[#C84B31] bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200/60">
-                            +10 à +30 pts
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#C84B31] transition-colors">
-                          Dénicher & Sauvegarder
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Sauvegardez vos criques secrètes, anses volcaniques et bonnes tables. Compléter votre profil rapporte aussi <strong>+30 pts</strong>.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => guardNavigation(() => router.push('/carte'))}
-                        className="text-xs font-semibold text-slate-700 hover:text-teal-900 inline-flex items-center gap-1.5 transition-colors cursor-pointer pt-2 border-t border-stone-100"
-                      >
-                        <span>Parcourir la carte</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                        Les 6 Sceaux de Madinina
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                        Chaque sceau valide une vraie étape de votre découverte de l&apos;île et vous rapporte un bonus d&apos;expérience.
+                      </p>
                     </div>
-
-                    {/* Voie 2 : Témoigner & Immortaliser */}
-                    <div className="p-5 rounded-2xl bg-white border border-stone-200/90 hover:border-teal-300 transition-all flex flex-col justify-between gap-4 group shadow-2xs">
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200/70 text-teal-800 flex items-center justify-center">
-                            <Camera className="w-5 h-5" />
-                          </div>
-                          <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200/60">
-                            +20 pts / post
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-teal-800 transition-colors">
-                          Témoigner & Immortaliser
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Racontez vos rencontres matinales avec les tortues, vos couchers de soleil et vos photos du jour dans le fil Communauté.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => guardNavigation(() => router.push('/?page=community'))}
-                        className="text-xs font-semibold text-slate-700 hover:text-teal-900 inline-flex items-center gap-1.5 transition-colors cursor-pointer pt-2 border-t border-stone-100"
-                      >
-                        <span>Ouvrir la communauté</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Voie 3 : Veiller sur le Littoral */}
-                    <div className="p-5 rounded-2xl bg-white border border-stone-200/90 hover:border-sky-300 transition-all flex flex-col justify-between gap-4 group shadow-2xs">
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200/70 text-sky-800 flex items-center justify-center">
-                            <Waves className="w-5 h-5" />
-                          </div>
-                          <span className="text-xs font-bold text-sky-800 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200/60">
-                            +25 pts / relevé
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-800 transition-colors">
-                          Veiller sur le Littoral
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Signalez en direct l&apos;état de la mer, la clarté de l&apos;eau ou l&apos;absence de sargasses pour guider les prochains baigneurs.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => guardNavigation(() => router.push('/meteo-plages'))}
-                        className="text-xs font-semibold text-slate-700 hover:text-teal-900 inline-flex items-center gap-1.5 transition-colors cursor-pointer pt-2 border-t border-stone-100"
-                      >
-                        <span>Météo des plages</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Voie 4 : Transmettre & Conseiller */}
-                    <div className="p-5 rounded-2xl bg-white border border-stone-200/90 hover:border-amber-300 transition-all flex flex-col justify-between gap-4 group shadow-2xs">
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/70 text-amber-800 flex items-center justify-center">
-                            <BookOpen className="w-5 h-5" />
-                          </div>
-                          <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60">
-                            +15 à +30 pts
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-amber-800 transition-colors">
-                          Transmettre & Conseiller
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Partagez vos conseils avisés sur le forum d&apos;entraide ou référencez une adresse confidentielle hors des sentiers battus.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => guardNavigation(() => router.push('/?page=community'))}
-                        className="text-xs font-semibold text-slate-700 hover:text-teal-900 inline-flex items-center gap-1.5 transition-colors cursor-pointer pt-2 border-t border-stone-100"
-                      >
-                        <span>Rejoindre le forum</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. LA GALERIE DES 6 SCEAUX D'EXPLORATION (COLLECTIBLES) */}
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-900">
-                      Les 6 Sceaux de Madinina
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500">
-                      Distinctions permanentes conservées au fil de toutes vos visites.
-                    </p>
+                    <span className="text-xs font-bold text-teal-900 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/70 shrink-0 self-start sm:self-auto">
+                      {unlockedBadges.length} / {evaluatedBadges.length} accomplis
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {badges.map(badge => {
-                      const isUnlocked = badge.unlocked || userPoints >= badge.requiredPoints;
+                    {evaluatedBadges.map(badge => {
+                      const isUnlocked = badge.unlocked;
                       const isNextTarget = nextBadge?.id === badge.id;
-                      const currentPtsForBadge = Math.min(userPoints, badge.requiredPoints);
+                      const currentCount = badge.currentCount || 0;
+                      const targetCount = badge.targetCount || 1;
                       const pct = Math.min(
                         100,
-                        Math.round((currentPtsForBadge / badge.requiredPoints) * 100)
+                        Math.round((currentCount / targetCount) * 100)
                       );
 
                       return (
@@ -2356,14 +2346,14 @@ export default function UserAccountPage() {
                           key={badge.id}
                           className={`rounded-2xl border p-5 sm:p-6 flex flex-col justify-between gap-5 transition-all ${
                             isUnlocked
-                              ? 'bg-white border-teal-200 shadow-xs'
+                              ? 'bg-white border-teal-200/90 shadow-xs'
                               : isNextTarget
                               ? 'bg-white border-amber-300 ring-2 ring-amber-300/30 shadow-xs'
-                              : 'bg-[#FAF8F5]/80 border-stone-200/80 text-slate-600'
+                              : 'bg-white/80 border-stone-200/80 text-slate-600'
                           }`}
                         >
                           <div className="space-y-4">
-                            {/* En-tête de carte : Sceau stylisé + Statut */}
+                            {/* En-tête de carte : Sceau stylisé + Badge XP */}
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3.5">
                                 <div
@@ -2394,14 +2384,10 @@ export default function UserAccountPage() {
                                     ? 'bg-teal-800 text-white shadow-2xs'
                                     : isNextTarget
                                     ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                                    : 'bg-stone-200/70 text-slate-500'
+                                    : 'bg-stone-100 text-slate-600 border border-stone-200'
                                 }`}
                               >
-                                {isUnlocked
-                                  ? '✓ Sceau acquis'
-                                  : isNextTarget
-                                  ? 'En cours'
-                                  : `${badge.requiredPoints} pts`}
+                                {isUnlocked ? `✓ +${badge.requiredPoints} XP` : `+${badge.requiredPoints} XP`}
                               </span>
                             </div>
 
@@ -2410,12 +2396,12 @@ export default function UserAccountPage() {
                               {badge.description}
                             </p>
 
-                            {/* Encadré parchemin : Condition de déblocage */}
+                            {/* Encadré parchemin : Mission requise */}
                             {badge.howToEarn && (
                               <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-stone-200/80 space-y-1">
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-teal-900">
                                   <Compass className="w-3 h-3" />
-                                  <span>Condition d&apos;obtention</span>
+                                  <span>Mission à accomplir</span>
                                 </div>
                                 <p className="text-xs text-slate-600 leading-relaxed">
                                   {badge.howToEarn}
@@ -2424,39 +2410,155 @@ export default function UserAccountPage() {
                             )}
                           </div>
 
-                          {/* Jauge de progression individuelle */}
-                          <div className="space-y-1.5 pt-2 border-t border-stone-100">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-bold text-slate-900">
-                                {currentPtsForBadge} / {badge.requiredPoints} pts
-                              </span>
-                              <span
-                                className={`font-semibold ${
-                                  isUnlocked ? 'text-teal-800' : 'text-slate-500'
-                                }`}
-                              >
-                                {isUnlocked
-                                  ? 'Objectif atteint'
-                                  : `Encore ${badge.requiredPoints - currentPtsForBadge} pts (${pct}%)`}
-                              </span>
+                          {/* Jauge d'avancement réelle basée sur la mission */}
+                          <div className="space-y-3 pt-3 border-t border-stone-100">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-bold text-slate-900">
+                                  {currentCount} / {targetCount} {badge.unitLabel}
+                                </span>
+                                <span
+                                  className={`font-semibold ${
+                                    isUnlocked ? 'text-teal-800' : 'text-slate-500'
+                                  }`}
+                                >
+                                  {isUnlocked
+                                    ? '✓ Sceau acquis'
+                                    : `Encore ${Math.max(0, targetCount - currentCount)} (${pct}%)`}
+                                </span>
+                              </div>
+
+                              <div className="h-2 w-full rounded-full bg-stone-100 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    isUnlocked
+                                      ? 'bg-teal-800'
+                                      : isNextTarget
+                                      ? 'bg-amber-500'
+                                      : 'bg-teal-600/70'
+                                  }`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
                             </div>
 
-                            <div className="h-1.5 w-full rounded-full bg-stone-100 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  isUnlocked
-                                    ? 'bg-teal-800'
-                                    : isNextTarget
-                                    ? 'bg-amber-500'
-                                    : 'bg-stone-300'
-                                }`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
+                            {/* Bouton d'action directe contextuelle quand non validé */}
+                            {!isUnlocked && (
+                              <div className="pt-1">
+                                {badge.id === 'b-anchor' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => guardNavigation(() => router.push('/carte'))}
+                                    className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <span>Explorer la carte & ajouter des favoris</span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {badge.id === 'b-beach' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => guardNavigation(() => router.push('/carte?category=beach'))}
+                                    className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <span>Découvrir les plages de l&apos;île</span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {badge.id === 'b-reef' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => guardNavigation(() => router.push('/carte?category=snorkeling'))}
+                                    className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <span>Voir les spots snorkeling & tortues</span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {badge.id === 'b-hiking' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => guardNavigation(() => router.push('/carte?category=hiking'))}
+                                    className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <span>Parcourir les randonnées & cascades</span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {badge.id === 'b-vigie' && (
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTabChange('settings')}
+                                      className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                    >
+                                      <span>Configurer mon profil</span>
+                                      <ArrowRight className="w-3.5 h-3.5" />
+                                    </button>
+                                    <span className="text-stone-300">·</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => guardNavigation(() => router.push('/meteo-plages'))}
+                                      className="text-xs font-semibold text-teal-800 hover:text-teal-900 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                    >
+                                      <span>Météo des plages</span>
+                                      <ArrowRight className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                                {badge.id === 'b-ambassador' && (
+                                  <span className="text-[11px] text-slate-500 italic">
+                                    Débloqué automatiquement dès obtention des 5 premiers sceaux.
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* 3. BARÈME & PHILOSOPHIE DU CARNET (SÉPARATION CLAIRE ENTRE ACTIONS, SCEAUX ET NIVEAUX) */}
+                <div className="p-6 sm:p-7 rounded-3xl bg-white border border-stone-200/90 shadow-2xs space-y-4">
+                  <div className="flex items-center gap-2.5 text-teal-900">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <h4 className="text-base font-bold text-slate-900">
+                      Comment fonctionne votre Carnet d&apos;Exploration ?
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2 text-xs text-slate-600 leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 space-y-1.5">
+                      <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px] font-extrabold">1</span>
+                        <span>Actions concrètes sur l&apos;île</span>
+                      </div>
+                      <p>
+                        Enregistrez des lieux favoris (<strong>+15 XP</strong>), personnalisez votre commune de résidence (<strong>+30 XP</strong>) ou partagez un relevé météo en direct (<strong>+25 XP</strong>).
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 space-y-1.5">
+                      <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px] font-extrabold">2</span>
+                        <span>Déblocage des 6 Sceaux</span>
+                      </div>
+                      <p>
+                        Chaque thématique (plages, lagon, randonnées, vigie) possède son propre compteur. Remplir la condition d&apos;un sceau vous fait gagner un gros bonus de <strong>+50 à +200 XP</strong>.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 space-y-1.5">
+                      <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px] font-extrabold">3</span>
+                        <span>Montée en Niveau d&apos;Explorateur</span>
+                      </div>
+                      <p>
+                        Vos points cumulés déterminent votre rang sur l&apos;île : d&apos;<em>Initié de Madinina</em> (Niveau 1) jusqu&apos;à <em>Ambassadeur de Madinina</em> (Niveau 5).
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

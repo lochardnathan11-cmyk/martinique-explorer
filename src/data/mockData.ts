@@ -1462,70 +1462,82 @@ export const INITIAL_FORUM_TOPICS: ForumTopic[] = [
 
 export const BADGES_LIST: UserBadge[] = [
   {
-    id: 'b-explorer',
-    name: 'Carnet d’Ancrage',
-    tier: 'Palier 1',
-    categoryLabel: 'Premiers repères',
-    description: 'Votre camp de base est choisi et vos premières adresses insulaires sont enregistrées.',
-    howToEarn: 'Personnalisez et enregistrez votre profil (+30 pts) puis ajoutez au moins 2 lieux en favoris (+10 pts/lieu).',
+    id: 'b-anchor',
+    name: 'Premier Ancrage',
+    tier: 'Sceau I',
+    categoryLabel: 'Carnet de Route',
+    description: 'Vous avez posé vos valises sur l’île et constitué votre première sélection d’adresses incontournables.',
+    howToEarn: 'Enregistrer au moins 3 lieux (plages, tables ou activités) dans vos favoris.',
     icon: '🧭',
     unlocked: false,
-    requiredPoints: 50
+    requiredPoints: 50,
+    targetCount: 3,
+    unitLabel: 'lieux en favoris'
   },
   {
-    id: 'b-beach-master',
+    id: 'b-beach',
     name: 'Éclaireur des Anses',
-    tier: 'Palier 2',
-    categoryLabel: 'Carnet de route',
-    description: 'Vous composez une sélection variée de plages, criques et tables créoles du Nord au Sud.',
-    howToEarn: 'Sauvegardez 6+ lieux coup de cœur en favoris (+10 pts/lieu) ou ajoutez des étapes à votre itinéraire.',
+    tier: 'Sceau II',
+    categoryLabel: 'Plages & Criques',
+    description: 'Des grandes anses de sable blond du Sud aux criques volcaniques du Nord, le littoral n’a plus de secret pour vous.',
+    howToEarn: 'Sauvegarder au moins 4 plages ou criques secrètes dans votre carnet de favoris.',
     icon: '🏖️',
     unlocked: false,
-    requiredPoints: 120
+    requiredPoints: 75,
+    targetCount: 4,
+    unitLabel: 'plages & criques'
   },
   {
-    id: 'b-turtle-friend',
-    name: 'Veilleur du Lagon',
-    tier: 'Palier 3',
+    id: 'b-reef',
+    name: 'Ami des Tortues & du Lagon',
+    tier: 'Sceau III',
     categoryLabel: 'Faune & Récifs',
-    description: 'Observateur attentif des herbiers marins, des tortues et des fonds coralliens de l’île.',
-    howToEarn: 'Partagez vos photos, récits de sortie et conseils d’observation dans l’espace Communauté (+20 pts/post).',
+    description: 'Observateur attentif et respectueux des herbiers marins, des tortues vertes et des jardins coralliens.',
+    howToEarn: 'Ajouter au moins 2 spots de snorkeling ou d’observation des tortues (Anse Dufour, Anse Noire, Grande Anse d’Arlet, Anse Figuier...) à vos favoris.',
     icon: '🐢',
     unlocked: false,
-    requiredPoints: 250
+    requiredPoints: 75,
+    targetCount: 2,
+    unitLabel: 'spots snorkeling & tortues'
   },
   {
-    id: 'b-coastal-watch',
+    id: 'b-hiking',
+    name: 'Boussole des Mornes',
+    tier: 'Sceau IV',
+    categoryLabel: 'Sentiers & Reliefs',
+    description: 'Explorateur des sentiers de la forêt tropicale, des cascades fraîches, de la mangrove et des pitons volcaniques.',
+    howToEarn: 'Enregistrer au moins 2 randonnées, sorties nature ou points de vue dans vos favoris.',
+    icon: '🌿',
+    unlocked: false,
+    requiredPoints: 100,
+    targetCount: 2,
+    unitLabel: 'randonnées & nature'
+  },
+  {
+    id: 'b-vigie',
     name: 'Vigie du Littoral',
-    tier: 'Palier 4',
-    categoryLabel: 'Météo & Mer',
-    description: 'Vos relevés d’état de la mer, d’alizés et de sargasses aident les voyageurs en temps réel.',
-    howToEarn: 'Publiez régulièrement des signalements côtiers en direct (sargasses, houle, clarté de l’eau : +25 pts/alerte).',
+    tier: 'Sceau V',
+    categoryLabel: 'Météo & Entraide',
+    description: 'Membre engagé qui renseigne son camp de base et partage ses observations pour guider les voyageurs de l’île.',
+    howToEarn: 'Personnaliser votre profil voyageur dans les réglages OU publier un relevé météo / message communautaire.',
     icon: '🌊',
     unlocked: false,
-    requiredPoints: 450
-  },
-  {
-    id: 'b-local-guide',
-    name: 'Passeur d’Adresses',
-    tier: 'Palier 5',
-    categoryLabel: 'Entraide locale',
-    description: 'Référence bienveillante sur le forum et découvreur de pépites authentiques en Martinique.',
-    howToEarn: 'Participez aux sujets d’entraide du forum (+15 pts) et proposez de nouvelles adresses vérifiées (+30 pts/lieu).',
-    icon: '⭐',
-    unlocked: false,
-    requiredPoints: 750
+    requiredPoints: 100,
+    targetCount: 1,
+    unitLabel: 'profil configuré ou partage'
   },
   {
     id: 'b-ambassador',
     name: 'Ambassadeur de Madinina',
-    tier: 'Palier 6',
-    categoryLabel: 'Long terme',
-    description: 'Distinction suprême saluant votre fidélité au fil des saisons et vos contributions durables.',
-    howToEarn: 'Cumulez 1 200 pts sur la durée grâce à vos séjours, partages photos, relevés météo et coups de cœur.',
+    tier: 'Sceau d’Honneur',
+    categoryLabel: 'Distinction Suprême',
+    description: 'Distinction suprême décernée aux amoureux fidèles de la Martinique ayant validé les 5 premiers sceaux d’exploration.',
+    howToEarn: 'Débloquer l’intégralité des 5 premiers sceaux thématiques de l’île.',
     icon: '👑',
     unlocked: false,
-    requiredPoints: 1200
+    requiredPoints: 200,
+    targetCount: 5,
+    unitLabel: 'sceaux débloqués'
   }
 ];
 
