@@ -22,24 +22,13 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [discoverDropdownOpen, setDiscoverDropdownOpen] = useState(false);
   const [mobileDiscoverOpen, setMobileDiscoverOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const discoverDropdownRef = useRef<HTMLDivElement>(null);
 
   const requestLogout = () => {
     setUserDropdownOpen(false);
     setMobileOpen(false);
-    setLogoutConfirmOpen(true);
-  };
-
-  const handleConfirmLogout = async () => {
-    setIsLoggingOut(true);
-    await new Promise(r => setTimeout(r, 400));
-    await logout();
-    setLogoutConfirmOpen(false);
-    setIsLoggingOut(false);
-    router.push('/');
+    openModal('logout_confirm');
   };
 
   // Fermer les menus si on clique à côté
@@ -364,8 +353,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                       <button
                         type="button"
                         onClick={requestLogout}
-                        disabled={isLoggingOut}
-                        className="w-full text-left px-3 py-2 text-xs font-semibold text-[#C84B31] hover:bg-red-50/80 rounded-xl transition-colors flex items-center gap-2.5 cursor-pointer disabled:opacity-50"
+                        className="w-full text-left px-3 py-2 text-xs font-semibold text-[#C84B31] hover:bg-red-50/80 rounded-xl transition-colors flex items-center gap-2.5 cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 shrink-0" />
                         <span>Se déconnecter</span>
@@ -501,8 +489,7 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                   <button
                     type="button"
                     onClick={requestLogout}
-                    disabled={isLoggingOut}
-                    className="text-coral hover:underline flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                    className="text-coral hover:underline flex items-center gap-1.5 cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Déconnexion</span>
@@ -539,73 +526,6 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Modale de confirmation de déconnexion */}
-      {logoutConfirmOpen && currentUser && (
-        <div className="fixed inset-0 z-[1400] bg-slate-900/45 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl border border-stone-200/90 shadow-2xl max-w-sm w-full overflow-hidden text-left">
-            <div className="px-6 py-5 bg-[#FAF8F5] border-b border-stone-200/80 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200/80 text-[#C84B31] flex items-center justify-center shrink-0">
-                  <LogOut className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Se déconnecter ?
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Compte : {currentUser.name}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setLogoutConfirmOpen(false)}
-                disabled={isLoggingOut}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-200/50 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5">
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Êtes-vous sûr de vouloir vous déconnecter ? Vos lieux favoris et vos préférences resteront sauvegardés pour votre prochaine visite.
-              </p>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setLogoutConfirmOpen(false)}
-                  disabled={isLoggingOut}
-                  className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 text-slate-700 border border-stone-200/90 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-                >
-                  Annuler
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleConfirmLogout}
-                  disabled={isLoggingOut}
-                  className="py-2.5 px-4 rounded-xl bg-[#C84B31] hover:bg-[#B03E26] text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-2 shadow-2xs disabled:opacity-60"
-                >
-                  {isLoggingOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Déconnexion...</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4" />
-                      <span>Me déconnecter</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

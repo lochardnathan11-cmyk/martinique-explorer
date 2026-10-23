@@ -6,6 +6,7 @@ import AlertReportModal from '@/components/modals/AlertReportModal';
 import AIAssistantModal from '@/components/ai/AIAssistantModal';
 import GamificationModal from '@/components/badges/GamificationModal';
 import AuthModal from '@/components/modals/AuthModal';
+import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
 import { useRouter } from 'next/navigation';
 
 export default function GlobalModals() {
@@ -22,6 +23,7 @@ export default function GlobalModals() {
       {activeModal.type === 'auth' && (
         <AuthModal onAdminNavigate={() => router.push('/admin')} />
       )}
+      {activeModal.type === 'logout_confirm' && <LogoutConfirmModal />}
     </>
   );
 }
