@@ -128,7 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [alerts, setAlerts] = useState<CommunityAlert[]>(INITIAL_ALERTS);
   const [posts, setPosts] = useState<SocialPost[]>(INITIAL_POSTS);
   const [forumTopics, setForumTopics] = useState<ForumTopic[]>(INITIAL_FORUM_TOPICS);
-  const [favorites, setFavorites] = useState<string[]>(['salines', 'anse-dufour']);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [itinerary, setItinerary] = useState<ItineraryDay[]>(INITIAL_ITINERARY);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('visitor');
@@ -144,18 +144,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persistence in localStorage on browser side & Supabase session listener
   useEffect(() => {
     try {
-      const savedFavs = localStorage.getItem('mq_favorites');
-      if (savedFavs) {
-        const parsedFavs = JSON.parse(savedFavs);
-        if (Array.isArray(parsedFavs)) {
-          setFavorites(parsedFavs);
-        }
-      }
       const savedUser = localStorage.getItem('mq_current_user');
       if (savedUser) {
         const u = JSON.parse(savedUser) as AuthUser;
         setCurrentUser(u);
         setUserRole(u.role);
+        // Charger les favoris uniquement pour l'utilisateur connecté
+        const userFavKey = `mq_favorites_${u.email.toLowerCase()}`;
+        const savedFavs = localStorage.getItem(userFavKey) || localStorage.getItem('mq_favorites');
+        if (savedFavs) {
+          const parsedFavs = JSON.parse(savedFavs);
+          if (Array.isArray(parsedFavs)) {
+            setFavorites(parsedFavs);
+          }
+        }
+      } else {
+        // Visiteur non connecté : aucun favori par défaut
+        setFavorites([]);
       }
       const savedExtra = Number(localStorage.getItem('mq_extra_xp') || '0');
       if (Number.isFinite(savedExtra)) {
@@ -193,6 +198,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setUserRole(role);
           try {
             localStorage.setItem('mq_current_user', JSON.stringify(user));
+            const userFavKey = `mq_favorites_${email.toLowerCase()}`;
+            const savedFavs = localStorage.getItem(userFavKey) || localStorage.getItem('mq_favorites');
+            if (savedFavs) {
+              const parsedFavs = JSON.parse(savedFavs);
+              if (Array.isArray(parsedFavs)) {
+                setFavorites(parsedFavs);
+              }
+            }
           } catch (e) {}
         }
       });
@@ -213,10 +226,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setUserRole(role);
           try {
             localStorage.setItem('mq_current_user', JSON.stringify(user));
+            const userFavKey = `mq_favorites_${email.toLowerCase()}`;
+            const savedFavs = localStorage.getItem(userFavKey) || localStorage.getItem('mq_favorites');
+            if (savedFavs) {
+              const parsedFavs = JSON.parse(savedFavs);
+              if (Array.isArray(parsedFavs)) {
+                setFavorites(parsedFavs);
+              }
+            }
           } catch (e) {}
         } else if (_event === 'SIGNED_OUT') {
           setCurrentUser(null);
           setUserRole('visitor');
+          setFavorites([]);
           try {
             localStorage.removeItem('mq_current_user');
           } catch (e) {}
@@ -284,6 +306,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setUserRole(role);
           try {
             localStorage.setItem('mq_current_user', JSON.stringify(user));
+            const userFavKey = `mq_favorites_${clean}`;
+            const savedFavs = localStorage.getItem(userFavKey) || localStorage.getItem('mq_favorites');
+            if (savedFavs) {
+              const parsed = JSON.parse(savedFavs);
+              if (Array.isArray(parsed)) setFavorites(parsed);
+            } else {
+              setFavorites([]);
+            }
           } catch (e) {}
 
           return { success: true, isAdmin: isUserAdmin };
@@ -305,6 +335,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserRole(role);
     try {
       localStorage.setItem('mq_current_user', JSON.stringify(user));
+      const userFavKey = `mq_favorites_${clean}`;
+      const savedFavs = localStorage.getItem(userFavKey) || localStorage.getItem('mq_favorites');
+      if (savedFavs) {
+        const parsed = JSON.parse(savedFavs);
+        if (Array.isArray(parsed)) setFavorites(parsed);
+      } else {
+        setFavorites([]);
+      }
     } catch (e) {}
 
     return { success: true, isAdmin };
@@ -345,6 +383,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCurrentUser(user);
     setUserRole(user.role);
+    setFavorites([]);
     try {
       localStorage.setItem('mq_current_user', JSON.stringify(user));
     } catch (e) {}
@@ -361,6 +400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setCurrentUser(null);
     setUserRole('visitor');
+    setFavorites([]);
     try {
       localStorage.removeItem('mq_current_user');
     } catch (e) {}
@@ -533,10 +573,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFavorite = (placeId: string) => {
+    if (!currentUser) {
+      openModal('auth_required_favorite', { placeId });
+      return;
+    }
+
     setFavorites(prev => {
       const exists = prev.includes(placeId);
       const next = exists ? prev.filter(id => id !== placeId) : [...prev, placeId];
       try {
+        const userFavKey = `mq_favorites_${currentUser.email.toLowerCase()}`;
+        localStorage.setItem(userFavKey, JSON.stringify(next));
         localStorage.setItem('mq_favorites', JSON.stringify(next));
       } catch (e) {}
       return next;
