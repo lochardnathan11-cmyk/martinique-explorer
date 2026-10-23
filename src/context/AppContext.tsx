@@ -257,7 +257,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         if (error) {
-          return { success: false, isAdmin: false, error: error.message };
+          const raw = error.message || '';
+          let friendlyError = 'Adresse e-mail ou mot de passe incorrect. Vérifiez vos informations ou créez un compte.';
+          if (/email not confirmed/i.test(raw)) {
+            friendlyError = 'Veuillez valider le lien de confirmation reçu par e-mail pour activer votre compte.';
+          } else if (/too many requests|rate limit/i.test(raw)) {
+            friendlyError = 'Trop de tentatives consécutives. Par sécurité, veuillez patienter quelques instants avant de réessayer.';
+          } else if (/invalid email/i.test(raw)) {
+            friendlyError = 'Le format de l’adresse e-mail est invalide.';
+          }
+          return { success: false, isAdmin: false, error: friendlyError };
         }
 
         if (data.user) {

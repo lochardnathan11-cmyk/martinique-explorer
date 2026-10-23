@@ -10,6 +10,86 @@ interface AuthModalProps {
   onAdminNavigate?: () => void;
 }
 
+interface AuthErrorInfo {
+  title: string;
+  description: string;
+  actionText?: string;
+  actionType?: 'signup' | 'login';
+}
+
+function parseAuthError(rawMsg: string | null): AuthErrorInfo {
+  if (!rawMsg) {
+    return {
+      title: 'Erreur de connexion',
+      description: 'Veuillez vérifier vos identifiants et réessayer.'
+    };
+  }
+
+  const lower = rawMsg.toLowerCase();
+
+  if (
+    lower.includes('invalid login credentials') ||
+    lower.includes('invalid credentials') ||
+    lower.includes('invalid_grant') ||
+    lower.includes('identifiants') ||
+    lower.includes('adresse e-mail ou mot de passe incorrect')
+  ) {
+    return {
+      title: 'Identifiants non reconnus',
+      description: 'L’adresse e-mail ou le mot de passe renseigné est incorrect. Si vous n’avez pas encore de compte sur Martinique Explorer, vous pouvez en créer un gratuitement.',
+      actionText: 'Créer un compte en quelques secondes',
+      actionType: 'signup'
+    };
+  }
+
+  if (
+    lower.includes('already registered') ||
+    lower.includes('already exists') ||
+    lower.includes('déjà un compte') ||
+    lower.includes('déjà associée')
+  ) {
+    return {
+      title: 'Compte déjà existant',
+      description: 'Cette adresse e-mail est déjà associée à un profil. Connectez-vous avec votre mot de passe habituel.',
+      actionText: 'Basculez sur « Se connecter »',
+      actionType: 'login'
+    };
+  }
+
+  if (lower.includes('email not confirmed') || lower.includes('confirmation')) {
+    return {
+      title: 'Validation de l’e-mail requise',
+      description: 'Veuillez vérifier vos e-mails pour valider votre compte avant de vous connecter.'
+    };
+  }
+
+  if (lower.includes('too many requests') || lower.includes('rate limit') || lower.includes('tentatives')) {
+    return {
+      title: 'Tentatives temporairement limitées',
+      description: 'Par mesure de sécurité suite à plusieurs essais, veuillez patienter quelques minutes avant de renouveler votre tentative.'
+    };
+  }
+
+  if (lower.includes('6 caractères') || lower.includes('au moins 6')) {
+    return {
+      title: 'Mot de passe trop court',
+      description: 'Pour votre sécurité, votre mot de passe doit comporter au moins 6 caractères.'
+    };
+  }
+
+  if (lower.includes('invalide') || lower.includes('invalid email')) {
+    return {
+      title: 'Format d’e-mail invalide',
+      description: 'Veuillez renseigner une adresse électronique valide (ex. prenom.nom@domaine.com).'
+    };
+  }
+
+  return {
+    title: 'Information de connexion',
+    description: rawMsg
+  };
+}
+
 export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
   const { closeModal, login, signup } = useApp();
   const router = useRouter();
@@ -172,13 +252,48 @@ export default function AuthModal({ onAdminNavigate }: AuthModalProps) {
             </div>
           )}
 
-          {/* Error Message Banner */}
-          {errorMsg && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-800 text-xs flex items-center gap-3 animate-fadeIn shadow-sm">
-              <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
-              <span className="font-medium leading-relaxed">{errorMsg}</span>
-            </div>
-          )}
+          {/* Professional Error Message Card */}
+          {errorMsg && (() => {
+            const err = parseAuthError(errorMsg);
+            return (
+              <div className="p-4 rounded-2xl bg-rose-50/90 border border-rose-200/80 shadow-2xs animate-fadeIn text-left space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 mt-0.5 border border-rose-200/60 shadow-2xs">
+                    <AlertCircle className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5 flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-rose-950 tracking-tight">
+                      {err.title}
+                    </h4>
+                    <p className="text-[12px] text-rose-900/90 leading-relaxed font-normal">
+                      {err.description}
+                    </p>
+                  </div>
+                </div>
+
+                {err.actionType && (
+                  <div className="pt-1 pl-11 flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (err.actionType === 'signup') {
+                          setTab('signup');
+                          setErrorMsg(null);
+                        } else if (err.actionType === 'login') {
+                          setTab('login');
+                          setErrorMsg(null);
+                        }
+                      }}
+                      className="text-xs font-bold text-teal-800 hover:text-teal-950 underline underline-offset-2 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <span>{err.actionText}</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Unified Form with Fluid Transitions */}
           {!successMsg && (
